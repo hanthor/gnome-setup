@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="setup">
+	<schema id="org.gnome.Setup" path="/org/gnome/Setup/">
+	</schema>
+</schemalist>

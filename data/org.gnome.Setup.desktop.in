@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Setup
+Exec=gnome-setup
+Icon=org.gnome.Setup
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

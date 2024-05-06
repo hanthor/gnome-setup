@@ -1,0 +1,4 @@
+data/org.gnome.Setup.desktop.in
+data/org.gnome.Setup.metainfo.xml.in
+data/org.gnome.Setup.gschema.xml
+src/window.ui
