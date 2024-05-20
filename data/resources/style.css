@@ -1,0 +1,15 @@
+button.nav {
+  padding: 4px;
+}
+
+statuspage.disclaimer .icon {
+	color: @yellow_3;
+}
+
+.eula undershoot {
+  border-radius: 12px;
+}
+
+.eula label {
+  padding: 12px;
+}

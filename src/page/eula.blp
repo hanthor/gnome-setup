@@ -1,0 +1,44 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupEulaPage : $SetupPage {
+  title: _("Terms of Use");
+
+  ready: bind accept.active;
+
+  child: Adw.Clamp {
+    maximum-size: 450;
+    Gtk.Box {
+      orientation: vertical;
+      valign: center;
+
+      spacing: 12;
+      margin-top: 18;
+      margin-bottom: 18;
+
+      Gtk.Label {
+        label: _("Terms of Use");
+        styles [ "title-1" ]
+      }
+
+      Gtk.ScrolledWindow {
+        propagate-natural-height: true;
+        hscrollbar-policy: never;
+
+        styles ["card", "eula"]
+
+        Gtk.Label eula {
+          wrap: true;
+          label: "ASDF";
+        }
+      }
+
+      Gtk.CheckButton accept {
+        label: _("I have read and accept the Terms of Use");
+        halign: center;
+        receives-default: true;
+      }
+    }
+  };
+}

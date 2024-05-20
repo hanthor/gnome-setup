@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupPrereleasePage : $SetupPage {
+  title: _("Disclaimer");
+  ready: true;
+  child: Adw.Clamp {
+    maximum-size: 520;
+    Adw.StatusPage {
+      icon-name: "dialog-warning-symbolic";
+      title: _("Pre-release Software");
+      description: _("This is an early development build of GNOME OS. Please be aware that breaking changes may still occur. You may need to manually migrate data after such a change. We provide no stability or security guarentees. Back up all important data. Do not use in a production environment.");
+      styles ["disclaimer"]
+    }
+  };
+}

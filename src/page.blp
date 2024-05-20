@@ -1,0 +1,73 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupPage : Adw.NavigationPage {
+
+  Adw.BreakpointBin {
+    width-request: 360;
+    height-request: 294;
+
+    child: Gtk.Overlay {
+      [overlay]
+      Gtk.Button back {
+        icon-name: "go-previous-symbolic";
+        tooltip-text: _("Back");
+
+        halign: start;
+        valign: center;
+        margin-start: 18;
+
+        action-name: "navigation.pop";
+        receives-default: false;
+        visible: bind template.can-pop;
+
+        accessibility {
+          label: _("Back");
+        }
+
+        styles ["circular", "nav"]
+      }
+
+      Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {
+          show-title: false;
+          show-back-button: bind back.visible inverted;
+        }
+
+        Adw.Bin contents {}
+      }
+
+      [overlay]
+      Gtk.Button next {
+        icon-name: "go-next-symbolic";
+
+        halign: end;
+        margin-end: 18;
+        valign: center;
+        margin-bottom: 18;
+
+        visible: bind template.can_next;
+        sensitive: bind template.ready;
+
+        accessibility {
+          label: _("Next");
+        }
+
+        clicked => $on_next() swapped;
+
+        styles ["circular", "nav", "suggested-action"]
+      }
+    };
+
+    Adw.Breakpoint breakpoint {
+      condition ('max-width: 500sp')
+      setters {
+        next.valign: end;
+        back.visible: false;
+      }
+    }
+
+  }
+}
