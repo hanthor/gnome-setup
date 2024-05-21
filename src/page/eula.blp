@@ -22,15 +22,19 @@ template $SetupEulaPage : $SetupBasePage {
         styles [ "title-1" ]
       }
 
-      Gtk.ScrolledWindow {
+      Gtk.ScrolledWindow scroll {
         propagate-natural-height: true;
         hscrollbar-policy: never;
+
+        accessibility {
+          labelled-by: eula;
+          // TODO: For some reason, the screen reader will not read this until I tab onto the checkbox and then tab back
+        }
 
         styles ["card", "eula"]
 
         Gtk.Label eula {
           wrap: true;
-          label: "ASDF";
         }
       }
 

@@ -4,6 +4,8 @@ using Adw 1;
 
 template $SetupBasePage : Adw.NavigationPage {
 
+  accessible-role: tab_panel;
+
   Adw.BreakpointBin {
     width-request: 360;
     height-request: 294;
@@ -44,7 +46,8 @@ template $SetupBasePage : Adw.NavigationPage {
         Adw.Bin mobile-next {
           visible: false;
           Gtk.Button {
-            label: _("Next");
+            label: _("_Next");
+            use-underline: true;
 
             halign: center;
             margin-bottom: 18;

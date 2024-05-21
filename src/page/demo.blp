@@ -18,7 +18,13 @@ template $SetupDemoPage : $SetupBasePage {
         Gtk.Button try_btn {
           use-underline: true;
           clicked => $on_try() swapped;
+
           styles [ "pill" ]
+
+          accessibility {
+            // TODO: If we get a better role above, probably drop this?
+            description: _("Try out the operating system in a temporary environment before you install");
+          }
         }
 
         Gtk.Button install_btn {
