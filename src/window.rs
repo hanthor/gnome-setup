@@ -4,15 +4,16 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
+use crate::page;
+
+glib::wrapper! {
+    pub struct SetupWindow(ObjectSubclass<imp::SetupWindow>)
+        @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow, adw::ApplicationWindow,
+        @implements gio::ActionGroup, gio::ActionMap;
+}
+
 mod imp {
     use super::*;
-
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/window.blp")]
-    pub struct SetupWindow {
-        #[template_child]
-        pub nav: TemplateChild<adw::NavigationView>,
-    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for SetupWindow {
@@ -29,11 +30,19 @@ mod imp {
         }
     }
 
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(file = "src/window.blp")]
+    pub struct SetupWindow {
+        #[template_child]
+        pub nav: TemplateChild<adw::NavigationView>,
+    }
+
     impl ObjectImpl for SetupWindow {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let page = crate::page::SetupPrereleasePage::new();
+            let page = page::PrereleasePage::new();
+
             page.set_can_pop(false);
             self.nav.push(&page);
         }
@@ -43,12 +52,6 @@ mod imp {
     impl WindowImpl for SetupWindow {}
     impl ApplicationWindowImpl for SetupWindow {}
     impl AdwApplicationWindowImpl for SetupWindow {}
-}
-
-glib::wrapper! {
-    pub struct SetupWindow(ObjectSubclass<imp::SetupWindow>)
-        @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow, adw::ApplicationWindow,
-        @implements gio::ActionGroup, gio::ActionMap;
 }
 
 impl SetupWindow {

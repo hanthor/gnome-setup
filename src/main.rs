@@ -28,8 +28,8 @@ fn main() -> glib::ExitCode {
         &gio::Resource::from_data(&glib::Bytes::from_static(GRESOURCE_BYTES)).unwrap(),
     );
 
-    // Ensure custom types exist for GtkBuilder
-    page::SetupPage::ensure_type();
+    // Set up type needed for GtkBuilder
+    page::BasePage::ensure_type();
 
     // Set up application
     let app = Application::builder()

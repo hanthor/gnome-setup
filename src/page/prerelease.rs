@@ -2,24 +2,24 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::{glib};
+use gtk::glib;
 
-use std::{cell::Cell, marker::PhantomData};
-use crate::page::{SetupPage, SetupPageImpl};
+use crate::page;
+
+glib::wrapper! {
+    pub struct PrereleasePage(ObjectSubclass<imp::PrereleasePage>)
+        @extends gtk::Widget, adw::NavigationPage, page::BasePage,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
+}
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/prerelease.blp")]
-    pub struct SetupPrereleasePage {
-    }
-
     #[glib::object_subclass]
-    impl ObjectSubclass for SetupPrereleasePage {
+    impl ObjectSubclass for PrereleasePage {
         const NAME: &'static str = "SetupPrereleasePage";
-        type Type = super::SetupPrereleasePage;
-        type ParentType = SetupPage;
+        type Type = super::PrereleasePage;
+        type ParentType = page::BasePage;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -30,24 +30,23 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for SetupPrereleasePage {}
-    impl WidgetImpl for SetupPrereleasePage {}
-    impl NavigationPageImpl for SetupPrereleasePage {}
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(file = "src/page/prerelease.blp")]
+    pub struct PrereleasePage {
+    }
 
-    impl SetupPageImpl for SetupPrereleasePage {
-        fn next(&self) -> SetupPage {
-            crate::page::SetupEulaPage::new().upcast()
+    impl ObjectImpl for PrereleasePage {}
+    impl WidgetImpl for PrereleasePage {}
+    impl NavigationPageImpl for PrereleasePage {}
+
+    impl page::BasePageImpl for PrereleasePage {
+        fn next(&self) -> page::BasePage {
+            page::EulaPage::new().upcast()
         }
     }
 }
 
-glib::wrapper! {
-    pub struct SetupPrereleasePage(ObjectSubclass<imp::SetupPrereleasePage>)
-        @extends gtk::Widget, adw::NavigationPage, SetupPage,
-        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
-}
-
-impl SetupPrereleasePage {
+impl PrereleasePage {
     pub fn new() -> Self {
         glib::Object::new()
     }

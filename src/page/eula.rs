@@ -2,26 +2,24 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::{glib};
+use gtk::glib;
 
-use std::{cell::Cell, marker::PhantomData};
-use crate::page::{SetupPage, SetupPageImpl};
+use crate::page;
+
+glib::wrapper! {
+    pub struct EulaPage(ObjectSubclass<imp::EulaPage>)
+        @extends gtk::Widget, adw::NavigationPage, page::BasePage,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
+}
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/eula.blp")]
-    pub struct SetupEulaPage {
-        #[template_child]
-        pub eula: TemplateChild<gtk::Label>,
-    }
-
     #[glib::object_subclass]
-    impl ObjectSubclass for SetupEulaPage {
+    impl ObjectSubclass for EulaPage {
         const NAME: &'static str = "SetupEulaPage";
-        type Type = super::SetupEulaPage;
-        type ParentType = SetupPage;
+        type Type = super::EulaPage;
+        type ParentType = page::BasePage;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -32,7 +30,14 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for SetupEulaPage {
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(file = "src/page/eula.blp")]
+    pub struct EulaPage {
+        #[template_child]
+        pub eula: TemplateChild<gtk::Label>,
+    }
+
+    impl ObjectImpl for EulaPage {
         fn constructed(&self) {
             self.parent_constructed();
 
@@ -47,26 +52,17 @@ Est velit egestas dui id ornare arcu odio ut. Tempus imperdiet nulla malesuada p
         }
     }
 
-    impl WidgetImpl for SetupEulaPage {}
-    impl NavigationPageImpl for SetupEulaPage {}
+    impl WidgetImpl for EulaPage {}
+    impl NavigationPageImpl for EulaPage {}
 
-    impl SetupPageImpl for SetupEulaPage {
-        fn next(&self) -> SetupPage {
-            crate::page::SetupPrereleasePage::new().upcast()
-            //crate::prerelease::SetupPrereleasePage::new().upcast()
+    impl page::BasePageImpl for EulaPage {
+        fn next(&self) -> page::BasePage {
+            page::PrereleasePage::new().upcast()
         }
     }
-
-    impl SetupEulaPage {}
 }
 
-glib::wrapper! {
-    pub struct SetupEulaPage(ObjectSubclass<imp::SetupEulaPage>)
-        @extends gtk::Widget, adw::NavigationPage, SetupPage,
-        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
-}
-
-impl SetupEulaPage {
+impl EulaPage {
     pub fn new() -> Self {
         glib::Object::new()
     }

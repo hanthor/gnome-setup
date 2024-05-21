@@ -7,34 +7,26 @@ use gtk::glib;
 use std::{cell::Cell, marker::PhantomData};
 
 mod prerelease;
-pub use prerelease::SetupPrereleasePage;
-
 mod eula;
-pub use eula::SetupEulaPage;
+
+pub use prerelease::PrereleasePage;
+pub use eula::EulaPage;
+
+glib::wrapper! {
+    pub struct BasePage(ObjectSubclass<imp::BasePage>)
+        @extends gtk::Widget, adw::NavigationPage,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
+}
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(file = "src/page.blp")]
-    #[properties(wrapper_type = super::SetupPage)]
-    pub struct SetupPage {
-        #[property(get = SetupPage::get_child, set = SetupPage::set_child)]
-        child: PhantomData<Option<gtk::Widget>>,
-
-        #[property(get, set)]
-        can_next: Cell<bool>,
-        #[property(get, set)]
-        ready: Cell<bool>,
-
-        #[template_child]
-        pub contents: TemplateChild<adw::Bin>,
-    }
-
     #[glib::object_subclass]
-    impl ObjectSubclass for SetupPage {
-        const NAME: &'static str = "SetupPage";
-        type Type = super::SetupPage;
+    impl ObjectSubclass for BasePage {
+        const NAME: &'static str = "SetupBasePage";
+        const ABSTRACT: bool = true;
+
+        type Type = super::BasePage;
         type ParentType = adw::NavigationPage;
         type Class = super::Class;
 
@@ -47,7 +39,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.bind_template_instance_callbacks();
+            klass.bind_template_callbacks();
 
             klass.next = |_| { panic!() };
         }
@@ -57,13 +49,30 @@ mod imp {
         }
     }
 
+    #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
+    #[template(file = "src/page.blp")]
+    #[properties(wrapper_type = super::BasePage)]
+    pub struct BasePage {
+        #[property(get = BasePage::get_child, set = BasePage::set_child)]
+        child: PhantomData<Option<gtk::Widget>>,
+
+        #[property(get, set)]
+        can_next: Cell<bool>,
+        #[property(get, set)]
+        ready: Cell<bool>,
+
+        #[template_child]
+        pub contents: TemplateChild<adw::Bin>,
+    }
+
     #[glib::derived_properties]
-    impl ObjectImpl for SetupPage {}
+    impl ObjectImpl for BasePage {}
 
-    impl WidgetImpl for SetupPage {}
-    impl NavigationPageImpl for SetupPage {}
+    impl WidgetImpl for BasePage {}
+    impl NavigationPageImpl for BasePage {}
 
-    impl SetupPage {
+    #[gtk::template_callbacks]
+    impl BasePage {
         fn get_child(&self) -> Option<gtk::Widget> {
             self.contents.get().child()
         }
@@ -71,42 +80,34 @@ mod imp {
         fn set_child(&self, value: Option<&gtk::Widget>) {
             self.contents.get().set_child(value);
         }
+
+        #[template_callback]
+        fn on_next(&self) {
+            let nav_view = self
+                .obj()
+                .ancestor(adw::NavigationView::static_type())
+                .and_downcast::<adw::NavigationView>()
+                .unwrap();
+            let next_page = self.obj().next();
+            nav_view.push(&next_page);
+        }
     }
 }
 
-glib::wrapper! {
-    pub struct SetupPage(ObjectSubclass<imp::SetupPage>)
-        @extends gtk::Widget, adw::NavigationPage,
-        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
-}
-
-#[gtk::template_callbacks]
-impl SetupPage {
-    #[template_callback]
-    fn on_next(&self) {
-        let next_page = self.next();
-        let nav = self
-            .ancestor(adw::NavigationView::static_type())
-            .and_downcast::<adw::NavigationView>()
-            .unwrap();
-        nav.push(&next_page);
-    }
-}
-
-pub trait SetupPageExt: IsA<SetupPage> {
-    fn next(&self) -> SetupPage {
-        let obj = self.upcast_ref::<SetupPage>();
+pub trait BasePageExt: IsA<BasePage> {
+    fn next(&self) -> BasePage {
+        let obj = self.upcast_ref::<BasePage>();
         (obj.class().as_ref().next)(obj)
     }
 }
 
-impl<O: IsA<SetupPage>> SetupPageExt for O {}
+impl<O: IsA<BasePage>> BasePageExt for O {}
 
-pub trait SetupPageImpl: NavigationPageImpl {
-    fn next(&self) -> SetupPage;
+pub trait BasePageImpl: NavigationPageImpl {
+    fn next(&self) -> BasePage;
 }
 
-unsafe impl<T: SetupPageImpl> IsSubclassable<T> for SetupPage {
+unsafe impl<T: BasePageImpl> IsSubclassable<T> for BasePage {
     fn class_init(class: &mut glib::Class<Self>) {
         Self::parent_class_init::<T>(class.upcast_ref_mut());
 
@@ -121,12 +122,12 @@ unsafe impl<T: SetupPageImpl> IsSubclassable<T> for SetupPage {
 #[repr(C)]
 pub struct Class {
     pub parent_class: adw::ffi::AdwNavigationPageClass,
-    pub next: fn(&SetupPage) -> SetupPage,
+    pub next: fn(&BasePage) -> BasePage,
 }
 
 // Unsafe to enforce that Class is #[repr(C)]
 unsafe impl ClassStruct for Class {
-    type Type = imp::SetupPage;
+    type Type = imp::BasePage;
 }
 
 // Deref directly to the parent class' class struct.
