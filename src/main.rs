@@ -4,8 +4,6 @@ mod config;
 mod window;
 mod page;
 
-use window::SetupWindow;
-
 use adw::prelude::*;
 use config::{GETTEXT_PACKAGE, LOCALEDIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
@@ -43,7 +41,7 @@ fn on_activate(app: &Application) {
     let window = if let Some(active) = app.active_window() {
         active
     } else {
-        SetupWindow::new(app).upcast()
+        window::Window::new(app).upcast()
     };
 
     window.present();

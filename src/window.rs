@@ -7,7 +7,7 @@ use gtk::{gio, glib};
 use crate::page;
 
 glib::wrapper! {
-    pub struct SetupWindow(ObjectSubclass<imp::SetupWindow>)
+    pub struct Window(ObjectSubclass<imp::Window>)
         @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow, adw::ApplicationWindow,
         @implements gio::ActionGroup, gio::ActionMap;
 }
@@ -16,9 +16,9 @@ mod imp {
     use super::*;
 
     #[glib::object_subclass]
-    impl ObjectSubclass for SetupWindow {
+    impl ObjectSubclass for Window {
         const NAME: &'static str = "SetupWindow";
-        type Type = super::SetupWindow;
+        type Type = super::Window;
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(klass: &mut Self::Class) {
@@ -32,12 +32,12 @@ mod imp {
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(file = "src/window.blp")]
-    pub struct SetupWindow {
+    pub struct Window {
         #[template_child]
         pub nav: TemplateChild<adw::NavigationView>,
     }
 
-    impl ObjectImpl for SetupWindow {
+    impl ObjectImpl for Window {
         fn constructed(&self) {
             self.parent_constructed();
 
@@ -48,13 +48,13 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for SetupWindow {}
-    impl WindowImpl for SetupWindow {}
-    impl ApplicationWindowImpl for SetupWindow {}
-    impl AdwApplicationWindowImpl for SetupWindow {}
+    impl WidgetImpl for Window {}
+    impl WindowImpl for Window {}
+    impl ApplicationWindowImpl for Window {}
+    impl AdwApplicationWindowImpl for Window {}
 }
 
-impl SetupWindow {
+impl Window {
     pub fn new(application: &impl IsA<gtk::Application>) -> Self {
         glib::Object::builder()
             .property("application", application)
