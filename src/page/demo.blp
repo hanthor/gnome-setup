@@ -1,0 +1,38 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupDemoPage : $SetupBasePage {
+  title: _("Try or Install");
+  can-next: false;
+
+  child: Adw.Clamp {
+    maximum-size: 450;
+    Adw.StatusPage info {
+      description: _("You can try out the operating system in a temporary environment before you install, or you can start an installation right away.");
+
+      Gtk.Box {
+        spacing: 12;
+        halign: center;
+
+        Gtk.Button try_btn {
+          use-underline: true;
+          clicked => $on_try() swapped;
+          styles [ "pill" ]
+        }
+
+        Gtk.Button install_btn {
+          label: _("_Install Now");
+          use-underline: true;
+          clicked => $on_install() swapped;
+          styles [ "pill", "suggested-action" ]
+        }
+      }
+
+    }
+  };
+}
+
+Gtk.SizeGroup {
+  widgets [ try_btn, install_btn ]
+}

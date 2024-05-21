@@ -8,9 +8,11 @@ use std::{cell::Cell, marker::PhantomData};
 
 mod prerelease;
 mod eula;
+mod demo;
 
 pub use prerelease::PrereleasePage;
 pub use eula::EulaPage;
+pub use demo::DemoPage;
 
 glib::wrapper! {
     pub struct BasePage(ObjectSubclass<imp::BasePage>)
@@ -81,20 +83,27 @@ mod imp {
             self.contents.get().set_child(value);
         }
 
-        #[template_callback]
-        fn on_next(&self) {
+        pub(super) fn go_next(&self, page: &super::BasePage) {
             let nav_view = self
                 .obj()
                 .ancestor(adw::NavigationView::static_type())
                 .and_downcast::<adw::NavigationView>()
                 .unwrap();
-            let next_page = self.obj().next();
-            nav_view.push(&next_page);
+            nav_view.push(page);
+        }
+
+        #[template_callback]
+        fn on_next(&self) {
+            self.go_next(&self.obj().next());
         }
     }
 }
 
 pub trait BasePageExt: IsA<BasePage> {
+    fn go_next(&self, next: &BasePage) {
+        self.upcast_ref::<BasePage>().imp().go_next(next);
+    }
+
     fn next(&self) -> BasePage {
         let obj = self.upcast_ref::<BasePage>();
         (obj.class().as_ref().next)(obj)
