@@ -10,23 +10,25 @@ template $SetupPage : Adw.NavigationPage {
 
     child: Gtk.Overlay {
       [overlay]
-      Gtk.Button back {
-        icon-name: "go-previous-symbolic";
-        tooltip-text: _("Back");
-
+      Adw.Bin back {
         halign: start;
         valign: center;
         margin-start: 18;
 
-        action-name: "navigation.pop";
-        receives-default: false;
-        visible: bind template.can-pop;
+        Gtk.Button {
+          icon-name: "go-previous-symbolic";
+          tooltip-text: _("Back");
 
-        accessibility {
-          label: _("Back");
+          action-name: "navigation.pop";
+          receives-default: false;
+          visible: bind template.can-pop;
+
+          accessibility {
+            label: _("Back");
+          }
+
+          styles ["circular", "nav"]
         }
-
-        styles ["circular", "nav"]
       }
 
       Adw.ToolbarView {
@@ -37,35 +39,56 @@ template $SetupPage : Adw.NavigationPage {
         }
 
         Adw.Bin contents {}
+
+        [bottom]
+        Adw.Bin mobile-next {
+          visible: false;
+          Gtk.Button {
+            label: _("Next");
+
+            halign: center;
+            margin-bottom: 18;
+
+            visible: bind template.can-next;
+            sensitive: bind template.ready;
+
+            clicked => $on_next() swapped;
+
+            styles [ "pill", "suggested-action" ]
+          }
+        }
       }
 
       [overlay]
-      Gtk.Button next {
-        icon-name: "go-next-symbolic";
-
+      Adw.Bin next {
         halign: end;
         margin-end: 18;
         valign: center;
-        margin-bottom: 18;
 
-        visible: bind template.can_next;
-        sensitive: bind template.ready;
+        Gtk.Button {
+          icon-name: "go-next-symbolic";
+          tooltip-text: _("Next");
 
-        accessibility {
-          label: _("Next");
+          visible: bind template.can_next;
+          sensitive: bind template.ready;
+
+          accessibility {
+            label: _("Next");
+          }
+
+          clicked => $on_next() swapped;
+
+          styles ["circular", "nav", "suggested-action"]
         }
-
-        clicked => $on_next() swapped;
-
-        styles ["circular", "nav", "suggested-action"]
       }
     };
 
     Adw.Breakpoint breakpoint {
       condition ('max-width: 500sp')
       setters {
-        next.valign: end;
+        next.visible: false;
         back.visible: false;
+        mobile-next.visible: true;
       }
     }
 

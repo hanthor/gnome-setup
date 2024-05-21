@@ -22,15 +22,13 @@ mod imp {
         #[property(get = SetupPage::get_child, set = SetupPage::set_child)]
         child: PhantomData<Option<gtk::Widget>>,
 
-        #[property(get, set, construct, default = true)]
+        #[property(get, set)]
         can_next: Cell<bool>,
         #[property(get, set)]
         ready: Cell<bool>,
 
         #[template_child]
         pub contents: TemplateChild<adw::Bin>,
-        #[template_child]
-        pub back: TemplateChild<gtk::Button>,
     }
 
     #[glib::object_subclass]
@@ -39,6 +37,13 @@ mod imp {
         type Type = super::SetupPage;
         type ParentType = adw::NavigationPage;
         type Class = super::Class;
+
+        fn new() -> Self {
+            Self {
+                can_next: Cell::new(true),
+                ..Default::default()
+            }
+        }
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
