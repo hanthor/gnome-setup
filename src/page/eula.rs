@@ -31,7 +31,7 @@ mod imp {
     }
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/eula.blp")]
+    #[template(file = "src/page/eula/eula.blp")]
     pub struct EulaPage {
         #[template_child]
         pub eula: TemplateChild<gtk::Label>,

@@ -33,7 +33,7 @@ mod imp {
     }
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/prerelease.blp")]
+    #[template(file = "src/page/prerelease/prerelease.blp")]
     pub struct PrereleasePage {
         #[template_child]
         status: TemplateChild<adw::StatusPage>,
