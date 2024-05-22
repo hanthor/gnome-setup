@@ -6,6 +6,7 @@ template $SetupEulaPage : $SetupBasePage {
   title: _("Terms of Use");
 
   ready: bind accept.active;
+  next => $next() swapped;
 
   child: Adw.Clamp {
     maximum-size: 450;

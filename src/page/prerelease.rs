@@ -1,12 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
 use gettextrs::gettext;
 
-use crate::page;
+use crate::page::{self, BasePageImpl, BasePageExt};
 
 glib::wrapper! {
     pub struct PrereleasePage(ObjectSubclass<imp::PrereleasePage>)
@@ -25,6 +24,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
+            klass.bind_template_instance_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -59,15 +59,17 @@ mod imp {
     impl WidgetImpl for PrereleasePage {}
     impl NavigationPageImpl for PrereleasePage {}
 
-    impl page::BasePageImpl for PrereleasePage {
-        fn next(&self) -> page::BasePage {
-            page::EulaPage::new().upcast()
-        }
-    }
+    impl BasePageImpl for PrereleasePage {}
 }
 
+#[gtk::template_callbacks]
 impl PrereleasePage {
     pub fn new() -> Self {
         glib::Object::new()
+    }
+
+    #[template_callback]
+    fn next(&self) {
+        self.go_next(page::EulaPage::new());
     }
 }

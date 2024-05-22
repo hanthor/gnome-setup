@@ -1,10 +1,9 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
-use crate::page;
+use crate::page::{self, BasePageImpl, BasePageExt};
 
 glib::wrapper! {
     pub struct EulaPage(ObjectSubclass<imp::EulaPage>)
@@ -23,6 +22,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
+            klass.bind_template_instance_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -54,16 +54,18 @@ Est velit egestas dui id ornare arcu odio ut. Tempus imperdiet nulla malesuada p
 
     impl WidgetImpl for EulaPage {}
     impl NavigationPageImpl for EulaPage {}
-
-    impl page::BasePageImpl for EulaPage {
-        fn next(&self) -> page::BasePage {
-            page::PrereleasePage::new().upcast()
-        }
-    }
+    impl BasePageImpl for EulaPage {}
 }
 
+#[gtk::template_callbacks]
 impl EulaPage {
     pub fn new() -> Self {
         glib::Object::new()
+    }
+
+    #[template_callback]
+    fn next(&self) {
+        //self.go_next();
+        todo!();
     }
 }

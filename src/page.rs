@@ -3,8 +3,10 @@
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
+use glib::subclass::Signal;
 
 use std::{cell::Cell, marker::PhantomData};
+use std::sync::OnceLock;
 
 mod prerelease;
 mod eula;
@@ -30,7 +32,6 @@ mod imp {
 
         type Type = super::BasePage;
         type ParentType = adw::NavigationPage;
-        type Class = super::Class;
 
         fn new() -> Self {
             Self {
@@ -42,8 +43,6 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
             klass.bind_template_callbacks();
-
-            klass.next = |_| { panic!() };
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -68,7 +67,14 @@ mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for BasePage {}
+    impl ObjectImpl for BasePage {
+        fn signals() -> &'static [Signal] {
+            static SIGNALS: OnceLock<Vec<Signal>> = OnceLock::new();
+            SIGNALS.get_or_init(|| vec![
+                Signal::builder("next").build(),
+            ])
+        }
+    }
 
     impl WidgetImpl for BasePage {}
     impl NavigationPageImpl for BasePage {}
@@ -83,6 +89,11 @@ mod imp {
             self.contents.get().set_child(value);
         }
 
+        #[template_callback]
+        fn on_next(&self) {
+            self.obj().emit_by_name::<()>("next", &[]);
+        }
+
         pub(super) fn go_next(&self, page: &super::BasePage) {
             let nav_view = self
                 .obj()
@@ -91,59 +102,17 @@ mod imp {
                 .unwrap();
             nav_view.push(page);
         }
-
-        #[template_callback]
-        fn on_next(&self) {
-            self.go_next(&self.obj().next());
-        }
     }
 }
 
 pub trait BasePageExt: IsA<BasePage> {
-    fn go_next(&self, next: &BasePage) {
-        self.upcast_ref::<BasePage>().imp().go_next(next);
-    }
-
-    fn next(&self) -> BasePage {
-        let obj = self.upcast_ref::<BasePage>();
-        (obj.class().as_ref().next)(obj)
+    fn go_next(&self, next: impl IsA<BasePage>) {
+        self.upcast_ref::<BasePage>().imp().go_next(next.upcast_ref());
     }
 }
 
 impl<O: IsA<BasePage>> BasePageExt for O {}
 
-pub trait BasePageImpl: NavigationPageImpl {
-    fn next(&self) -> BasePage;
-}
+pub trait BasePageImpl: NavigationPageImpl {}
 
-unsafe impl<T: BasePageImpl> IsSubclassable<T> for BasePage {
-    fn class_init(class: &mut glib::Class<Self>) {
-        Self::parent_class_init::<T>(class.upcast_ref_mut());
-
-        let klass = class.as_mut();
-        klass.next = |obj| unsafe {
-            let imp = obj.unsafe_cast_ref::<T::Type>().imp();
-            imp.next()
-        }
-    }
-}
-
-#[repr(C)]
-pub struct Class {
-    pub parent_class: adw::ffi::AdwNavigationPageClass,
-    pub next: fn(&BasePage) -> BasePage,
-}
-
-// Unsafe to enforce that Class is #[repr(C)]
-unsafe impl ClassStruct for Class {
-    type Type = imp::BasePage;
-}
-
-// Deref directly to the parent class' class struct.
-impl std::ops::Deref for Class {
-    type Target = glib::Class<adw::NavigationPage>;
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*(&self.parent_class as *const _ as *const _) }
-    }
-}
+unsafe impl<T: BasePageImpl> IsSubclassable<T> for BasePage {}

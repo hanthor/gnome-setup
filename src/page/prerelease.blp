@@ -4,7 +4,9 @@ using Adw 1;
 
 template $SetupPrereleasePage : $SetupBasePage {
   title: _("Disclaimer");
+
   ready: true;
+  next => $next() swapped;
 
   child: Adw.Clamp {
     maximum-size: 520;

@@ -6,7 +6,7 @@ use gtk::glib;
 
 use gettextrs::gettext;
 
-use crate::page::{self, BasePageExt};
+use crate::page::{self, BasePageImpl, BasePageExt};
 
 glib::wrapper! {
     pub struct DemoPage(ObjectSubclass<imp::DemoPage>)
@@ -61,11 +61,7 @@ mod imp {
     impl WidgetImpl for DemoPage {}
     impl NavigationPageImpl for DemoPage {}
 
-    impl page::BasePageImpl for DemoPage {
-        fn next(&self) -> page::BasePage {
-            panic!()
-        }
-    }
+    impl BasePageImpl for DemoPage {}
 }
 
 #[gtk::template_callbacks]
@@ -76,7 +72,7 @@ impl DemoPage {
 
     #[template_callback]
     fn on_install(&self) {
-        self.go_next(page::PrereleasePage::new().upcast_ref());
+        self.go_next(page::PrereleasePage::new());
     }
 
     #[template_callback]
