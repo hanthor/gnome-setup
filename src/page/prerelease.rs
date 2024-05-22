@@ -4,6 +4,8 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
+use gettextrs::gettext;
+
 use crate::page;
 
 glib::wrapper! {
@@ -33,9 +35,27 @@ mod imp {
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(file = "src/page/prerelease.blp")]
     pub struct PrereleasePage {
+        #[template_child]
+        status: TemplateChild<adw::StatusPage>,
     }
 
-    impl ObjectImpl for PrereleasePage {}
+    impl ObjectImpl for PrereleasePage {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            let os_name = glib::os_info("NAME").unwrap_or("Linux".into());
+
+            // TRANSLATORS: The first {} is the name of the OS
+            self.status.set_description(Some(gettext!(
+                "This is an early development build of {}. Please be aware that breaking \
+                changes may still occur. You may need to manually migrate data after such a \
+                change. We provide no stability or security guarantees. Back up all important \
+                data. Do not use in a production environment.",
+                os_name,
+            ).as_str()));
+        }
+    }
+
     impl WidgetImpl for PrereleasePage {}
     impl NavigationPageImpl for PrereleasePage {}
 

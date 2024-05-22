@@ -8,13 +8,13 @@ template $SetupPrereleasePage : $SetupBasePage {
 
   child: Adw.Clamp {
     maximum-size: 520;
-    Adw.StatusPage {
+    Adw.StatusPage status {
       icon-name: "dialog-warning-symbolic";
       title: _("Pre-release Software");
-      description: _("This is an early development build of GNOME OS. Please be aware that breaking changes may still occur. You may need to manually migrate data after such a change. We provide no stability or security guarentees. Back up all important data. Do not use in a production environment.");
       styles ["disclaimer"]
 
-      // TODO: This role is technically wrong (this isn't an alert), but it's the only way I could get the screen reader to read this...
+      // TODO: This role is technically wrong (this isn't an alert), but it's
+      // the only way I could get the screen reader to read this...
       accessible-role: alert;
     }
   };
