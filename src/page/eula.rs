@@ -65,7 +65,7 @@ impl EulaPage {
 
     #[template_callback]
     fn next(&self) {
-        //self.go_next();
-        todo!();
+        // TODO: Mockup
+        self.go_next(page::InstallPage::new());
     }
 }

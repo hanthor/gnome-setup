@@ -11,10 +11,12 @@ use std::sync::OnceLock;
 mod prerelease;
 mod eula;
 mod demo;
+mod install;
 
 pub use prerelease::PrereleasePage;
 pub use eula::EulaPage;
 pub use demo::DemoPage;
+pub use install::InstallPage;
 
 glib::wrapper! {
     pub struct BasePage(ObjectSubclass<imp::BasePage>)
@@ -36,6 +38,7 @@ mod imp {
         fn new() -> Self {
             Self {
                 can_next: Cell::new(true),
+                can_close: Cell::new(true),
                 ..Default::default()
             }
         }
@@ -61,6 +64,8 @@ mod imp {
         can_next: Cell<bool>,
         #[property(get, set)]
         ready: Cell<bool>,
+        #[property(get, set)]
+        can_close: Cell<bool>,
 
         #[template_child]
         pub contents: TemplateChild<adw::Bin>,

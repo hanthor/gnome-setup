@@ -1,0 +1,41 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupInstallDonePage : $SetupBasePage {
+  title: _("Done");
+
+  can-next: false;
+  can-pop: false;
+
+  child: Adw.Clamp {
+    maximum-size: 450;
+    Adw.StatusPage info {
+      title: _("Installation Complete!");
+
+      Gtk.Box {
+        spacing: 12;
+        halign: center;
+
+        Gtk.Button cancel_btn {
+          label: _("_Not Now");
+          use-underline: true;
+          action-name: "window.close";
+          styles [ "pill" ]
+        }
+
+        Gtk.Button reboot_btn {
+          label: _("_Reboot");
+          use-underline: true;
+          clicked => $on_reboot() swapped;
+          styles [ "pill", "suggested-action" ]
+        }
+      }
+
+    }
+  };
+}
+
+Gtk.SizeGroup {
+  widgets [ cancel_btn, reboot_btn ]
+}

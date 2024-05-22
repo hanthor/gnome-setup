@@ -1,0 +1,27 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupInstallPage : $SetupBasePage {
+  can-pop: false;
+  can-next: false;
+  can-close: false;
+
+  child: Adw.Clamp {
+    maximum-size: 450;
+    Adw.StatusPage info {
+
+      Gtk.Box {
+        orientation: vertical;
+        spacing: 6;
+
+        Gtk.ProgressBar progress {}
+
+        Gtk.Label status {
+          halign: start;
+          styles [ "dim-label" ]
+        }
+      }
+    }
+  };
+}
