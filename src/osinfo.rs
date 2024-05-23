@@ -7,7 +7,7 @@ use log;
 pub fn logo() -> &'static str {
     static ONCE: OnceLock<glib::GString> = OnceLock::new();
     ONCE.get_or_init(|| {
-        glib::os_info("LOGO").unwrap_or("application-x-executable".into())
+        glib::os_info("LOGO").unwrap_or("org.gnome.Setup".into())
     })
 }
 
