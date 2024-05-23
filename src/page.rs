@@ -82,7 +82,17 @@ mod imp {
     }
 
     impl WidgetImpl for BasePage {}
-    impl NavigationPageImpl for BasePage {}
+
+    impl NavigationPageImpl for BasePage {
+        fn showing(&self) {
+            let window = self
+                .obj()
+                .ancestor(gtk::Window::static_type())
+                .and_downcast::<gtk::Window>()
+                .unwrap();
+            window.set_deletable(self.can_close.get() && crate::in_session())
+        }
+    }
 
     #[gtk::template_callbacks]
     impl BasePage {

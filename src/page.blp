@@ -38,8 +38,6 @@ template $SetupBasePage : Adw.NavigationPage {
         Adw.HeaderBar {
           show-title: false;
           show-back-button: bind back.visible inverted;
-          show-start-title-buttons: bind template.can_close;
-          show-end-title-buttons: bind template.can_close;
         }
 
         Adw.Bin contents {}
