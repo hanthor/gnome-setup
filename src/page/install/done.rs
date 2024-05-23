@@ -7,6 +7,7 @@ use gtk::glib;
 use gettextrs::gettext;
 
 use crate::page::{self, BasePageImpl, BasePageExt};
+use crate::osinfo;
 
 glib::wrapper! {
     pub struct DonePage(ObjectSubclass<imp::DonePage>)
@@ -46,22 +47,18 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            self.info.set_icon_name(
-                glib::os_info("ICON").as_deref().or(Some("application-x-executable"))
-            );
-
+            osinfo::bind_logo(self.info.get(), "icon-name");
             self.cancel_btn.set_visible(crate::in_session());
-            let os_name = glib::os_info("NAME").unwrap_or("Linux".into());
             let msg = if crate::in_session() {
                 gettext!(
                     "{} has been installed to this device. Reboot now to start using {} or \
                     continue to test in this evaluation environment.",
-                    os_name, os_name,
+                    osinfo::name(), osinfo::name(),
                 )
             } else {
                 gettext!(
                     "{} has been installed to this device. Reboot now to start using {}",
-                    os_name, os_name,
+                    osinfo::name(), osinfo::name(),
                 )
             };
             self.info.set_description(Some(msg.as_str()));

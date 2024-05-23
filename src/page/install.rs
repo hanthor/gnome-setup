@@ -5,7 +5,7 @@ use adw::subclass::prelude::*;
 use gtk::glib;
 
 use crate::page::{self, BasePageImpl, BasePageExt};
-use crate::window;
+use crate::{window,osinfo};
 
 use gettextrs::gettext;
 
@@ -52,12 +52,8 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            self.info.set_icon_name(
-                glib::os_info("ICON").as_deref().or(Some("application-x-executable"))
-            );
-
-            let os_name = glib::os_info("NAME").unwrap_or("Linux".into());
-            let title = &gettext!("Installing {}", os_name);
+            osinfo::bind_logo(self.info.get(), "icon-name");
+            let title = &gettext!("Installing {}", osinfo::name());
             self.obj().set_title(title);
             self.info.set_title(title);
 

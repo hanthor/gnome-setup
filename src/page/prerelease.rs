@@ -1,11 +1,13 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
 use gettextrs::gettext;
 
 use crate::page::{self, BasePageImpl, BasePageExt};
+use crate::osinfo;
 
 glib::wrapper! {
     pub struct PrereleasePage(ObjectSubclass<imp::PrereleasePage>)
@@ -43,15 +45,13 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let os_name = glib::os_info("NAME").unwrap_or("Linux".into());
-
             // TRANSLATORS: The first {} is the name of the OS
             self.status.set_description(Some(gettext!(
                 "This is an early development build of {}. Please be aware that breaking \
                 changes may still occur. You may need to manually migrate data after such a \
                 change. We provide no stability or security guarantees. Back up all important \
                 data. Do not use in a production environment.",
-                os_name,
+                osinfo::name(),
             ).as_str()));
         }
     }
@@ -62,14 +62,20 @@ mod imp {
     impl BasePageImpl for PrereleasePage {}
 }
 
+type Next = page::EulaPage;
+
 #[gtk::template_callbacks]
 impl PrereleasePage {
-    pub fn new() -> Self {
-        glib::Object::new()
+    pub fn new() -> page::BasePage {
+        if osinfo::is_prerelease() {
+            glib::Object::new::<Self>().upcast()
+        } else {
+            Next::new().upcast()
+        }
     }
 
     #[template_callback]
     fn next(&self) {
-        self.go_next(page::EulaPage::new());
+        self.go_next(Next::new());
     }
 }

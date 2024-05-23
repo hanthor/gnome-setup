@@ -7,6 +7,7 @@ use gtk::glib;
 use gettextrs::gettext;
 
 use crate::page::{self, BasePageImpl, BasePageExt};
+use crate::osinfo;
 
 glib::wrapper! {
     pub struct DemoPage(ObjectSubclass<imp::DemoPage>)
@@ -47,14 +48,9 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            self.info.set_icon_name(
-                glib::os_info("ICON").as_deref().or(Some("application-x-executable"))
-            );
-
-            let os_name = glib::os_info("NAME").unwrap_or("Linux".into());
-
-            self.info.set_title(gettext!("Welcome to {}!", os_name).as_str());
-            self.try_btn.set_label(gettext!("_Try {}", os_name).as_str());
+            osinfo::bind_logo(self.info.get(), "icon-name");
+            self.info.set_title(gettext!("Welcome to {}!", osinfo::name()).as_str());
+            self.try_btn.set_label(gettext!("_Try {}", osinfo::name()).as_str());
         }
     }
 
