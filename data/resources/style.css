@@ -6,6 +6,10 @@ statuspage.disclaimer .icon {
 	color: @yellow_3;
 }
 
+statuspage.larger-art .icon {
+	-gtk-icon-size: 192px;
+}
+
 .eula undershoot {
   border-radius: 12px;
 }
