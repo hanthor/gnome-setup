@@ -38,6 +38,8 @@ mod imp {
     pub struct DonePage {
         #[template_child]
         info: TemplateChild<adw::StatusPage>,
+        #[template_child]
+        cancel_btn: TemplateChild<gtk::Button>,
     }
 
     impl ObjectImpl for DonePage {
@@ -48,14 +50,21 @@ mod imp {
                 glib::os_info("ICON").as_deref().or(Some("application-x-executable"))
             );
 
+            self.cancel_btn.set_visible(crate::in_session());
             let os_name = glib::os_info("NAME").unwrap_or("Linux".into());
-            self.info.set_description(Some(gettext!(
-                // TODO: What if we're not in the evaluation environment?
-                "{} has been installed to this device. Reboot now to start using {} or \
-                continue to test in this evaluation environment.",
-                os_name,
-                os_name
-            ).as_str()));
+            let msg = if crate::in_session() {
+                gettext!(
+                    "{} has been installed to this device. Reboot now to start using {} or \
+                    continue to test in this evaluation environment.",
+                    os_name, os_name,
+                )
+            } else {
+                gettext!(
+                    "{} has been installed to this device. Reboot now to start using {}",
+                    os_name, os_name,
+                )
+            };
+            self.info.set_description(Some(msg.as_str()));
         }
     }
 

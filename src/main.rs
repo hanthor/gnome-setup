@@ -8,6 +8,7 @@ use adw::prelude::*;
 use config::{GETTEXT_PACKAGE, LOCALEDIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
 use adw::{glib, gio, Application};
+use std::{env, sync::OnceLock};
 use log;
 
 fn main() -> glib::ExitCode {
@@ -53,4 +54,18 @@ fn on_activate(app: &Application) {
     };
 
     window.present();
+}
+
+pub fn in_session() -> bool {
+    static ONCE: OnceLock<bool> = OnceLock::new();
+    *ONCE.get_or_init(|| {
+        if let Ok(var) = env::var("SETUP_OVERRIDE_IN_SESSION") {
+            match var.parse() {
+                Ok(val) => return val,
+                Err(e) => log::warn!("Failed to parse $SETUP_OVERRIDE_IN_SESSION: {e}"),
+            }
+        }
+
+        env::var("XDG_SESSION_CLASS").map(|val| val == "user").unwrap_or(false)
+    })
 }
