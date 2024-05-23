@@ -10,12 +10,12 @@ use std::sync::OnceLock;
 
 mod prerelease;
 mod eula;
-mod demo;
+mod welcome;
 mod install;
 
 pub use prerelease::PrereleasePage;
 pub use eula::EulaPage;
-pub use demo::DemoPage;
+pub use welcome::WelcomePage;
 pub use install::InstallPage;
 
 glib::wrapper! {

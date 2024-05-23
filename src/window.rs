@@ -41,7 +41,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let page = page::DemoPage::new();
+            let page = page::WelcomePage::new();
 
             page.set_can_pop(false);
             self.nav.push(&page);
