@@ -47,7 +47,6 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            osinfo::bind_logo(self.info.get(), "icon-name");
             self.cancel_btn.set_visible(crate::in_session());
             let msg = if crate::in_session() {
                 gettext!(
