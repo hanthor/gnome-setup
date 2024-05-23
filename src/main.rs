@@ -13,6 +13,11 @@ use std::{env, sync::OnceLock};
 use log;
 
 fn main() -> glib::ExitCode {
+    // For debugging
+    // TODO: Try to come up with a better way to do this?
+    env::set_var("SETUP_OVERRIDE_IN_SESSION", "true");
+    env::set_var("SETUP_OVERRIDE_OS_IS_PRERELEASE", "true");
+
     // Set up gettext translations
     bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR)
         .expect("Unable to bind the text domain");
