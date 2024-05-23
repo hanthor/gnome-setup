@@ -7,11 +7,15 @@ edition = "2021"
 anyhow = "1.0.82"
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
 gvdb-macros = "0.1.12"
+log = "0.4.21"
+
+[dependencies.glib]
+features = ["log"]
 
 [dependencies.gtk]
 package = "gtk4"
 version = "0.8"
-features = ["blueprint"]
+features = ["gnome_46", "blueprint"]
 
 [dependencies.adw]
 package = "libadwaita"

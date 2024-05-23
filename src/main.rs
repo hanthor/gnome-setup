@@ -8,9 +8,7 @@ use adw::prelude::*;
 use config::{GETTEXT_PACKAGE, LOCALEDIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
 use adw::{glib, gio, Application};
-
-static GRESOURCE_BYTES: &[u8] =
-    gvdb_macros::include_gresource_from_dir!("/org/gnome/Setup", "data/resources");
+use log;
 
 fn main() -> glib::ExitCode {
     // Set up gettext translations
@@ -21,7 +19,17 @@ fn main() -> glib::ExitCode {
     textdomain(GETTEXT_PACKAGE)
         .expect("Unable to switch to the text domain");
 
+    // Set up logging
+    static LOGGER: glib::GlibLogger = glib::GlibLogger::new(
+        glib::GlibLoggerFormat::Plain,
+        glib::GlibLoggerDomain::CrateTarget,
+    );
+    log::set_logger(&LOGGER).expect("Failed to set up logging");
+    log::set_max_level(log::LevelFilter::Debug);
+
     // Set up resources
+    static GRESOURCE_BYTES: &[u8] =
+        gvdb_macros::include_gresource_from_dir!("/org/gnome/Setup", "data/resources");
     gio::resources_register(
         &gio::Resource::from_data(&glib::Bytes::from_static(GRESOURCE_BYTES)).unwrap(),
     );
