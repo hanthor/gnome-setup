@@ -54,6 +54,11 @@ fn main() -> glib::ExitCode {
 }
 
 fn on_activate(app: &Application) {
+    // Force the app into light mode, for testing purposes
+    // TODO: DROP THIS EVENTUALLY. User can technically switch gnome-shell into dark mode from
+    // quick settings, and maybe one day we'll want a light/dark mode switch in initial setup
+    adw::StyleManager::default().set_color_scheme(adw::ColorScheme::ForceLight);
+
     let window = if let Some(active) = app.active_window() {
         active
     } else {
