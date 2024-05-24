@@ -5,35 +5,32 @@ using Adw 1;
 template $SetupWelcomePage : $SetupBasePage {
   can-next: false;
 
-  child: Adw.Clamp {
-    maximum-size: 450;
-    Adw.StatusPage info {
-      Gtk.Box {
-        spacing: 12;
-        halign: center;
+  child: Adw.StatusPage info {
+    Gtk.Box {
+      spacing: 12;
+      halign: center;
 
-        Gtk.Button try_btn {
-          use-underline: true;
-          clicked => $on_try() swapped;
+      Gtk.Button try_btn {
+        use-underline: true;
+        clicked => $on_try() swapped;
 
-          styles [ "pill" ]
+        styles [ "pill" ]
 
-          accessibility {
-            // TODO: If we get a better role above, probably drop this?
-            description: _("Try out the operating system in a temporary environment before you install");
-          }
-        }
-
-        Gtk.Button install_btn {
-          label: _("_Install Now");
-          use-underline: true;
-          clicked => $on_install() swapped;
-          styles [ "pill", "suggested-action" ]
+        accessibility {
+          // TODO: If we get a better role above, probably drop this?
+          description: _("Try out the operating system in a temporary environment before you install");
         }
       }
 
-      styles [ "larger-art", "icon-dropshadow" ]
+      Gtk.Button install_btn {
+        label: _("_Install Now");
+        use-underline: true;
+        clicked => $on_install() swapped;
+        styles [ "pill", "suggested-action" ]
+      }
     }
+
+    styles [ "larger-art", "icon-dropshadow" ]
   };
 }
 
