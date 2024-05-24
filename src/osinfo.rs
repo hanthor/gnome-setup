@@ -16,11 +16,15 @@ pub fn bind_logo(obj: impl IsA<glib::Object>, name: &str) {
         .bind_property("dark", obj.upcast_ref(), name)
         .sync_create()
         .transform_to(|_, dark: bool| {
-            Some(if dark {
-                logo().into()
-            } else {
-                glib::gformat!("{}-dark", logo())
-            })
+            let mut maybe_dark: Option<glib::GString> = None;
+            if dark {
+                let theme = gtk::IconTheme::for_display(&gtk::gdk::Display::default().unwrap());
+                let name = glib::gformat!("{}-dark", logo());
+                if theme.has_icon(&name) {
+                    maybe_dark = Some(name);
+                }
+            }
+            maybe_dark.or_else(|| Some(logo().into()))
         })
         .build();
 }
