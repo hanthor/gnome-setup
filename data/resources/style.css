@@ -2,8 +2,12 @@ button.nav {
   padding: 4px;
 }
 
-statuspage.disclaimer .icon {
-	color: @yellow_3;
+statuspage.prerelease .icon {
+	color: var(--yellow-3);
+}
+
+statuspage.experimental .icon {
+	color: var(--red-2);
 }
 
 statuspage.larger-art .icon {

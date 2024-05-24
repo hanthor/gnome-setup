@@ -32,16 +32,36 @@ pub fn name() -> &'static str {
     })
 }
 
-pub fn is_prerelease() -> bool {
-    static ONCE: OnceLock<bool> = OnceLock::new();
-    *ONCE.get_or_init(|| {
-        if let Ok(var) = env::var("SETUP_OVERRIDE_OS_IS_PRERELEASE") {
-            match var.parse() {
-                Ok(val) => return val,
-                Err(e) => log::warn!("Failed to parse $SETUP_OVERRIDE_OS_IS_PRERELEASE: {e}"),
+pub enum ReleaseType {
+    Experimental {
+        description: Option<String>,
+    },
+    PreRelease,
+    Stable,
+    Lts,
+}
+
+pub fn release_type() -> &'static ReleaseType {
+    static ONCE: OnceLock<ReleaseType> = OnceLock::new();
+    ONCE.get_or_init(|| {
+        let reltype = env::var("SETUP_OVERRIDE_OS_RELEASE_TYPE")
+            .ok()
+            .map(|s| s.into())
+            .or_else(|| glib::os_info("RELEASE_TYPE"));
+
+        match reltype.as_deref() {
+            Some("stable") | None => ReleaseType::Stable,
+            Some("lts") => ReleaseType::Lts,
+            Some("pre-release") => ReleaseType::PreRelease,
+            Some("experiment") => ReleaseType::Experimental {
+                description: env::var("SETUP_OVERRIDE_OS_EXPERIMENT")
+                    .ok()
+                    .or_else(|| glib::os_info("EXPERIMENT").map(Into::into)),
+            },
+            Some(other) => {
+                log::warn!("Encountered unknown RELEASE_TYPE: {other}");
+                ReleaseType::Stable
             }
         }
-
-        glib::os_info("RELEASE_TYPE").map(|t| t == "prerelease").unwrap_or(false)
     })
 }

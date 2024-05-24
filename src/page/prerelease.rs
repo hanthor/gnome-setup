@@ -39,20 +39,47 @@ mod imp {
     pub struct PrereleasePage {
         #[template_child]
         status: TemplateChild<adw::StatusPage>,
+        #[template_child]
+        experiment: TemplateChild<adw::ActionRow>,
     }
 
     impl ObjectImpl for PrereleasePage {
         fn constructed(&self) {
             self.parent_constructed();
 
-            // TRANSLATORS: The first {} is the name of the OS
-            self.status.set_description(Some(gettext!(
-                "This is an early development build of {}. Please be aware that breaking \
-                changes may still occur. You may need to manually migrate data after such a \
-                change. We provide no stability or security guarantees. Back up all important \
-                data. Do not use in a production environment.",
-                osinfo::name(),
-            ).as_str()));
+            use osinfo::ReleaseType as R;
+            match osinfo::release_type() {
+                R::Stable | R::Lts => unreachable!(), // Would have skipped this page entirely
+                R::PreRelease => {
+                    self.status.set_icon_name(Some("dialog-warning-symbolic"));
+                    self.status.set_title(&gettext("Pre-release Software"));
+                    self.status.set_description(Some(&gettext!(
+                        "This is a pre-release build of {}. Please be aware that breaking changes may \
+                        still occur. You may need to manually migrate data after such a change. We \
+                        provide no stability or security guarantees. Back up all important data. Do \
+                        not use in a production environment.",
+                        osinfo::name(),
+                    )));
+                    self.status.add_css_class("prerelease");
+                },
+                R::Experimental { description } => {
+                    self.status.set_icon_name(Some("experimental-symbolic"));
+                    self.status.set_title(&gettext("Experimental Software"));
+                    self.status.set_description(Some(&gettext!(
+                        "This is an experimental build of {}, built to test new features that are \
+                        still in development. Breaking changes and data loss are likely. We provide \
+                        no stability or security guarantees. Do not store any important data. Do not \
+                        use in a production environment.",
+                        osinfo::name(),
+                    )));
+                    self.status.add_css_class("experimental");
+
+                    if let Some(description) = description {
+                        self.experiment.set_visible(true);
+                        self.experiment.set_subtitle(&description);
+                    }
+                }
+            }
         }
     }
 
@@ -67,10 +94,12 @@ type Next = page::EulaPage;
 #[gtk::template_callbacks]
 impl PrereleasePage {
     pub fn new() -> page::BasePage {
-        if osinfo::is_prerelease() {
-            glib::Object::new::<Self>().upcast()
-        } else {
-            Next::new().upcast()
+        use osinfo::ReleaseType as R;
+        match osinfo::release_type() {
+            R::PreRelease | R::Experimental {..} =>
+                glib::Object::new::<Self>().upcast(),
+            R::Stable | R::Lts =>
+                Next::new().upcast(),
         }
     }
 

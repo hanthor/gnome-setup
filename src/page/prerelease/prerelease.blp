@@ -11,8 +11,22 @@ template $SetupPrereleasePage : $SetupBasePage {
   child: Adw.Clamp {
     maximum-size: 520;
     Adw.StatusPage status {
-      icon-name: "dialog-warning-symbolic";
-      title: _("Pre-release Software");
+
+      child: Gtk.ListBox {
+        accessible-role: generic; // Not really a list...
+        selection-mode: none;
+        visible: bind experiment.visible;
+
+        Adw.ActionRow experiment {
+          title: _("Experiment");
+          use-markup: false;
+          visible: false;
+          styles [ "property" ]
+        }
+
+        styles [ "boxed-list" ]
+      };
+
       styles ["disclaimer"]
 
       // TODO: This role is technically wrong (this isn't an alert), but it's
