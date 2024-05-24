@@ -8,30 +8,25 @@ template $SetupPrereleasePage : $SetupBasePage {
   ready: true;
   next => $next() swapped;
 
-  child: Adw.Clamp {
-    maximum-size: 520;
-    Adw.StatusPage status {
+  child: Adw.StatusPage status {
 
-      child: Gtk.ListBox {
-        accessible-role: generic; // Not really a list...
-        selection-mode: none;
-        visible: bind experiment.visible;
+    child: Gtk.ListBox {
+      accessible-role: generic; // Not really a list...
+      selection-mode: none;
+      visible: bind experiment.visible;
 
-        Adw.ActionRow experiment {
-          title: _("Experiment");
-          use-markup: false;
-          visible: false;
-          styles [ "property" ]
-        }
+      Adw.ActionRow experiment {
+        title: _("Experiment");
+        use-markup: false;
+        visible: false;
+        styles [ "property" ]
+      }
 
-        styles [ "boxed-list" ]
-      };
+      styles [ "boxed-list" ]
+    };
 
-      styles ["disclaimer"]
-
-      // TODO: This role is technically wrong (this isn't an alert), but it's
-      // the only way I could get the screen reader to read this...
-      accessible-role: alert;
-    }
+    // TODO: This role is technically wrong (this isn't an alert), but it's
+    // the only way I could get the screen reader to read this...
+    accessible-role: alert;
   };
 }
