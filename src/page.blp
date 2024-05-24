@@ -33,32 +33,60 @@ template $SetupBasePage : Adw.NavigationPage {
         }
       }
 
-      Adw.ToolbarView {
+      Adw.ToolbarView toolbarview {
         [top]
-        Adw.HeaderBar {
+        Adw.HeaderBar headerbar {
           show-title: false;
           show-back-button: bind back.visible inverted;
         }
 
-        Adw.Bin contents {}
+        Gtk.ScrolledWindow {
+          propagate-natural-width: true;
+          propagate-natural-height: true;
+          hscrollbar-policy: never;
+          Gtk.Viewport  viewport {
+            vscroll-policy: natural;
+
+            Gtk.Box {
+              orientation: vertical;
+              valign: center;
+
+              Gtk.Label {
+                label: bind template.title;
+                margin-bottom: bind toolbarview.top-bar-height;
+                visible: bind template.big-title;
+                styles [ "title-1" ]
+              }
+
+              Adw.Bin contents {}
+            }
+          }
+        }
+
+        [bottom]
+        Adw.Bin bottom_contents {
+          visible: false;
+          styles [ "bottom-bar-padded" ]
+        }
 
         [bottom]
         Adw.Bin mobile-next {
           visible: false;
-          Gtk.Button {
-            label: _("_Next");
-            use-underline: true;
-
-            halign: center;
-            margin-top: 12;
-            margin-bottom: 12;
-
+          Adw.Bin {
             visible: bind template.can-next;
-            sensitive: bind template.ready;
 
-            clicked => $on_next() swapped;
+            Gtk.Button {
+              label: _("_Next");
+              halign: center;
+              use-underline: true;
+              sensitive: bind template.ready;
 
-            styles [ "pill", "suggested-action" ]
+              clicked => $on_next() swapped;
+
+              styles [ "pill", "suggested-action" ]
+            }
+
+            styles [ "bottom-bar-padded" ]
           }
         }
       }

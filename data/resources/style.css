@@ -21,3 +21,13 @@ statuspage.larger-art .icon {
 .eula label {
   padding: 12px;
 }
+
+.bottom-bar-padded {
+	padding-top: 6px;
+	padding-bottom: 6px;
+}
+
+.collapse-spacing .bottom-bar-padded {
+	padding-top: 3px;
+	padding-bottom: 3px;
+}

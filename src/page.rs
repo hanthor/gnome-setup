@@ -39,6 +39,7 @@ mod imp {
             Self {
                 can_next: Cell::new(true),
                 can_close: Cell::new(true),
+                default_clamp: Cell::new(true),
                 ..Default::default()
             }
         }
@@ -59,6 +60,8 @@ mod imp {
     pub struct BasePage {
         #[property(get = BasePage::get_child, set = BasePage::set_child)]
         child: PhantomData<Option<gtk::Widget>>,
+        #[property(get = BasePage::get_bottom_child, set = BasePage::set_bottom_child)]
+        bottom_child: PhantomData<Option<gtk::Widget>>,
 
         #[property(get, set)]
         can_next: Cell<bool>,
@@ -67,8 +70,19 @@ mod imp {
         #[property(get, set)]
         can_close: Cell<bool>,
 
+        #[property(get, set)]
+        default_clamp: Cell<bool>,
+        #[property(get, set)]
+        big_title: Cell<bool>,
+
         #[template_child]
-        pub contents: TemplateChild<adw::Bin>,
+        headerbar: TemplateChild<adw::HeaderBar>,
+        #[template_child]
+        viewport: TemplateChild<gtk::Viewport>,
+        #[template_child]
+        contents: TemplateChild<adw::Bin>,
+        #[template_child]
+        bottom_contents: TemplateChild<adw::Bin>,
     }
 
     #[glib::derived_properties]
@@ -78,6 +92,19 @@ mod imp {
             SIGNALS.get_or_init(|| vec![
                 Signal::builder("next").build(),
             ])
+        }
+
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            let obj = self.obj();
+            let adj = self.viewport.vadjustment().unwrap();
+            adj.connect_closure(
+                "value-changed", false,
+                glib::closure_local!(@watch obj => move |adj: gtk::Adjustment| {
+                    obj.imp().headerbar.set_show_title(adj.value() > 0.0);
+                })
+            );
         }
     }
 
@@ -97,11 +124,31 @@ mod imp {
     #[gtk::template_callbacks]
     impl BasePage {
         fn get_child(&self) -> Option<gtk::Widget> {
-            self.contents.get().child()
+            self.contents.child()
         }
 
-        fn set_child(&self, value: Option<&gtk::Widget>) {
-            self.contents.get().set_child(value);
+        fn set_child(&self, value: Option<gtk::Widget>) {
+            let child = match value {
+                Some(child) if self.default_clamp.get() => Some(
+                    adw::Clamp::builder()
+                        .child(&child)
+                        .maximum_size(450)
+                        .tightening_threshold(200)
+                        .build()
+                        .upcast()
+                ),
+                _ => value,
+            };
+            self.contents.set_child(child.as_ref());
+        }
+
+        fn get_bottom_child(&self) -> Option<gtk::Widget> {
+            self.bottom_contents.child()
+        }
+
+        fn set_bottom_child(&self, value: Option<&gtk::Widget>) {
+            self.bottom_contents.set_child(value);
+            self.bottom_contents.set_visible(value.is_some());
         }
 
         #[template_callback]
