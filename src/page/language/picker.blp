@@ -1,0 +1,24 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupLanguagePicker : Gtk.Box {
+  orientation: vertical;
+  spacing: 24;
+
+  Gtk.SearchEntry searchbox {
+    search-changed => $on_search() swapped;
+  }
+
+  Gtk.Stack switcher {
+    Gtk.ListBox list {
+      valign: start;
+      row-selected => $on_row_selected() swapped;
+      styles ["boxed-list"]
+    }
+
+    Adw.StatusPage empty {
+      icon-name: "edit-find-symbolic";
+    }
+  }
+}

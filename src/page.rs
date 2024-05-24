@@ -5,18 +5,23 @@ use adw::subclass::prelude::*;
 use gtk::glib;
 use glib::subclass::Signal;
 
+use gettextrs::gettext;
 use std::{cell::Cell, marker::PhantomData};
 use std::sync::OnceLock;
 
+mod language;
+mod welcome;
 mod prerelease;
 mod eula;
-mod welcome;
 mod install;
 
+pub use language::LanguagePage;
+pub use welcome::WelcomePage;
 pub use prerelease::PrereleasePage;
 pub use eula::EulaPage;
-pub use welcome::WelcomePage;
 pub use install::InstallPage;
+
+pub use imp::BasePagePropertiesExt;
 
 glib::wrapper! {
     pub struct BasePage(ObjectSubclass<imp::BasePage>)
@@ -56,7 +61,7 @@ mod imp {
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(file = "src/page.blp")]
-    #[properties(wrapper_type = super::BasePage)]
+    #[properties(wrapper_type = super::BasePage, ext_trait)]
     pub struct BasePage {
         #[property(get = BasePage::get_child, set = BasePage::set_child)]
         child: PhantomData<Option<gtk::Widget>>,
@@ -83,6 +88,18 @@ mod imp {
         contents: TemplateChild<adw::Bin>,
         #[template_child]
         bottom_contents: TemplateChild<adw::Bin>,
+
+        #[template_child]
+        back_btn: TemplateChild<gtk::Button>,
+        #[template_child]
+        next_btn: TemplateChild<gtk::Button>,
+        #[template_child]
+        mobile_next_btn: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        toolbarview: TemplateChild<adw::ToolbarView>,
+        #[property(get = BasePage::get_top_bar_height)]
+        top_bar_height: PhantomData<i32>,
     }
 
     #[glib::derived_properties]
@@ -96,8 +113,8 @@ mod imp {
 
         fn constructed(&self) {
             self.parent_constructed();
-
             let obj = self.obj();
+
             let adj = self.viewport.vadjustment().unwrap();
             adj.connect_closure(
                 "value-changed", false,
@@ -117,7 +134,9 @@ mod imp {
                 .ancestor(gtk::Window::static_type())
                 .and_downcast::<gtk::Window>()
                 .unwrap();
-            window.set_deletable(self.can_close.get() && crate::in_session())
+            window.set_deletable(self.can_close.get() && crate::in_session());
+
+            self.reload_locale();
         }
     }
 
@@ -156,6 +175,15 @@ mod imp {
             self.obj().emit_by_name::<()>("next", &[]);
         }
 
+        #[template_callback]
+        fn toolbar_height_changed(&self) {
+            self.obj().notify_top_bar_height();
+        }
+
+        fn get_top_bar_height(&self) -> i32 {
+            self.toolbarview.top_bar_height()
+        }
+
         pub(super) fn go_next(&self, page: &super::BasePage) {
             let nav_view = self
                 .obj()
@@ -164,6 +192,18 @@ mod imp {
                 .unwrap();
             nav_view.push(page);
         }
+
+        pub(super) fn reload_locale(&self) {
+            self.back_btn.set_tooltip_text(Some(&gettext("Back")));
+            self.next_btn.set_tooltip_text(Some(&gettext("Next")));
+            self.mobile_next_btn.set_label(&gettext("_Next"));
+        }
+    }
+}
+
+impl BasePage {
+    fn reload_locale(&self) {
+        self.imp().reload_locale();
     }
 }
 

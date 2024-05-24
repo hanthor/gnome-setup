@@ -27,3 +27,11 @@ label.card {
 	padding-top: 3px;
 	padding-bottom: 3px;
 }
+
+row:selected {
+	background: transparent;
+}
+
+row:not(:selected) .check {
+	opacity: 0;
+}

@@ -3,7 +3,6 @@ using Gtk 4.0;
 using Adw 1;
 
 template $SetupBasePage : Adw.NavigationPage {
-
   accessible-role: tab_panel;
 
   Adw.BreakpointBin {
@@ -17,9 +16,8 @@ template $SetupBasePage : Adw.NavigationPage {
         valign: center;
         margin-start: 18;
 
-        Gtk.Button {
+        Gtk.Button back_btn {
           icon-name: "go-previous-symbolic";
-          tooltip-text: _("Back");
 
           action-name: "navigation.pop";
           receives-default: false;
@@ -34,6 +32,8 @@ template $SetupBasePage : Adw.NavigationPage {
       }
 
       Adw.ToolbarView toolbarview {
+        notify::top-bar-height => $toolbar_height_changed() swapped;
+
         [top]
         Adw.HeaderBar headerbar {
           show-title: false;
@@ -70,13 +70,12 @@ template $SetupBasePage : Adw.NavigationPage {
         }
 
         [bottom]
-        Adw.Bin mobile-next {
+        Adw.Bin mobile_next {
           visible: false;
           Adw.Bin {
             visible: bind template.can-next;
 
-            Gtk.Button {
-              label: _("_Next");
+            Gtk.Button mobile_next_btn {
               halign: center;
               use-underline: true;
               sensitive: bind template.ready;
@@ -97,7 +96,7 @@ template $SetupBasePage : Adw.NavigationPage {
         margin-end: 18;
         valign: center;
 
-        Gtk.Button {
+        Gtk.Button next_btn {
           icon-name: "go-next-symbolic";
           tooltip-text: _("Next");
 
@@ -120,7 +119,7 @@ template $SetupBasePage : Adw.NavigationPage {
       setters {
         next.visible: false;
         back.visible: false;
-        mobile-next.visible: true;
+        mobile_next.visible: true;
       }
     }
 

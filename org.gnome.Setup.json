@@ -1,9 +1,11 @@
 {
     "id" : "org.gnome.Setup",
-    "runtime" : "org.gnome.Platform",
+    "runtime" : "org.gnome.Sdk",
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
+        "org.gnome.Sdk.Debug",
+    	"org.gnome.Sdk.Locale",
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
     "command" : "gnome-setup",
@@ -11,6 +13,7 @@
         "--share=network",
         "--share=ipc",
         "--socket=fallback-x11",
+        "--socket=system-bus",
         "--device=dri",
         "--socket=wayland"
     ],
@@ -48,6 +51,17 @@
 	    }
 	  ]
 	},
+	{
+	  "name": "gnome-desktop",
+	  "buildsystem": "meson",
+	  "sources": [
+	    {
+	      "type": "git",
+	      "url": "https://gitlab.gnome.org/GNOME/gnome-desktop",
+	      "tag": "44.0"
+	    }
+	  ]
+	},
         {
             "name" : "setup",
             "builddir" : true,
@@ -55,7 +69,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "file:///var/home/adrian/Projects"
+                    "url" : "."
                 }
             ]
         }

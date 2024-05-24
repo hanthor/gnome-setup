@@ -41,7 +41,11 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let page = page::WelcomePage::new();
+            let page: page::BasePage = if crate::in_session() {
+                page::WelcomePage::new().upcast()
+            } else {
+                page::LanguagePage::new().upcast()
+            };
 
             page.set_can_pop(false);
             self.nav.push(&page);

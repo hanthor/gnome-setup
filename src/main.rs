@@ -81,3 +81,8 @@ pub fn in_session() -> bool {
         env::var("XDG_SESSION_CLASS").map(|val| val == "user").unwrap_or(false)
     })
 }
+
+pub fn system_bus() -> &'static zbus::Connection {
+    static ONCE: OnceLock<zbus::Connection> = OnceLock::new();
+    ONCE.get_or_init(|| zbus::blocking::Connection::system().unwrap().into_inner())
+}

@@ -1,0 +1,33 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupLanguagePage : $SetupBasePage {
+  default-clamp: false;
+  ready: false;
+
+  next => $on_next() swapped;
+  shown => $on_shown() swapped;
+  hidden => $on_hidden() swapped;
+
+  child: Gtk.Box {
+    orientation: vertical;
+    margin-bottom: 12;
+
+    Adw.Carousel welcome {
+      margin-bottom: bind template.top-bar-height;
+      interactive: false;
+      page-changed => $on_welcome_changed();
+    }
+
+    Adw.Clamp {
+      // Make sure these values are in sync w/ the defaults in page.rs
+      maximum-size: 450;
+      tightening-threshold: 200;
+
+      $SetupLanguagePicker picker {
+        selected => $on_selected() swapped;
+      }
+    }
+  };
+}

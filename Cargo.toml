@@ -6,8 +6,11 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.82"
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
+gnome-desktop = "0.4.2"
 gvdb-macros = "0.1.12"
 log = "0.4.21"
+thiserror = "1.0.61"
+zbus = "4.2.2"
 
 [dependencies.glib]
 features = ["log"]
