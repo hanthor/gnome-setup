@@ -8,34 +8,31 @@ template $SetupInstallDonePage : $SetupBasePage {
   can-next: false;
   can-pop: false;
 
-  child: Adw.Clamp {
-    maximum-size: 450;
-    Adw.StatusPage info {
-      title: _("Installation Complete!");
+  child: Adw.StatusPage info {
+    title: _("Installation Complete!");
 
-      icon-name: "ready-to-go";
+    icon-name: "ready-to-go";
 
-      Gtk.Box {
-        spacing: 12;
-        halign: center;
+    Gtk.Box {
+      spacing: 12;
+      halign: center;
 
-        Gtk.Button cancel_btn {
-          label: _("_Not Now");
-          use-underline: true;
-          action-name: "window.close";
-          styles [ "pill" ]
-        }
-
-        Gtk.Button reboot_btn {
-          label: _("_Reboot");
-          use-underline: true;
-          clicked => $on_reboot() swapped;
-          styles [ "pill", "suggested-action" ]
-        }
+      Gtk.Button cancel_btn {
+        label: _("_Not Now");
+        use-underline: true;
+        action-name: "window.close";
+        styles [ "pill" ]
       }
 
-      styles [ "larger-art" ]
+      Gtk.Button reboot_btn {
+        label: _("_Reboot");
+        use-underline: true;
+        clicked => $on_reboot() swapped;
+        styles [ "pill", "suggested-action" ]
+      }
     }
+
+    styles [ "larger-art" ]
   };
 }
 

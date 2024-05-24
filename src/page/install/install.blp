@@ -7,23 +7,19 @@ template $SetupInstallPage : $SetupBasePage {
   can-next: false;
   can-close: false;
 
-  child: Adw.Clamp {
-    maximum-size: 450;
-    Adw.StatusPage info {
+  child: Adw.StatusPage info {
+    Gtk.Box {
+      orientation: vertical;
+      spacing: 6;
 
-      Gtk.Box {
-        orientation: vertical;
-        spacing: 6;
+      Gtk.ProgressBar progress {}
 
-        Gtk.ProgressBar progress {}
-
-        Gtk.Label status {
-          halign: start;
-          styles [ "dim-label" ]
-        }
+      Gtk.Label status {
+        halign: start;
+        styles [ "dim-label" ]
       }
-
-      styles [ "larger-art", "icon-dropshadow" ]
     }
+
+    styles [ "larger-art", "icon-dropshadow" ]
   };
 }
