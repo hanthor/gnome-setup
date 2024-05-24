@@ -4,46 +4,22 @@ using Adw 1;
 
 template $SetupEulaPage : $SetupBasePage {
   title: _("Terms of Use");
+  big-title: true;
 
   ready: bind accept.active;
   next => $next() swapped;
 
-  child: Adw.Clamp {
-    maximum-size: 450;
-    Gtk.Box {
-      orientation: vertical;
-      valign: center;
-
-      spacing: 12;
-      margin-top: 18;
-      margin-bottom: 18;
-
-      Gtk.Label {
-        label: _("Terms of Use");
-        styles [ "title-1" ]
-      }
-
-      Gtk.ScrolledWindow scroll {
-        propagate-natural-height: true;
-        hscrollbar-policy: never;
-
-        accessibility {
-          labelled-by: eula;
-          // TODO: For some reason, the screen reader will not read this until I tab onto the checkbox and then tab back
-        }
-
-        styles ["card", "eula"]
-
-        Gtk.Label eula {
-          wrap: true;
-        }
-      }
-
-      Gtk.CheckButton accept {
-        label: _("I have read and accept the Terms of Use");
-        halign: center;
-        receives-default: true;
-      }
-    }
+  child: Gtk.Label eula {
+    accessible-role: paragraph;
+    wrap: true;
+    selectable: true;
+    margin-bottom: 12;
+    styles [ "card" ]
   };
+
+  bottom-child: Gtk.CheckButton accept {
+      label: _("I have read and accept the Terms of Use");
+      halign: center;
+      receives-default: true;
+    };
 }

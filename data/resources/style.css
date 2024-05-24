@@ -14,12 +14,8 @@ statuspage.larger-art .icon {
 	-gtk-icon-size: 192px;
 }
 
-.eula undershoot {
-  border-radius: 12px;
-}
-
-.eula label {
-  padding: 12px;
+label.card {
+  padding: 12px 18px;
 }
 
 .bottom-bar-padded {
