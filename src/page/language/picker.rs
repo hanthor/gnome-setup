@@ -108,6 +108,7 @@ mod imp {
     impl LanguagePicker {
         #[template_callback]
         fn on_search(&self) {
+            self.searchbox.grab_focus();
             self.filter.set_query(&self.searchbox.text());
         }
 
