@@ -1,7 +1,6 @@
-use gtk::{glib, gio};
+use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gnome_desktop as gutil;
 
 use std::cell::RefCell;
 

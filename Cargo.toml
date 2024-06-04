@@ -13,11 +13,12 @@ thiserror = "1.0.61"
 zbus = "4.2.2"
 
 [dependencies.glib]
+version = "*"
 features = ["log"]
 
 [dependencies.gtk]
 package = "gtk4"
-version = "0.8"
+version = "*"
 features = ["gnome_46", "blueprint"]
 
 [dependencies.adw]

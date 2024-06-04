@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use gtk::{glib, gio};
+use gtk::glib;
 use glib::prelude::*;
 use glib::subclass::prelude::*;
 

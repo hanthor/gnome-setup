@@ -5,7 +5,7 @@ use adw::subclass::prelude::*;
 use gtk::glib;
 
 use crate::page::{self, BasePageImpl, BasePageExt};
-use crate::{window,osinfo};
+use crate::osinfo;
 
 use gettextrs::gettext;
 

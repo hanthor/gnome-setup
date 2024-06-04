@@ -6,7 +6,7 @@ use gtk::glib;
 
 use gettextrs::gettext;
 
-use crate::page::{self, BasePageImpl, BasePageExt};
+use crate::page::{self, BasePageImpl};
 use crate::osinfo;
 
 glib::wrapper! {
