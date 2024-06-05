@@ -2,7 +2,6 @@
 
 use gtk::glib::{self, prelude::*};
 use std::{env, sync::OnceLock};
-use log;
 
 pub fn logo() -> &'static str {
     static ONCE: OnceLock<glib::GString> = OnceLock::new();

@@ -72,6 +72,7 @@ impl LanguageFilter {
         let prepared = tokenize_and_casefold(query);
         let change = {
             let old = &self.imp().query.borrow().0;
+            #[allow(clippy::if_same_then_else)]
             if query.is_empty() {
                 gtk::FilterChange::LessStrict
             } else if old.is_empty() {

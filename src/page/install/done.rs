@@ -6,7 +6,7 @@ use gtk::glib;
 
 use gettextrs::gettext;
 
-use crate::page::{self, BasePageImpl};
+use crate::page::{self, BasePageImpl, NextTarget};
 use crate::osinfo;
 
 glib::wrapper! {
@@ -72,12 +72,18 @@ mod imp {
 
 #[gtk::template_callbacks]
 impl DonePage {
-    pub fn new() -> Self {
+    fn new() -> Self {
         glib::Object::new()
     }
 
     #[template_callback]
     fn on_reboot(&self) {
         todo!();
+    }
+}
+
+impl NextTarget for DonePage {
+    fn page() -> page::BasePage {
+        Self::new().upcast()
     }
 }

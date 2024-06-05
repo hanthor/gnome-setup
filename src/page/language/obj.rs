@@ -202,7 +202,7 @@ mod imp {
             self.sort_key.get_or_init(|| {
                 let mut key: String = glib::casefold(
                     glib::normalize(
-                        &self.translated_display_name(),
+                        self.translated_display_name(),
                         glib::NormalizeMode::All // un-combine accented characters
                     )
                 ).into();

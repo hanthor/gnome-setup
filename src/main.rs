@@ -10,7 +10,6 @@ use config::{GETTEXT_PACKAGE, LOCALEDIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
 use adw::{glib, gio, Application};
 use std::{env, sync::OnceLock};
-use log;
 
 fn main() -> glib::ExitCode {
     // For debugging

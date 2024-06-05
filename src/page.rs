@@ -184,13 +184,13 @@ mod imp {
             self.toolbarview.top_bar_height()
         }
 
-        pub(super) fn go_next(&self, page: &super::BasePage) {
+        pub(super) fn go_next(&self, page: super::BasePage) {
             let nav_view = self
                 .obj()
                 .ancestor(adw::NavigationView::static_type())
                 .and_downcast::<adw::NavigationView>()
                 .unwrap();
-            nav_view.push(page);
+            nav_view.push(&page);
         }
 
         pub(super) fn reload_locale(&self) {
@@ -208,8 +208,8 @@ impl BasePage {
 }
 
 pub trait BasePageExt: IsA<BasePage> {
-    fn go_next(&self, next: impl IsA<BasePage>) {
-        self.upcast_ref::<BasePage>().imp().go_next(next.upcast_ref());
+    fn go_next<T: NextTarget>(&self) {
+        self.upcast_ref::<BasePage>().imp().go_next(T::page());
     }
 }
 
@@ -218,3 +218,7 @@ impl<O: IsA<BasePage>> BasePageExt for O {}
 pub trait BasePageImpl: NavigationPageImpl {}
 
 unsafe impl<T: BasePageImpl> IsSubclassable<T> for BasePage {}
+
+pub trait NextTarget {
+    fn page() -> BasePage;
+}

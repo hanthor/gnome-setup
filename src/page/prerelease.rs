@@ -6,7 +6,7 @@ use gtk::glib;
 
 use gettextrs::gettext;
 
-use crate::page::{self, BasePageImpl, BasePageExt};
+use crate::page::{self, BasePageImpl, BasePageExt, NextTarget};
 use crate::osinfo;
 
 glib::wrapper! {
@@ -76,7 +76,7 @@ mod imp {
 
                     if let Some(description) = description {
                         self.experiment.set_visible(true);
-                        self.experiment.set_subtitle(&description);
+                        self.experiment.set_subtitle(description);
                     }
                 }
             }
@@ -93,18 +93,24 @@ type Next = page::EulaPage;
 
 #[gtk::template_callbacks]
 impl PrereleasePage {
-    pub fn new() -> page::BasePage {
-        use osinfo::ReleaseType as R;
-        match osinfo::release_type() {
-            R::PreRelease | R::Experimental {..} =>
-                glib::Object::new::<Self>().upcast(),
-            R::Stable | R::Lts =>
-                Next::new().upcast(),
-        }
+    fn new() -> Self {
+        glib::Object::new()
     }
 
     #[template_callback]
     fn next(&self) {
-        self.go_next(Next::new());
+        self.go_next::<Next>();
+    }
+}
+
+impl NextTarget for PrereleasePage {
+    fn page() -> page::BasePage {
+        use osinfo::ReleaseType as R;
+        match osinfo::release_type() {
+            R::PreRelease | R::Experimental {..} =>
+                Self::new().upcast(),
+            R::Stable | R::Lts =>
+                Next::page(),
+        }
     }
 }

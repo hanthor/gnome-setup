@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
-use crate::page;
+use crate::page::{self, NextTarget};
 
 glib::wrapper! {
     pub struct Window(ObjectSubclass<imp::Window>)
@@ -42,9 +42,9 @@ mod imp {
             self.parent_constructed();
 
             let page: page::BasePage = if crate::in_session() {
-                page::WelcomePage::new().upcast()
+                page::WelcomePage::page()
             } else {
-                page::LanguagePage::new().upcast()
+                page::LanguagePage::page()
             };
 
             page.set_can_pop(false);

@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
-use crate::page::{self, BasePageImpl, BasePageExt};
+use crate::page::{self, BasePageImpl, BasePageExt, NextTarget};
 use crate::osinfo;
 
 use gettextrs::gettext;
@@ -28,7 +28,6 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.bind_template_instance_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -64,7 +63,7 @@ mod imp {
             glib::timeout_add_local(
                 std::time::Duration::new(3, 0),
                 glib::clone!(@strong obj => move || {
-                    obj.go_next(page::install::done::DonePage::new());
+                    obj.go_next::<done::DonePage>();
                     glib::ControlFlow::Break
                 })
             );
@@ -76,9 +75,14 @@ mod imp {
     impl BasePageImpl for InstallPage {}
 }
 
-#[gtk::template_callbacks]
 impl InstallPage {
-    pub fn new() -> Self {
+    fn new() -> Self {
         glib::Object::new()
+    }
+}
+
+impl NextTarget for InstallPage {
+    fn page() -> page::BasePage {
+        Self::new().upcast()
     }
 }

@@ -1,9 +1,10 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
-use crate::page::{self, BasePageImpl, BasePageExt};
+use crate::page::{self, BasePageImpl, BasePageExt, NextTarget};
 
 glib::wrapper! {
     pub struct EulaPage(ObjectSubclass<imp::EulaPage>)
@@ -57,15 +58,25 @@ Est velit egestas dui id ornare arcu odio ut. Tempus imperdiet nulla malesuada p
     impl BasePageImpl for EulaPage {}
 }
 
+type Next = page::InstallPage;
+
 #[gtk::template_callbacks]
 impl EulaPage {
-    pub fn new() -> Self {
+    fn new() -> Self {
         glib::Object::new()
     }
 
     #[template_callback]
     fn next(&self) {
         // TODO: Mockup
-        self.go_next(page::InstallPage::new());
+        self.go_next::<Next>();
+    }
+}
+
+impl NextTarget for EulaPage {
+    fn page() -> page::BasePage {
+        // TODO: Check if there's a EULA, and skip straight to Next if there isn't
+        // TODO: Use same check as eos-installer?
+        Self::new().upcast()
     }
 }

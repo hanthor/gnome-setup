@@ -6,7 +6,7 @@ use gtk::glib;
 
 use gettextrs::gettext;
 
-use crate::page::{self, BasePageImpl, BasePageExt};
+use crate::page::{self, NextTarget, BasePageImpl, BasePageExt};
 use crate::osinfo;
 
 glib::wrapper! {
@@ -79,17 +79,23 @@ mod imp {
 
 #[gtk::template_callbacks]
 impl WelcomePage {
-    pub fn new() -> Self {
+    fn new() -> Self {
         glib::Object::new()
     }
 
     #[template_callback]
     fn on_install(&self) {
-        self.go_next(page::PrereleasePage::new());
+        self.go_next::<page::PrereleasePage>();
     }
 
     #[template_callback]
     fn on_try(&self) {
         todo!("Start demo session");
+    }
+}
+
+impl NextTarget for WelcomePage {
+    fn page() -> page::BasePage {
+        Self::new().upcast()
     }
 }

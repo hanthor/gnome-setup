@@ -7,20 +7,20 @@ use gtk::glib;
 use gettextrs::gettext;
 use std::cell::RefCell;
 
-mod language;
+mod obj;
 mod model;
 mod filter;
 mod picker_row;
 mod picker;
 mod localed;
 
-pub use language::*;
+pub use obj::*;
 pub use model::*;
 pub use filter::*;
 pub use picker_row::*;
 pub use picker::*;
 
-use crate::page::{self, BasePageImpl, BasePageExt, BasePagePropertiesExt};
+use crate::page::{self, BasePageImpl, BasePageExt, BasePagePropertiesExt, NextTarget};
 use localed::*;
 
 glib::wrapper! {
@@ -120,7 +120,9 @@ mod imp {
 
         #[template_callback]
         fn on_hidden(&self) {
-            self.welcome_anim.take().map(|id| id.remove());
+            if let Some(id) = self.welcome_anim.take() {
+                id.remove();
+            }
         }
 
         #[template_callback]
@@ -162,17 +164,22 @@ mod imp {
 
                 if let Err(e) = localed.set_locale(vec![selected], false).await {
                     log::error!("Failed to set localed locale: {e}");
-                    return;
                 }
             });
 
-            self.obj().go_next(page::WelcomePage::new());
+            self.obj().go_next::<page::WelcomePage>();
         }
     }
 }
 
 impl LanguagePage {
-    pub fn new() -> Self {
+    fn new() -> Self {
         glib::Object::new()
+    }
+}
+
+impl NextTarget for LanguagePage {
+    fn page() -> page::BasePage {
+        Self::new().upcast()
     }
 }

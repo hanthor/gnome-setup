@@ -160,10 +160,6 @@ mod imp {
 }
 
 impl LanguagePicker {
-    pub fn new() -> Self {
-        glib::Object::new()
-    }
-
     pub fn reload_locale(&self) {
         self.imp().load_locale()
     }
