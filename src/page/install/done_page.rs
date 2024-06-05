@@ -6,12 +6,12 @@ use gtk::glib;
 
 use gettextrs::gettext;
 
-use crate::page::{self, BasePageImpl, NextTarget};
+use crate::page::subclass::*;
 use crate::osinfo;
 
 glib::wrapper! {
     pub struct DonePage(ObjectSubclass<imp::DonePage>)
-        @extends gtk::Widget, adw::NavigationPage, page::BasePage,
+        @extends gtk::Widget, adw::NavigationPage, BasePage,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
@@ -22,7 +22,7 @@ mod imp {
     impl ObjectSubclass for DonePage {
         const NAME: &'static str = "SetupInstallDonePage";
         type Type = super::DonePage;
-        type ParentType = page::BasePage;
+        type ParentType = BasePage;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -35,7 +35,7 @@ mod imp {
     }
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/install/done.blp")]
+    #[template(file = "src/page/install/done_page.blp")]
     pub struct DonePage {
         #[template_child]
         info: TemplateChild<adw::StatusPage>,
@@ -83,7 +83,7 @@ impl DonePage {
 }
 
 impl NextTarget for DonePage {
-    fn page() -> page::BasePage {
+    fn page() -> BasePage {
         Self::new().upcast()
     }
 }

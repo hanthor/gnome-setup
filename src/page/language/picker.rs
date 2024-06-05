@@ -9,7 +9,10 @@ use gettextrs::gettext;
 use std::sync::OnceLock;
 use std::marker::PhantomData;
 
-use super::{Language, LanguageModel, LanguageFilter, LanguagePickerRow};
+use super::obj::Language;
+use super::model::LanguageModel;
+use super::filter::LanguageFilter;
+use super::picker_row::LanguagePickerRow;
 
 glib::wrapper! {
     pub struct LanguagePicker(ObjectSubclass<imp::LanguagePicker>)

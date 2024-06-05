@@ -2,9 +2,10 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::{gio, glib};
+use crate::page::prelude::*;
 
-use crate::page::{self, NextTarget};
+use gtk::{gio, glib};
+use crate::page::{BasePage, LanguagePage, WelcomePage};
 
 glib::wrapper! {
     pub struct Window(ObjectSubclass<imp::Window>)
@@ -41,10 +42,10 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let page: page::BasePage = if crate::in_session() {
-                page::WelcomePage::page()
+            let page: BasePage = if crate::in_session() {
+                WelcomePage::page()
             } else {
-                page::LanguagePage::page()
+                LanguagePage::page()
             };
 
             page.set_can_pop(false);

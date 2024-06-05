@@ -7,7 +7,20 @@ use gnome_desktop as gutil;
 
 use std::cmp::Ordering;
 
-use super::{Language, LocaleParseError, POPULAR_LOCALES};
+use super::obj::{Language, LocaleParseError};
+
+// Languages that show up in welcome spinner, and at the top of the list.
+// These should be popular languages that GNOME (and Setup) is well-translated in.
+pub static POPULAR_LOCALES: &[&str] = &[
+    "en_US.UTF-8",
+    "de_DE.UTF-8",
+    "fr_FR.UTF-8",
+    "es_ES.UTF-8",
+    "zh_CN.UTF-8",
+    "ja_JP.UTF-8",
+    "ru_RU.UTF-8",
+    "ar_EG.UTF-8",
+];
 
 glib::wrapper! {
     pub struct LanguageModel(ObjectSubclass<imp::LanguageModel>)

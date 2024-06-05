@@ -2,16 +2,17 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
+use crate::page::subclass::*;
 
+use gtk::glib;
 use gettextrs::gettext;
 
-use crate::page::{self, BasePageImpl, BasePageExt, NextTarget};
 use crate::osinfo;
+use crate::page::EulaPage as Next;
 
 glib::wrapper! {
     pub struct PrereleasePage(ObjectSubclass<imp::PrereleasePage>)
-        @extends gtk::Widget, adw::NavigationPage, page::BasePage,
+        @extends gtk::Widget, adw::NavigationPage, BasePage,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
@@ -22,7 +23,7 @@ mod imp {
     impl ObjectSubclass for PrereleasePage {
         const NAME: &'static str = "SetupPrereleasePage";
         type Type = super::PrereleasePage;
-        type ParentType = page::BasePage;
+        type ParentType = BasePage;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -35,7 +36,7 @@ mod imp {
     }
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/prerelease/prerelease.blp")]
+    #[template(file = "src/page/prerelease/page.blp")]
     pub struct PrereleasePage {
         #[template_child]
         status: TemplateChild<adw::StatusPage>,
@@ -89,8 +90,6 @@ mod imp {
     impl BasePageImpl for PrereleasePage {}
 }
 
-type Next = page::EulaPage;
-
 #[gtk::template_callbacks]
 impl PrereleasePage {
     fn new() -> Self {
@@ -104,7 +103,7 @@ impl PrereleasePage {
 }
 
 impl NextTarget for PrereleasePage {
-    fn page() -> page::BasePage {
+    fn page() -> BasePage {
         use osinfo::ReleaseType as R;
         match osinfo::release_type() {
             R::PreRelease | R::Experimental {..} =>

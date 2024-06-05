@@ -2,16 +2,17 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
+use crate::page::subclass::*;
 
+use gtk::glib;
 use gettextrs::gettext;
 
-use crate::page::{self, NextTarget, BasePageImpl, BasePageExt};
 use crate::osinfo;
+use crate::page::PrereleasePage as Next;
 
 glib::wrapper! {
     pub struct WelcomePage(ObjectSubclass<imp::WelcomePage>)
-        @extends gtk::Widget, adw::NavigationPage, page::BasePage,
+        @extends gtk::Widget, adw::NavigationPage, BasePage,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
@@ -22,7 +23,7 @@ mod imp {
     impl ObjectSubclass for WelcomePage {
         const NAME: &'static str = "SetupWelcomePage";
         type Type = super::WelcomePage;
-        type ParentType = page::BasePage;
+        type ParentType = BasePage;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -35,7 +36,7 @@ mod imp {
     }
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/welcome/welcome.blp")]
+    #[template(file = "src/page/welcome/page.blp")]
     pub struct WelcomePage {
         #[template_child]
         info: TemplateChild<adw::StatusPage>,
@@ -85,7 +86,7 @@ impl WelcomePage {
 
     #[template_callback]
     fn on_install(&self) {
-        self.go_next::<page::PrereleasePage>();
+        self.go_next::<Next>();
     }
 
     #[template_callback]
@@ -95,7 +96,7 @@ impl WelcomePage {
 }
 
 impl NextTarget for WelcomePage {
-    fn page() -> page::BasePage {
+    fn page() -> BasePage {
         Self::new().upcast()
     }
 }

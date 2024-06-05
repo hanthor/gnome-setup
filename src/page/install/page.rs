@@ -4,16 +4,16 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
-use crate::page::{self, BasePageImpl, BasePageExt, NextTarget};
-use crate::osinfo;
-
 use gettextrs::gettext;
 
-pub mod done;
+use crate::page::subclass::*;
+use crate::osinfo;
+
+use super::done_page::DonePage;
 
 glib::wrapper! {
     pub struct InstallPage(ObjectSubclass<imp::InstallPage>)
-        @extends gtk::Widget, adw::NavigationPage, page::BasePage,
+        @extends gtk::Widget, adw::NavigationPage, BasePage,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
@@ -24,7 +24,7 @@ mod imp {
     impl ObjectSubclass for InstallPage {
         const NAME: &'static str = "SetupInstallPage";
         type Type = super::InstallPage;
-        type ParentType = page::BasePage;
+        type ParentType = BasePage;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -36,7 +36,7 @@ mod imp {
     }
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/install/install.blp")]
+    #[template(file = "src/page/install/page.blp")]
     pub struct InstallPage {
         #[template_child]
         info: TemplateChild<adw::StatusPage>,
@@ -63,7 +63,7 @@ mod imp {
             glib::timeout_add_local(
                 std::time::Duration::new(3, 0),
                 glib::clone!(@strong obj => move || {
-                    obj.go_next::<done::DonePage>();
+                    obj.go_next::<DonePage>();
                     glib::ControlFlow::Break
                 })
             );
@@ -82,7 +82,7 @@ impl InstallPage {
 }
 
 impl NextTarget for InstallPage {
-    fn page() -> page::BasePage {
+    fn page() -> BasePage {
         Self::new().upcast()
     }
 }

@@ -4,11 +4,12 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
-use crate::page::{self, BasePageImpl, BasePageExt, NextTarget};
+use crate::page::subclass::*;
+use crate::page::InstallPage as Next;
 
 glib::wrapper! {
     pub struct EulaPage(ObjectSubclass<imp::EulaPage>)
-        @extends gtk::Widget, adw::NavigationPage, page::BasePage,
+        @extends gtk::Widget, adw::NavigationPage, BasePage,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
@@ -19,7 +20,7 @@ mod imp {
     impl ObjectSubclass for EulaPage {
         const NAME: &'static str = "SetupEulaPage";
         type Type = super::EulaPage;
-        type ParentType = page::BasePage;
+        type ParentType = BasePage;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -32,7 +33,7 @@ mod imp {
     }
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/eula/eula.blp")]
+    #[template(file = "src/page/eula/page.blp")]
     pub struct EulaPage {
         #[template_child]
         pub eula: TemplateChild<gtk::Label>,
@@ -58,8 +59,6 @@ Est velit egestas dui id ornare arcu odio ut. Tempus imperdiet nulla malesuada p
     impl BasePageImpl for EulaPage {}
 }
 
-type Next = page::InstallPage;
-
 #[gtk::template_callbacks]
 impl EulaPage {
     fn new() -> Self {
@@ -74,7 +73,7 @@ impl EulaPage {
 }
 
 impl NextTarget for EulaPage {
-    fn page() -> page::BasePage {
+    fn page() -> BasePage {
         // TODO: Check if there's a EULA, and skip straight to Next if there isn't
         // TODO: Use same check as eos-installer?
         Self::new().upcast()

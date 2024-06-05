@@ -2,45 +2,24 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
+use crate::page::subclass::*;
 
+use gtk::glib;
 use gettextrs::gettext;
 use std::cell::RefCell;
 
-mod obj;
-mod model;
-mod filter;
-mod picker_row;
-mod picker;
-mod localed;
+use crate::page::WelcomePage as Next;
 
-pub use obj::*;
-pub use model::*;
-pub use filter::*;
-pub use picker_row::*;
-pub use picker::*;
-
-use crate::page::{self, BasePageImpl, BasePageExt, BasePagePropertiesExt, NextTarget};
-use localed::*;
+use super::localed::LocaledProxy;
+use super::obj::Language;
+use super::picker::LanguagePicker;
+use super::model::POPULAR_LOCALES;
 
 glib::wrapper! {
     pub struct LanguagePage(ObjectSubclass<imp::LanguagePage>)
-        @extends gtk::Widget, adw::NavigationPage, page::BasePage,
+        @extends gtk::Widget, adw::NavigationPage, BasePage,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
-
-// Languages that show up in welcome spinner, and at the top of the list.
-// These should be popular languages that GNOME (and Setup) is well-translated in.
-static POPULAR_LOCALES: &[&str] = &[
-    "en_US.UTF-8",
-    "de_DE.UTF-8",
-    "fr_FR.UTF-8",
-    "es_ES.UTF-8",
-    "zh_CN.UTF-8",
-    "ja_JP.UTF-8",
-    "ru_RU.UTF-8",
-    "ar_EG.UTF-8",
-];
 
 mod imp {
     use super::*;
@@ -49,7 +28,7 @@ mod imp {
     impl ObjectSubclass for LanguagePage {
         const NAME: &'static str = "SetupLanguagePage";
         type Type = super::LanguagePage;
-        type ParentType = page::BasePage;
+        type ParentType = BasePage;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -62,7 +41,7 @@ mod imp {
     }
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/language/language.blp")]
+    #[template(file = "src/page/language/page.blp")]
     pub struct LanguagePage {
         #[template_child]
         welcome: TemplateChild<adw::Carousel>,
@@ -131,7 +110,7 @@ mod imp {
         }
 
         fn load_locale(&self) {
-            self.obj().upcast_ref::<page::BasePage>().reload_locale();
+            self.obj().upcast_ref::<BasePage>().reload_locale();
 
             self.obj().set_title(&gettext("Language"));
             self.picker.reload_locale();
@@ -167,7 +146,7 @@ mod imp {
                 }
             });
 
-            self.obj().go_next::<page::WelcomePage>();
+            self.obj().go_next::<Next>();
         }
     }
 }
@@ -179,7 +158,7 @@ impl LanguagePage {
 }
 
 impl NextTarget for LanguagePage {
-    fn page() -> page::BasePage {
+    fn page() -> BasePage {
         Self::new().upcast()
     }
 }

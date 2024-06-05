@@ -4,7 +4,7 @@ use gtk::subclass::prelude::*;
 
 use std::cell::RefCell;
 
-use super::Language;
+use super::obj::Language;
 
 glib::wrapper! {
     pub struct LanguageFilter(ObjectSubclass<imp::LanguageFilter>)

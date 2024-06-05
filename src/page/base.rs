@@ -9,58 +9,19 @@ use gettextrs::gettext;
 use std::{cell::Cell, marker::PhantomData};
 use std::sync::OnceLock;
 
-mod language;
-mod welcome;
-mod prerelease;
-mod eula;
-mod install;
-
-pub use language::LanguagePage;
-pub use welcome::WelcomePage;
-pub use prerelease::PrereleasePage;
-pub use eula::EulaPage;
-pub use install::InstallPage;
-
-pub use imp::BasePagePropertiesExt;
-
 glib::wrapper! {
     pub struct BasePage(ObjectSubclass<imp::BasePage>)
         @extends gtk::Widget, adw::NavigationPage,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
+pub use imp::BasePagePropertiesExt;
+
 mod imp {
     use super::*;
 
-    #[glib::object_subclass]
-    impl ObjectSubclass for BasePage {
-        const NAME: &'static str = "SetupBasePage";
-        const ABSTRACT: bool = true;
-
-        type Type = super::BasePage;
-        type ParentType = adw::NavigationPage;
-
-        fn new() -> Self {
-            Self {
-                can_next: Cell::new(true),
-                can_close: Cell::new(true),
-                default_clamp: Cell::new(true),
-                ..Default::default()
-            }
-        }
-
-        fn class_init(klass: &mut Self::Class) {
-            klass.bind_template();
-            klass.bind_template_callbacks();
-        }
-
-        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
-            obj.init_template();
-        }
-    }
-
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(file = "src/page.blp")]
+    #[template(file = "src/page/base.blp")]
     #[properties(wrapper_type = super::BasePage, ext_trait)]
     pub struct BasePage {
         #[property(get = BasePage::get_child, set = BasePage::set_child)]
@@ -100,6 +61,33 @@ mod imp {
         toolbarview: TemplateChild<adw::ToolbarView>,
         #[property(get = BasePage::get_top_bar_height)]
         top_bar_height: PhantomData<i32>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for BasePage {
+        const NAME: &'static str = "SetupBasePage";
+        const ABSTRACT: bool = true;
+
+        type Type = super::BasePage;
+        type ParentType = adw::NavigationPage;
+
+        fn new() -> Self {
+            Self {
+                can_next: Cell::new(true),
+                can_close: Cell::new(true),
+                default_clamp: Cell::new(true),
+                ..Default::default()
+            }
+        }
+
+        fn class_init(klass: &mut Self::Class) {
+            klass.bind_template();
+            klass.bind_template_callbacks();
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
     }
 
     #[glib::derived_properties]
@@ -202,9 +190,13 @@ mod imp {
 }
 
 impl BasePage {
-    fn reload_locale(&self) {
+    pub fn reload_locale(&self) {
         self.imp().reload_locale();
     }
+}
+
+pub trait NextTarget {
+    fn page() -> BasePage;
 }
 
 pub trait BasePageExt: IsA<BasePage> {
@@ -215,10 +207,9 @@ pub trait BasePageExt: IsA<BasePage> {
 
 impl<O: IsA<BasePage>> BasePageExt for O {}
 
-pub trait BasePageImpl: NavigationPageImpl {}
-
-unsafe impl<T: BasePageImpl> IsSubclassable<T> for BasePage {}
-
-pub trait NextTarget {
-    fn page() -> BasePage;
+pub mod subclass {
+    pub use super::*;
+    pub trait BasePageImpl: NavigationPageImpl {}
 }
+
+unsafe impl<T: subclass::BasePageImpl> IsSubclassable<T> for BasePage {}

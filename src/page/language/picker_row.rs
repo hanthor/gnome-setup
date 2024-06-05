@@ -6,7 +6,7 @@ use gtk::glib;
 
 use std::cell::OnceCell;
 
-use super::Language;
+use super::obj::Language;
 
 glib::wrapper! {
     pub struct LanguagePickerRow(ObjectSubclass<imp::LanguagePickerRow>)
@@ -18,7 +18,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(file = "src/page/language/picker-row.blp")]
+    #[template(file = "src/page/language/picker_row.blp")]
     #[properties(wrapper_type = super::LanguagePickerRow)]
     pub struct LanguagePickerRow {
         #[property(get, construct_only)]
