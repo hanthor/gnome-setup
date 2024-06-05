@@ -1,4 +1,5 @@
-use gtk::glib;
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
@@ -9,6 +10,36 @@ use super::obj::Language;
 glib::wrapper! {
     pub struct LanguageFilter(ObjectSubclass<imp::LanguageFilter>)
         @extends gtk::Filter;
+}
+
+// https://github.com/gtk-rs/gtk-rs-core/issues/658
+impl Default for LanguageFilter {
+    fn default() -> Self {
+        glib::Object::new()
+    }
+}
+
+impl LanguageFilter {
+    pub fn set_query(&self, query: &str) {
+        let prepared = tokenize_and_casefold(query);
+        let change = {
+            let old = &self.imp().query.borrow().0;
+            #[allow(clippy::if_same_then_else)]
+            if query.is_empty() {
+                gtk::FilterChange::LessStrict
+            } else if old.is_empty() {
+                gtk::FilterChange::MoreStrict
+            } else if query.starts_with(old) {
+                gtk::FilterChange::MoreStrict
+            } else if old.starts_with(query) {
+                gtk::FilterChange::LessStrict
+            } else {
+                gtk::FilterChange::Different
+            }
+        };
+        self.imp().query.replace((query.into(), prepared));
+        self.changed(change);
+    }
 }
 
 mod imp {
@@ -61,39 +92,10 @@ mod imp {
     }
 }
 
-impl Default for LanguageFilter {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
-impl LanguageFilter {
-    pub fn set_query(&self, query: &str) {
-        let prepared = tokenize_and_casefold(query);
-        let change = {
-            let old = &self.imp().query.borrow().0;
-            #[allow(clippy::if_same_then_else)]
-            if query.is_empty() {
-                gtk::FilterChange::LessStrict
-            } else if old.is_empty() {
-                gtk::FilterChange::MoreStrict
-            } else if query.starts_with(old) {
-                gtk::FilterChange::MoreStrict
-            } else if old.starts_with(query) {
-                gtk::FilterChange::LessStrict
-            } else  {
-                gtk::FilterChange::Different
-            }
-        };
-        self.imp().query.replace((query.into(), prepared));
-        self.changed(change);
-    }
-}
-
 fn tokenize_and_casefold_internal(
     arg: &str,
     translit_locale: Option<&str>,
-    alts: bool
+    alts: bool,
 ) -> (glib::StrV, Option<glib::StrV>) {
     // https://github.com/gtk-rs/gtk-rs-core/issues/1418
     use glib::translate::*;
@@ -109,11 +111,11 @@ fn tokenize_and_casefold_internal(
                 let result = glib::ffi::g_str_tokenize_and_fold(
                     arg.to_glib_none().0,
                     translit_locale.to_glib_none().0,
-                    alternates_ptr
+                    alternates_ptr,
                 );
                 (
                     glib::StrV::from_glib_full(result),
-                    alts.then(|| glib::StrV::from_glib_full(alternates))
+                    alts.then(|| glib::StrV::from_glib_full(alternates)),
                 )
             }
         })
@@ -126,7 +128,7 @@ pub fn tokenize_and_casefold(arg: &str) -> glib::StrV {
 
 pub fn tokenize_and_casefold_with_alts(
     arg: &str,
-    translit_locale: Option<&str>
+    translit_locale: Option<&str>,
 ) -> (glib::StrV, glib::StrV) {
     let res = tokenize_and_casefold_internal(arg, translit_locale, true);
     (res.0, res.1.unwrap())

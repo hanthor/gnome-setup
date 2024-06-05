@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
 
 use gettextrs::gettext;
+use gtk::glib;
 
-use crate::page::subclass::*;
 use crate::osinfo;
 
 glib::wrapper! {
@@ -15,8 +15,30 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
+// https://github.com/gtk-rs/gtk-rs-core/issues/658
+impl Default for DonePage {
+    fn default() -> Self {
+        glib::Object::new()
+    }
+}
+
+impl NextTarget for DonePage {
+    fn page() -> BasePage {
+        Self::default().upcast()
+    }
+}
+
 mod imp {
     use super::*;
+
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(file = "src/page/install/done_page.blp")]
+    pub struct DonePage {
+        #[template_child]
+        info: TemplateChild<adw::StatusPage>,
+        #[template_child]
+        cancel_btn: TemplateChild<gtk::Button>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for DonePage {
@@ -26,21 +48,12 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.bind_template_instance_callbacks();
+            klass.bind_template_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
             obj.init_template();
         }
-    }
-
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/install/done_page.blp")]
-    pub struct DonePage {
-        #[template_child]
-        info: TemplateChild<adw::StatusPage>,
-        #[template_child]
-        cancel_btn: TemplateChild<gtk::Button>,
     }
 
     impl ObjectImpl for DonePage {
@@ -52,12 +65,14 @@ mod imp {
                 gettext!(
                     "{} has been installed to this device. Reboot now to start using {} or \
                     continue to test in this evaluation environment.",
-                    osinfo::name(), osinfo::name(),
+                    osinfo::name(),
+                    osinfo::name(),
                 )
             } else {
                 gettext!(
                     "{} has been installed to this device. Reboot now to start using {}",
-                    osinfo::name(), osinfo::name(),
+                    osinfo::name(),
+                    osinfo::name(),
                 )
             };
             self.info.set_description(Some(msg.as_str()));
@@ -66,24 +81,13 @@ mod imp {
 
     impl WidgetImpl for DonePage {}
     impl NavigationPageImpl for DonePage {}
-
     impl BasePageImpl for DonePage {}
-}
 
-#[gtk::template_callbacks]
-impl DonePage {
-    fn new() -> Self {
-        glib::Object::new()
-    }
-
-    #[template_callback]
-    fn on_reboot(&self) {
-        todo!();
-    }
-}
-
-impl NextTarget for DonePage {
-    fn page() -> BasePage {
-        Self::new().upcast()
+    #[gtk::template_callbacks]
+    impl DonePage {
+        #[template_callback]
+        fn on_reboot(&self) {
+            todo!();
+        }
     }
 }

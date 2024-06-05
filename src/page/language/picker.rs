@@ -2,22 +2,28 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
-use glib::subclass::Signal;
+
+use std::marker::PhantomData;
+use std::sync::OnceLock;
 
 use gettextrs::gettext;
-use std::sync::OnceLock;
-use std::marker::PhantomData;
+use glib::subclass::Signal;
 
-use super::obj::Language;
-use super::model::LanguageModel;
 use super::filter::LanguageFilter;
+use super::model::LanguageModel;
+use super::obj::Language;
 use super::picker_row::LanguagePickerRow;
 
 glib::wrapper! {
     pub struct LanguagePicker(ObjectSubclass<imp::LanguagePicker>)
         @extends gtk::Widget, gtk::Box,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
+}
+
+impl LanguagePicker {
+    pub fn reload_locale(&self) {
+        self.imp().load_locale()
+    }
 }
 
 mod imp {
@@ -54,13 +60,12 @@ mod imp {
 
         fn new() -> Self {
             let filter = LanguageFilter::default();
+            let model =
+                gtk::FilterListModel::new(Some(LanguageModel::default()), Some(filter.clone()));
             Self {
-                filter: filter.clone(),
-                model: gtk::FilterListModel::new(
-                    Some(LanguageModel::default()),
-                    Some(filter)
-                ),
-                .. Default::default()
+                filter,
+                model,
+                ..Default::default()
             }
         }
 
@@ -78,11 +83,9 @@ mod imp {
     impl ObjectImpl for LanguagePicker {
         fn signals() -> &'static [Signal] {
             static SIGNALS: OnceLock<Vec<Signal>> = OnceLock::new();
-            SIGNALS.get_or_init(|| vec![
-                Signal::builder("selected")
-                    .param_types([String::static_type()])
-                    .build(),
-            ])
+            SIGNALS.get_or_init(|| {
+                vec![Signal::builder("selected").param_types([String::static_type()]).build()]
+            })
         }
 
         fn constructed(&self) {
@@ -97,7 +100,7 @@ mod imp {
 
             let obj = self.obj();
             self.model.connect_items_changed(
-                glib::clone!(@strong obj => move |_, _, _, _| obj.imp().on_changed())
+                glib::clone!(@strong obj => move |_, _, _, _| obj.imp().on_changed()),
             );
         }
     }
@@ -159,11 +162,5 @@ mod imp {
             });
             self.list.select_row(row.as_ref());
         }
-    }
-}
-
-impl LanguagePicker {
-    pub fn reload_locale(&self) {
-        self.imp().load_locale()
     }
 }

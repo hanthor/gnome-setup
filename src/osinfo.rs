@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use gtk::glib::{self, prelude::*};
-use std::{env, sync::OnceLock};
+use glib::prelude::*;
+
+use std::env;
+use std::sync::OnceLock;
 
 pub fn logo() -> &'static str {
     static ONCE: OnceLock<glib::GString> = OnceLock::new();
-    ONCE.get_or_init(|| {
-        glib::os_info("LOGO").unwrap_or("org.gnome.Setup".into())
-    })
+    ONCE.get_or_init(|| glib::os_info("LOGO").unwrap_or("org.gnome.Setup".into()))
 }
 
 pub fn bind_logo(obj: impl IsA<glib::Object>, name: &str) {
@@ -30,15 +30,11 @@ pub fn bind_logo(obj: impl IsA<glib::Object>, name: &str) {
 
 pub fn name() -> &'static str {
     static ONCE: OnceLock<glib::GString> = OnceLock::new();
-    ONCE.get_or_init(|| {
-        glib::os_info("NAME").unwrap_or("Linux".into())
-    })
+    ONCE.get_or_init(|| glib::os_info("NAME").unwrap_or("Linux".into()))
 }
 
 pub enum ReleaseType {
-    Experimental {
-        description: Option<String>,
-    },
+    Experimental { description: Option<String> },
     PreRelease,
     Stable,
     Lts,

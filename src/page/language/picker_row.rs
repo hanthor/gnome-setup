@@ -2,7 +2,6 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
 
 use std::cell::OnceCell;
 
@@ -12,6 +11,12 @@ glib::wrapper! {
     pub struct LanguagePickerRow(ObjectSubclass<imp::LanguagePickerRow>)
         @extends gtk::Widget, gtk::ListBoxRow,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Actionable;
+}
+
+impl LanguagePickerRow {
+    pub fn new(lang: &Language) -> Self {
+        glib::Object::builder().property("language", lang).build()
+    }
 }
 
 mod imp {
@@ -62,12 +67,4 @@ mod imp {
 
     impl WidgetImpl for LanguagePickerRow {}
     impl ListBoxRowImpl for LanguagePickerRow {}
-}
-
-impl LanguagePickerRow {
-    pub fn new(lang: &Language) -> Self {
-        glib::Object::builder()
-            .property("language", lang)
-            .build()
-    }
 }

@@ -2,29 +2,34 @@
 
 mod config;
 mod osinfo;
-mod window;
 mod page;
+mod window;
 
 use adw::prelude::*;
-use config::{GETTEXT_PACKAGE, LOCALEDIR};
+
+use std::env;
+use std::sync::OnceLock;
+
+use adw::{gio, Application};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
-use adw::{glib, gio, Application};
-use std::{env, sync::OnceLock};
+
+use config::{GETTEXT_PACKAGE, LOCALEDIR};
 
 fn main() -> glib::ExitCode {
     // For debugging
     // TODO: Try to come up with a better way to do this?
     env::set_var("SETUP_OVERRIDE_IN_SESSION", "false");
     env::set_var("SETUP_OVERRIDE_OS_RELEASE_TYPE", "experiment");
-    env::set_var("SETUP_OVERRIDE_OS_EXPERIMENT", "GNOME OS with @verdre's GNOME Shell Mobile patches applied");
+    env::set_var(
+        "SETUP_OVERRIDE_OS_EXPERIMENT",
+        "GNOME OS with @verdre's GNOME Shell Mobile patches applied",
+    );
 
     // Set up gettext translations
-    bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR)
-        .expect("Unable to bind the text domain");
+    bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).expect("Unable to bind the text domain");
     bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8")
         .expect("Unable to set the text domain encoding");
-    textdomain(GETTEXT_PACKAGE)
-        .expect("Unable to switch to the text domain");
+    textdomain(GETTEXT_PACKAGE).expect("Unable to switch to the text domain");
 
     // Set up logging
     static LOGGER: glib::GlibLogger = glib::GlibLogger::new(
@@ -45,9 +50,7 @@ fn main() -> glib::ExitCode {
     page::BasePage::ensure_type();
 
     // Set up application
-    let app = Application::builder()
-        .application_id("org.gnome.Setup")
-        .build();
+    let app = Application::builder().application_id("org.gnome.Setup").build();
     app.connect_activate(on_activate);
     app.run()
 }

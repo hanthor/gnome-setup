@@ -1,13 +1,19 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use gtk::{glib, gio};
 use gio::prelude::*;
 use gio::subclass::prelude::*;
-use gnome_desktop as gutil;
 
 use std::cmp::Ordering;
 
+use gnome_desktop as gutil;
+use gtk::gio;
+
 use super::obj::{Language, LocaleParseError};
+
+glib::wrapper! {
+    pub struct LanguageModel(ObjectSubclass<imp::LanguageModel>)
+        @implements gio::ListModel;
+}
 
 // Languages that show up in welcome spinner, and at the top of the list.
 // These should be popular languages that GNOME (and Setup) is well-translated in.
@@ -22,9 +28,17 @@ pub static POPULAR_LOCALES: &[&str] = &[
     "ar_EG.UTF-8",
 ];
 
-glib::wrapper! {
-    pub struct LanguageModel(ObjectSubclass<imp::LanguageModel>)
-        @implements gio::ListModel;
+impl Default for LanguageModel {
+    fn default() -> Self {
+        thread_local!(static ONCE: LanguageModel = glib::Object::new());
+        ONCE.with(|v| v.clone())
+    }
+}
+
+impl LanguageModel {
+    pub fn iter(&self) -> impl Iterator<Item = Language> + '_ {
+        self.upcast_ref::<gio::ListModel>().iter::<Language>().map(|l| l.unwrap())
+    }
 }
 
 mod imp {
@@ -48,7 +62,7 @@ mod imp {
                     Err(LocaleParseError::NotUtf8) => continue,
                     Err(e) => {
                         log::warn!("Skipping {id}: {e}");
-                        continue
+                        continue;
                     }
                 };
 
@@ -99,20 +113,5 @@ mod imp {
         fn item(&self, pos: u32) -> Option<glib::Object> {
             self.0.item(pos)
         }
-    }
-}
-
-impl Default for LanguageModel {
-    fn default() -> Self {
-        thread_local!(static ONCE: LanguageModel = glib::Object::new());
-        ONCE.with(|v| v.clone())
-    }
-}
-
-impl LanguageModel {
-    pub fn iter(&self) -> impl Iterator<Item=Language> + '_ {
-        self.upcast_ref::<gio::ListModel>()
-            .iter::<Language>()
-            .map(|l| l.unwrap())
     }
 }

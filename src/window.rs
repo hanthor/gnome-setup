@@ -1,10 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use crate::page::prelude::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use crate::page::prelude::*;
 
-use gtk::{gio, glib};
+use gtk::gio;
+
 use crate::page::{BasePage, LanguagePage, WelcomePage};
 
 glib::wrapper! {
@@ -13,8 +14,21 @@ glib::wrapper! {
         @implements gio::ActionGroup, gio::ActionMap;
 }
 
+impl Window {
+    pub fn new(application: &impl IsA<gtk::Application>) -> Self {
+        glib::Object::builder().property("application", application).build()
+    }
+}
+
 mod imp {
     use super::*;
+
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(file = "src/window.blp")]
+    pub struct Window {
+        #[template_child]
+        pub nav: TemplateChild<adw::NavigationView>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for Window {
@@ -29,13 +43,6 @@ mod imp {
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
             obj.init_template();
         }
-    }
-
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/window.blp")]
-    pub struct Window {
-        #[template_child]
-        pub nav: TemplateChild<adw::NavigationView>,
     }
 
     impl ObjectImpl for Window {
@@ -57,12 +64,4 @@ mod imp {
     impl WindowImpl for Window {}
     impl ApplicationWindowImpl for Window {}
     impl AdwApplicationWindowImpl for Window {}
-}
-
-impl Window {
-    pub fn new(application: &impl IsA<gtk::Application>) -> Self {
-        glib::Object::builder()
-            .property("application", application)
-            .build()
-    }
 }

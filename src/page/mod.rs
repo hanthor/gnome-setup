@@ -7,7 +7,7 @@ mod language;
 mod prerelease;
 mod welcome;
 
-pub use base::{BasePage, subclass};
+pub use base::{subclass, BasePage};
 pub use eula::EulaPage;
 pub use install::InstallPage;
 pub use language::LanguagePage;

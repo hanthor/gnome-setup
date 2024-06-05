@@ -2,12 +2,15 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
-use glib::subclass::Signal;
+
+use std::cell::Cell;
+use std::marker::PhantomData;
+use std::sync::OnceLock;
 
 use gettextrs::gettext;
-use std::{cell::Cell, marker::PhantomData};
-use std::sync::OnceLock;
+use glib::subclass::Signal;
+
+pub use imp::BasePagePropertiesExt;
 
 glib::wrapper! {
     pub struct BasePage(ObjectSubclass<imp::BasePage>)
@@ -15,7 +18,28 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-pub use imp::BasePagePropertiesExt;
+impl BasePage {
+    pub fn reload_locale(&self) {
+        self.imp().reload_locale();
+    }
+}
+
+pub trait BasePageExt: IsA<BasePage> {
+    fn go_next<T: NextTarget>(&self) {
+        self.upcast_ref::<BasePage>().imp().go_next(T::page());
+    }
+}
+
+pub trait NextTarget {
+    fn page() -> BasePage;
+}
+
+pub mod subclass {
+    pub use super::*;
+    pub use adw::subclass::prelude::*;
+
+    pub trait BasePageImpl: NavigationPageImpl {}
+}
 
 mod imp {
     use super::*;
@@ -94,9 +118,7 @@ mod imp {
     impl ObjectImpl for BasePage {
         fn signals() -> &'static [Signal] {
             static SIGNALS: OnceLock<Vec<Signal>> = OnceLock::new();
-            SIGNALS.get_or_init(|| vec![
-                Signal::builder("next").build(),
-            ])
+            SIGNALS.get_or_init(|| vec![Signal::builder("next").build()])
         }
 
         fn constructed(&self) {
@@ -105,10 +127,11 @@ mod imp {
 
             let adj = self.viewport.vadjustment().unwrap();
             adj.connect_closure(
-                "value-changed", false,
+                "value-changed",
+                false,
                 glib::closure_local!(@watch obj => move |adj: gtk::Adjustment| {
                     obj.imp().headerbar.set_show_title(adj.value() > 0.0);
-                })
+                }),
             );
         }
     }
@@ -142,7 +165,7 @@ mod imp {
                         .maximum_size(450)
                         .tightening_threshold(200)
                         .build()
-                        .upcast()
+                        .upcast(),
                 ),
                 _ => value,
             };
@@ -189,27 +212,6 @@ mod imp {
     }
 }
 
-impl BasePage {
-    pub fn reload_locale(&self) {
-        self.imp().reload_locale();
-    }
-}
-
-pub trait NextTarget {
-    fn page() -> BasePage;
-}
-
-pub trait BasePageExt: IsA<BasePage> {
-    fn go_next<T: NextTarget>(&self) {
-        self.upcast_ref::<BasePage>().imp().go_next(T::page());
-    }
-}
-
 impl<O: IsA<BasePage>> BasePageExt for O {}
-
-pub mod subclass {
-    pub use super::*;
-    pub trait BasePageImpl: NavigationPageImpl {}
-}
 
 unsafe impl<T: subclass::BasePageImpl> IsSubclassable<T> for BasePage {}

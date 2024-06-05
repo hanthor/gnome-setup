@@ -1,19 +1,19 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use crate::page::subclass::*;
 
-use gtk::glib;
-use gettextrs::gettext;
 use std::cell::RefCell;
+use std::time::Duration;
 
-use crate::page::WelcomePage as Next;
+use gettextrs::gettext;
 
 use super::localed::LocaledProxy;
+use super::model::POPULAR_LOCALES;
 use super::obj::Language;
 use super::picker::LanguagePicker;
-use super::model::POPULAR_LOCALES;
+use crate::page::WelcomePage as Next;
 
 glib::wrapper! {
     pub struct LanguagePage(ObjectSubclass<imp::LanguagePage>)
@@ -21,8 +21,32 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
+// https://github.com/gtk-rs/gtk-rs-core/issues/658
+impl Default for LanguagePage {
+    fn default() -> Self {
+        glib::Object::new()
+    }
+}
+
+impl NextTarget for LanguagePage {
+    fn page() -> BasePage {
+        Self::default().upcast()
+    }
+}
+
 mod imp {
     use super::*;
+
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(file = "src/page/language/page.blp")]
+    pub struct LanguagePage {
+        #[template_child]
+        welcome: TemplateChild<adw::Carousel>,
+        welcome_anim: RefCell<Option<glib::SourceId>>,
+
+        #[template_child]
+        picker: TemplateChild<LanguagePicker>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for LanguagePage {
@@ -40,17 +64,6 @@ mod imp {
         }
     }
 
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/language/page.blp")]
-    pub struct LanguagePage {
-        #[template_child]
-        welcome: TemplateChild<adw::Carousel>,
-        welcome_anim: RefCell<Option<glib::SourceId>>,
-
-        #[template_child]
-        picker: TemplateChild<LanguagePicker>,
-    }
-
     impl ObjectImpl for LanguagePage {
         fn constructed(&self) {
             self.parent_constructed();
@@ -66,7 +79,7 @@ mod imp {
                         .label(&gettext("Welcome"))
                         .css_classes(["title-1"])
                         .hexpand(true)
-                        .build()
+                        .build(),
                 );
             }
             gettextrs::setlocale(gettextrs::LocaleCategory::LcMessages, "");
@@ -86,14 +99,12 @@ mod imp {
         fn on_shown(&self) {
             let obj = self.obj();
             *self.welcome_anim.borrow_mut() = Some(glib::timeout_add_local(
-                std::time::Duration::new(8, 0),
+                Duration::new(8, 0),
                 glib::clone!(@strong obj => move || {
-                    obj.imp().welcome.scroll_to(
-                        &obj.imp().welcome.nth_page(1),
-                        true
-                    );
+                    let welcome = &obj.imp().welcome;
+                    welcome.scroll_to(&welcome.nth_page(1), true);
                     glib::ControlFlow::Continue
-                })
+                }),
             ));
         }
 
@@ -138,7 +149,7 @@ mod imp {
                     Err(e) => {
                         log::error!("Failed to obtain localed proxy: {e}");
                         return;
-                    },
+                    }
                 };
 
                 if let Err(e) = localed.set_locale(vec![selected], false).await {
@@ -148,17 +159,5 @@ mod imp {
 
             self.obj().go_next::<Next>();
         }
-    }
-}
-
-impl LanguagePage {
-    fn new() -> Self {
-        glib::Object::new()
-    }
-}
-
-impl NextTarget for LanguagePage {
-    fn page() -> BasePage {
-        Self::new().upcast()
     }
 }

@@ -1,15 +1,14 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
 
 use gettextrs::gettext;
-
-use crate::page::subclass::*;
-use crate::osinfo;
+use gtk::glib;
 
 use super::done_page::DonePage;
+use crate::osinfo;
 
 glib::wrapper! {
     pub struct InstallPage(ObjectSubclass<imp::InstallPage>)
@@ -17,8 +16,33 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
+// https://github.com/gtk-rs/gtk-rs-core/issues/658
+impl Default for InstallPage {
+    fn default() -> Self {
+        glib::Object::new()
+    }
+}
+
+impl NextTarget for InstallPage {
+    fn page() -> BasePage {
+        Self::default().upcast()
+    }
+}
+
 mod imp {
     use super::*;
+
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(file = "src/page/install/page.blp")]
+    pub struct InstallPage {
+        #[template_child]
+        info: TemplateChild<adw::StatusPage>,
+
+        #[template_child]
+        progress: TemplateChild<gtk::ProgressBar>,
+        #[template_child]
+        status: TemplateChild<gtk::Label>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for InstallPage {
@@ -33,18 +57,6 @@ mod imp {
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
             obj.init_template();
         }
-    }
-
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/install/page.blp")]
-    pub struct InstallPage {
-        #[template_child]
-        info: TemplateChild<adw::StatusPage>,
-
-        #[template_child]
-        progress: TemplateChild<gtk::ProgressBar>,
-        #[template_child]
-        status: TemplateChild<gtk::Label>,
     }
 
     impl ObjectImpl for InstallPage {
@@ -65,7 +77,7 @@ mod imp {
                 glib::clone!(@strong obj => move || {
                     obj.go_next::<DonePage>();
                     glib::ControlFlow::Break
-                })
+                }),
             );
         }
     }
@@ -73,16 +85,4 @@ mod imp {
     impl WidgetImpl for InstallPage {}
     impl NavigationPageImpl for InstallPage {}
     impl BasePageImpl for InstallPage {}
-}
-
-impl InstallPage {
-    fn new() -> Self {
-        glib::Object::new()
-    }
-}
-
-impl NextTarget for InstallPage {
-    fn page() -> BasePage {
-        Self::new().upcast()
-    }
 }

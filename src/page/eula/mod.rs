@@ -1,10 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+
 use gtk::glib;
 
-use crate::page::subclass::*;
 use crate::page::InstallPage as Next;
 
 glib::wrapper! {
@@ -13,8 +14,30 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
+// https://github.com/gtk-rs/gtk-rs-core/issues/658
+impl Default for EulaPage {
+    fn default() -> Self {
+        glib::Object::new()
+    }
+}
+
+impl NextTarget for EulaPage {
+    fn page() -> BasePage {
+        // TODO: Check if there's a EULA, and skip straight to Next if there isn't
+        // TODO: Use same check as eos-installer?
+        Self::default().upcast()
+    }
+}
+
 mod imp {
     use super::*;
+
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(file = "src/page/eula/page.blp")]
+    pub struct EulaPage {
+        #[template_child]
+        pub eula: TemplateChild<gtk::Label>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for EulaPage {
@@ -24,19 +47,12 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.bind_template_instance_callbacks();
+            klass.bind_template_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
             obj.init_template();
         }
-    }
-
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/eula/page.blp")]
-    pub struct EulaPage {
-        #[template_child]
-        pub eula: TemplateChild<gtk::Label>,
     }
 
     impl ObjectImpl for EulaPage {
@@ -57,25 +73,12 @@ Est velit egestas dui id ornare arcu odio ut. Tempus imperdiet nulla malesuada p
     impl WidgetImpl for EulaPage {}
     impl NavigationPageImpl for EulaPage {}
     impl BasePageImpl for EulaPage {}
-}
 
-#[gtk::template_callbacks]
-impl EulaPage {
-    fn new() -> Self {
-        glib::Object::new()
-    }
-
-    #[template_callback]
-    fn next(&self) {
-        // TODO: Mockup
-        self.go_next::<Next>();
-    }
-}
-
-impl NextTarget for EulaPage {
-    fn page() -> BasePage {
-        // TODO: Check if there's a EULA, and skip straight to Next if there isn't
-        // TODO: Use same check as eos-installer?
-        Self::new().upcast()
+    #[gtk::template_callbacks]
+    impl EulaPage {
+        #[template_callback]
+        fn next(&self) {
+            self.obj().go_next::<Next>();
+        }
     }
 }
