@@ -3,10 +3,19 @@
 use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+use appstream::prelude::*;
 
+use std::sync::OnceLock;
+
+use constcat::concat;
 use gtk::glib;
+use quick_xml::de::from_str;
+use serde::{Deserialize, Deserializer};
 
+use crate::config::PKGDATADIR;
 use crate::page::InstallPage as Next;
+
+const EULA_PATH: &str = concat!(PKGDATADIR, "/eula.xml");
 
 glib::wrapper! {
     pub struct EulaPage(ObjectSubclass<imp::EulaPage>)
@@ -23,9 +32,11 @@ impl Default for EulaPage {
 
 impl NextTarget for EulaPage {
     fn page() -> BasePage {
-        // TODO: Check if there's a EULA, and skip straight to Next if there isn't
-        // TODO: Use same check as eos-installer?
-        Self::default().upcast()
+        if read_xml().is_empty() {
+            Next::page()
+        } else {
+            Self::default().upcast()
+        }
     }
 }
 
@@ -36,7 +47,7 @@ mod imp {
     #[template(file = "src/page/eula/page.blp")]
     pub struct EulaPage {
         #[template_child]
-        pub eula: TemplateChild<gtk::Label>,
+        pub eula: TemplateChild<gtk::Box>,
     }
 
     #[glib::object_subclass]
@@ -58,15 +69,7 @@ mod imp {
     impl ObjectImpl for EulaPage {
         fn constructed(&self) {
             self.parent_constructed();
-
-            self.eula.set_label(r#"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id ornare arcu odio ut. Ut venenatis tellus in metus. Eget gravida cum sociis natoque penatibus et magnis. Eros donec ac odio tempor orci dapibus. In ornare quam viverra orci. Dignissim diam quis enim lobortis scelerisque fermentum dui. Orci porta non pulvinar neque laoreet. Nec ultrices dui sapien eget. Odio facilisis mauris sit amet massa vitae. Gravida cum sociis natoque penatibus et magnis dis parturient. Vitae elementum curabitur vitae nunc sed velit dignissim sodales ut. Feugiat vivamus at augue eget arcu dictum.\n
-Imperdiet massa tincidunt nunc pulvinar sapien et. Mattis ullamcorper velit sed ullamcorper morbi. Sit amet dictum sit amet justo. Ornare arcu dui vivamus arcu felis bibendum ut tristique et. Dictum sit amet justo donec enim. Fermentum dui faucibus in ornare quam. Ut diam quam nulla porttitor massa id neque aliquam vestibulum. Ut porttitor leo a diam sollicitudin tempor id eu. Integer vitae justo eget magna fermentum iaculis eu. Nunc scelerisque viverra mauris in aliquam sem.\n
-Accumsan tortor posuere ac ut consequat semper. Ut ornare lectus sit amet est placerat in egestas erat. Dignissim suspendisse in est ante in. Faucibus pulvinar elementum integer enim. Massa ultricies mi quis hendrerit dolor. In est ante in nibh mauris. Amet massa vitae tortor condimentum lacinia quis vel eros. Diam maecenas ultricies mi eget mauris. Convallis convallis tellus id interdum velit laoreet id donec. Massa tincidunt nunc pulvinar sapien et ligula. Ipsum dolor sit amet consectetur adipiscing elit duis. Sit amet consectetur adipiscing elit. Ipsum consequat nisl vel pretium. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus. Diam volutpat commodo sed egestas egestas fringilla. Facilisis mauris sit amet massa vitae tortor condimentum. Non quam lacus suspendisse faucibus interdum. Nisl tincidunt eget nullam non nisi. Faucibus purus in massa tempor nec feugiat nisl pretium.\n
-Est velit egestas dui id ornare arcu odio ut. Tempus imperdiet nulla malesuada pellentesque elit eget gravida cum sociis. Scelerisque varius morbi enim nunc faucibus. Vulputate dignissim suspendisse in est ante in nibh mauris cursus. Libero justo laoreet sit amet cursus sit amet dictum sit. Amet consectetur adipiscing elit pellentesque habitant morbi tristique. Vel pretium lectus quam id leo in. Faucibus a pellentesque sit amet porttitor eget. Etiam sit amet nisl purus in mollis nunc. In nisl nisi scelerisque eu ultrices vitae auctor eu augue. In nulla posuere sollicitudin aliquam ultrices. Aliquet sagittis id consectetur purus ut faucibus pulvinar elementum. Bibendum est ultricies integer quis auctor. Velit sed ullamcorper morbi tincidunt ornare massa eget. Eu tincidunt tortor aliquam nulla facilisi cras fermentum odio. Potenti nullam ac tortor vitae. Est ante in nibh mauris cursus mattis. Mauris rhoncus aenean vel elit scelerisque mauris pellentesque. Placerat vestibulum lectus mauris ultrices eros in cursus turpis.\n
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id ornare arcu odio ut. Ut venenatis tellus in metus. Eget gravida cum sociis natoque penatibus et magnis. Eros donec ac odio tempor orci dapibus. In ornare quam viverra orci. Dignissim diam quis enim lobortis scelerisque fermentum dui. Orci porta non pulvinar neque laoreet. Nec ultrices dui sapien eget. Odio facilisis mauris sit amet massa vitae. Gravida cum sociis natoque penatibus et magnis dis parturient. Vitae elementum curabitur vitae nunc sed velit dignissim sodales ut. Feugiat vivamus at augue eget arcu dictum.\n
-Imperdiet massa tincidunt nunc pulvinar sapien et. Mattis ullamcorper velit sed ullamcorper morbi. Sit amet dictum sit amet justo. Ornare arcu dui vivamus arcu felis bibendum ut tristique et. Dictum sit amet justo donec enim. Fermentum dui faucibus in ornare quam. Ut diam quam nulla porttitor massa id neque aliquam vestibulum. Ut porttitor leo a diam sollicitudin tempor id eu. Integer vitae justo eget magna fermentum iaculis eu. Nunc scelerisque viverra mauris in aliquam sem.\n
-Accumsan tortor posuere ac ut consequat semper. Ut ornare lectus sit amet est placerat in egestas erat. Dignissim suspendisse in est ante in. Faucibus pulvinar elementum integer enim. Massa ultricies mi quis hendrerit dolor. In est ante in nibh mauris. Amet massa vitae tortor condimentum lacinia quis vel eros. Diam maecenas ultricies mi eget mauris. Convallis convallis tellus id interdum velit laoreet id donec. Massa tincidunt nunc pulvinar sapien et ligula. Ipsum dolor sit amet consectetur adipiscing elit duis. Sit amet consectetur adipiscing elit. Ipsum consequat nisl vel pretium. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus. Diam volutpat commodo sed egestas egestas fringilla. Facilisis mauris sit amet massa vitae tortor condimentum. Non quam lacus suspendisse faucibus interdum. Nisl tincidunt eget nullam non nisi. Faucibus purus in massa tempor nec feugiat nisl pretium.\n
-Est velit egestas dui id ornare arcu odio ut. Tempus imperdiet nulla malesuada pellentesque elit eget gravida cum sociis. Scelerisque varius morbi enim nunc faucibus. Vulputate dignissim suspendisse in est ante in nibh mauris cursus. Libero justo laoreet sit amet cursus sit amet dictum sit. Amet consectetur adipiscing elit pellentesque habitant morbi tristique. Vel pretium lectus quam id leo in. Faucibus a pellentesque sit amet porttitor eget. Etiam sit amet nisl purus in mollis nunc. In nisl nisi scelerisque eu ultrices vitae auctor eu augue. In nulla posuere sollicitudin aliquam ultrices. Aliquet sagittis id consectetur purus ut faucibus pulvinar elementum. Bibendum est ultricies integer quis auctor. Velit sed ullamcorper morbi tincidunt ornare massa eget. Eu tincidunt tortor aliquam nulla facilisi cras fermentum odio. Potenti nullam ac tortor vitae. Est ante in nibh mauris cursus mattis. Mauris rhoncus aenean vel elit scelerisque mauris pellentesque. Placerat vestibulum lectus mauris ultrices eros in cursus turpis."#);
+            self.load_eula();
         }
     }
 
@@ -76,9 +79,127 @@ Est velit egestas dui id ornare arcu odio ut. Tempus imperdiet nulla malesuada p
 
     #[gtk::template_callbacks]
     impl EulaPage {
+        fn load_eula(&self) {
+            let ctx = appstream::Context::new();
+            ctx.set_locale(Some(&crate::locale()));
+
+            let component = appstream::Component::new();
+            component
+                .load_from_bytes(&ctx, appstream::FormatKind::Xml, read_xml())
+                .expect("AppStream component invalid");
+            let agreement = component
+                .agreement_by_kind(appstream::AgreementKind::Eula)
+                .expect("AppStream component must have a EULA agreement");
+
+            for section in agreement.sections() {
+                let desc = section.description().expect("EULA section must have content");
+                let markup: Vec<Markup> = from_str(&desc).unwrap();
+
+                let section_box = gtk::Box::new(gtk::Orientation::Vertical, 6);
+                self.eula.append(&section_box);
+
+                if let Some(name) = section.name() {
+                    let header = gtk::Label::builder()
+                        .label(name)
+                        .wrap(true)
+                        .xalign(0.0)
+                        .css_classes(["title-3"])
+                        .build();
+                    section_box.append(&header);
+                }
+
+                for node in markup {
+                    section_box.append(&node.widget());
+                }
+            }
+        }
+
         #[template_callback]
         fn next(&self) {
             self.obj().go_next::<Next>();
         }
     }
+}
+
+fn read_xml() -> &'static glib::Bytes {
+    static ONCE: OnceLock<glib::Bytes> = OnceLock::new();
+    ONCE.get_or_init(|| match std::fs::read(EULA_PATH) {
+        Ok(bytes) => glib::Bytes::from_owned(bytes),
+        Err(e) => {
+            if e.kind() != std::io::ErrorKind::NotFound {
+                log::error!("Failed to load {EULA_PATH}: {e}");
+            }
+            glib::Bytes::from_static(&[])
+        }
+    })
+}
+
+#[derive(Debug, Deserialize)]
+enum Markup {
+    #[serde(rename = "p")]
+    Paragraph(#[serde(deserialize_with = "sanitize_spaces")] String),
+
+    #[serde(rename = "ol")]
+    OrderedList {
+        #[serde(default, rename = "li", deserialize_with = "unwrap_li")]
+        items: Vec<String>,
+    },
+
+    #[serde(rename = "ul")]
+    UnorderedList {
+        #[serde(default, rename = "li", deserialize_with = "unwrap_li")]
+        items: Vec<String>,
+    },
+}
+
+impl Markup {
+    fn widget(&self) -> gtk::Widget {
+        match self {
+            Markup::Paragraph(text) => Self::label(text),
+            Markup::OrderedList { items } => Self::list(true, items),
+            Markup::UnorderedList { items } => Self::list(false, items),
+        }
+    }
+
+    fn label(text: &str) -> gtk::Widget {
+        gtk::Label::builder().label(text).xalign(0.0).wrap(true).build().upcast()
+    }
+
+    fn list(ordered: bool, items: &Vec<String>) -> gtk::Widget {
+        let grid = gtk::Grid::builder().column_spacing(6).build();
+
+        for (i, item) in (0i32..).zip(items) {
+            let bullet = if ordered {
+                (i + 1).to_string() + "."
+            } else {
+                "•".into()
+            };
+            let bullet = gtk::Label::builder().label(bullet).xalign(1.0).yalign(0.0).build();
+
+            grid.attach(&bullet, 0, i, 1, 1);
+            grid.attach(&Self::label(item), 1, i, 1, 1);
+        }
+
+        grid.upcast()
+    }
+}
+
+fn sanitize_spaces<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Ok(String::deserialize(deserializer)?
+        .split('\n')
+        .map(str::trim)
+        .collect::<Vec<_>>()
+        .join(" "))
+}
+
+fn unwrap_li<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize, Debug)]
+    struct ListItem(#[serde(deserialize_with = "sanitize_spaces")] String);
+    Ok(Vec::<ListItem>::deserialize(deserializer)?.into_iter().map(|li| li.0).collect())
 }

@@ -62,6 +62,33 @@
 	    }
 	  ]
 	},
+	{
+	  "name": "libappstream",
+	  "buildsystem": "meson",
+	  "build-options": {
+	  	"config-opts": ["-Dstemming=false", "-Dapidocs=false"]
+	  },
+	  "sources": [
+	    {
+	      "type": "git",
+	      "url": "https://github.com/ximion/appstream",
+	      "tag": "v1.0.3"
+	    }
+	  ]
+	},
+	{
+            "name" : "demo-content",
+            "buildsystem" : "simple",
+            "sources" : [
+            	{
+            	    "type" : "dir",
+            	    "path" : "."
+            	}
+            ],
+            "build-commands" : [
+            	"install -Dm644 demo-eula.xml /app/share/gnome-setup/eula.xml"
+            ]
+        },
         {
             "name" : "setup",
             "builddir" : true,
@@ -69,9 +96,10 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "."
+                    "path" : "."
                 }
-            ]
+            ],
+            "post-install": ["ls /app/share/gnome-setup"]
         }
     ]
 }

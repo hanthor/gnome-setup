@@ -9,11 +9,11 @@ template $SetupEulaPage : $SetupBasePage {
   ready: bind accept.active;
   next => $next() swapped;
 
-  child: Gtk.Label eula {
-    accessible-role: paragraph;
-    wrap: true;
-    selectable: true;
+
+  child: Gtk.Box eula {
+    spacing: 18;
     margin-bottom: 12;
+    orientation: vertical;
     styles [ "card" ]
   };
 

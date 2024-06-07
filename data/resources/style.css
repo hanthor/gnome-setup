@@ -14,7 +14,7 @@ statuspage.larger-art .icon {
 	-gtk-icon-size: 192px;
 }
 
-label.card {
+box.card {
   padding: 12px 18px;
 }
 

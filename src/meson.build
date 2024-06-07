@@ -3,6 +3,9 @@ gnome = import('gnome')
 conf = configuration_data()
 conf.set_quoted('GETTEXT_PACKAGE', meson.project_name())
 conf.set_quoted('LOCALEDIR', get_option('prefix') / get_option('localedir'))
+conf.set_quoted('PKGDATADIR',
+	get_option('prefix') / get_option('datadir') / meson.project_name()
+)
 
 configure_file(
     input: 'config.rs.in',

@@ -88,3 +88,16 @@ pub fn system_bus() -> &'static zbus::Connection {
     static ONCE: OnceLock<zbus::Connection> = OnceLock::new();
     ONCE.get_or_init(|| zbus::blocking::Connection::system().unwrap().into_inner())
 }
+
+pub fn locale() -> String {
+    // https://github.com/Koka/gettext-rs/issues/96
+    let cstr = unsafe {
+        let out = gettext_sys::setlocale(
+            gettextrs::LocaleCategory::LcMessages as i32,
+            std::ptr::null(),
+        );
+        assert!(!out.is_null());
+        std::ffi::CStr::from_ptr(out)
+    };
+    String::from_utf8_lossy(cstr.to_bytes()).to_string()
+}

@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <id>com.distro.name</id> <!-- Required by appstream -->
+
+  <!--
+    License text generated via ChatGPT. SO DON'T USE IT FOR ANYTHING IMPORTANT!
+    Prompt: Write me a fake EULA for a fake Linux distribution called EampleOS
+            made by ExampleCorp
+    Follow-up prompt: Now translate this to Russian
+  -->
+
+  <agreement type="eula">
+    <agreement_section>
+      <description>
+        <p>PLEASE READ THIS END USER LICENSE AGREEMENT (“EULA”) CAREFULLY
+          BEFORE USING EXAMPLEOS. BY USING EXAMPLEOS, YOU AGREE TO BE BOUND BY
+          THE TERMS AND CONDITIONS OF THIS EULA. IF YOU DO NOT AGREE TO THESE
+          TERMS AND CONDITIONS, DO NOT USE EXAMPLEOS.</p>
+        <p>This End User License Agreement ("Agreement") is made between
+          ExampleCorp ("Licensor") and you ("Licensee"), and governs your use
+          of the ExampleOS software ("Software").</p>
+      </description>
+
+      <description lang="ru">
+        <p>ПОЖАЛУЙСТА, ВНИМАТЕЛЬНО ПРОЧИТАЙТЕ ДАННОЕ ЛИЦЕНЗИОННОЕ СОГЛАШЕНИЕ С
+          КОНЕЧНЫМ ПОЛЬЗОВАТЕЛЕМ («EULA») ПЕРЕД ИСПОЛЬЗОВАНИЕМ EXAMPLEOS.
+          ИСПОЛЬЗУЯ EXAMPLEOS, ВЫ СОГЛАШАЕТЕСЬ С УСЛОВИЯМИ НАСТОЯЩЕГО
+          СОГЛАШЕНИЯ. ЕСЛИ ВЫ НЕ СОГЛАСНЫ С ЭТИМИ УСЛОВИЯМИ, НЕ ИСПОЛЬЗУЙТЕ
+          EXAMPLEOS.</p>
+        <p>Настоящее Лицензионное соглашение с конечным пользователем
+          («Соглашение») заключается между ExampleCorp («Лицензиар») и вами
+          («Лицензиат») и регулирует ваше использование программного обеспечения
+          ExampleOS («Программное обеспечение»).</p>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>1. License Grant</name>
+      <description>
+        <p>Licensor hereby grants to Licensee a non-exclusive, non-transferable,
+          revocable license to use the Software solely for personal or internal
+          business purposes, subject to the terms and conditions of this
+          Agreement.</p>
+      </description>
+
+      <name lang="ru">1. Предоставление лицензии</name>
+      <description lang="ru">
+        <p>Лицензиар настоящим предоставляет Лицензиату неисключительную,
+          непередаваемую, отзывную лицензию на использование Программного
+          обеспечения исключительно в личных или внутренних бизнес-целях в
+          соответствии с условиями настоящего Соглашения.</p>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>2. Restrictions</name>
+      <description>
+        <p>Licensee shall not:</p>
+        <ul>
+          <li>Copy, modify, or distribute the Software except as expressly
+            permitted in this Agreement.</li>
+          <li>Reverse engineer, decompile, or disassemble the Software, except
+            to the extent that such activity is expressly permitted by
+            applicable law.</li>
+          <li>Use the Software to develop any derivative works or competitive
+            products.</li>
+          <li>Rent, lease, lend, sell, sublicense, or otherwise transfer any
+            rights in the Software.</li>
+          <li>Remove or alter any proprietary notices or labels on the
+            Software.</li>
+        </ul>
+      </description>
+
+      <name lang="ru">2. Ограничения</name>
+      <description lang="ru">
+        <p>Лицензиат не должен:</p>
+        <ul>
+          <li>Копировать, изменять или распространять Программное обеспечение,
+            за исключением случаев, прямо разрешенных в настоящем Соглашении.</li>
+          <li>Обратное проектировать, декомпилировать или дизассемблировать
+            Программное обеспечение, за исключением случаев, прямо разрешенных
+            применимым законодательством.</li>
+          <li>Использовать Программное обеспечение для разработки каких-либо
+            производных продуктов или конкурентных продуктов.</li>
+          <li>Арендовать, сдавать в аренду, занимать, продавать,
+            сублицензировать или иным образом передавать любые права на
+            Программное обеспечение.</li>
+          <li>Удалять или изменять любые собственнические уведомления или метки
+            на Программном обеспечении.</li>
+        </ul>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>3. Ownership</name>
+      <description>
+        <p>The Software is licensed, not sold. Licensor retains all right,
+          title, and interest in and to the Software, including all
+          intellectual property rights therein.</p>
+      </description>
+
+      <name lang="ru">3. Право собственности</name>
+      <description lang="ru">
+        <p>Программное обеспечение лицензируется, но не продается. Лицензиар
+          сохраняет за собой все права, титулы и интересы в отношении
+          Программного обеспечения, включая все права интеллектуальной
+          собственности на него.</p>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>4. Updates and Upgrades</name>
+      <description>
+        <p>Licensor may, from time to time, provide updates or upgrades to the
+          Software. Such updates or upgrades shall be deemed part of the
+          Software and subject to the terms of this Agreement. Licensee's use
+          of any updates or upgrades shall constitute acceptance of this
+          Agreement</p>
+      </description>
+
+      <name lang="ru">4. Обновления и модернизации</name>
+      <description lang="ru">
+        <p>Лицензиар может время от времени предоставлять обновления или
+          модернизации Программного обеспечения. Такие обновления или
+          модернизации считаются частью Программного обеспечения и подлежат
+          условиям настоящего Соглашения. Использование Лицензиатом любых
+          обновлений или модернизаций будет считаться принятием условий
+          настоящего Соглашения.</p>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>5. Termination</name>
+      <description>
+        <p>This Agreement is effective until terminated. Licensee may terminate
+          this Agreement at any time by ceasing to use and destroying all
+          copies of the Software. Licensor may terminate this Agreement
+          immediately upon notice if Licensee breaches any term of this
+          Agreement. Upon termination, Licensee shall cease all use of the
+          Software and destroy all copies thereof.</p>
+      </description>
+
+      <name lang="ru">5. Прекращение действия</name>
+      <description lang="ru">
+        <p>Настоящее Соглашение действует до его прекращения. Лицензиат может
+          прекратить действие настоящего Соглашения в любое время, прекратив
+          использование и уничтожив все копии Программного обеспечения.
+          Лицензиар может прекратить действие настоящего Соглашения немедленно
+          после уведомления, если Лицензиат нарушит любое условие настоящего
+          Соглашения. По прекращении действия Лицензиат должен прекратить
+          использование Программного обеспечения и уничтожить все его копии.</p>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>6. Limited Warranty</name>
+      <description>
+        <p>The Software is provided "AS IS" and "WITH ALL FAULTS." Licensor
+          makes no warranties, express or implied, and hereby disclaims all
+          warranties, including but not limited to the implied warranties of
+          merchantability, fitness for a particular purpose, and
+          non-infringement. Licensor does not warrant that the Software will
+          be error-free, secure, or uninterrupted.</p>
+      </description>
+
+      <name lang="ru">6. Ограниченная гарантия</name>
+      <description lang="ru">
+        <p>Программное обеспечение предоставляется «КАК ЕСТЬ» и «СО ВСЕМИ
+          НЕДОСТАТКАМИ». Лицензиар не предоставляет никаких гарантий, явных или
+          подразумеваемых, и настоящим отказывается от всех гарантий, включая,
+          но не ограничиваясь подразумеваемыми гарантиями товарной пригодности,
+          пригодности для конкретной цели и ненарушения прав. Лицензиар не
+          гарантирует, что Программное обеспечение будет без ошибок, безопасным
+          или непрерывным.</p>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>7. Limited Liability</name>
+      <description>
+        <p>In no event shall Licensor be liable for any indirect, incidental,
+          special, consequential, or punitive damages, or any loss of profits
+          or revenues, whether incurred directly or indirectly, or any loss of
+          data, use, goodwill, or other intangible losses, resulting from:</p>
+        <ol>
+          <li>Licensee’s use or inability to use the Software,</li>
+          <li>Any unauthorized access to or use of Licensor's servers and/or
+            any personal information stored therein,</li>
+          <li>Any bugs, viruses, trojan horses, or the like that may be
+            transmitted to or through the Software by any third party, or</li>
+          <li>any errors or omissions in any content or for any loss or damage
+            of any kind incurred as a result of Licensee's use of any content
+            posted, emailed, transmitted, or otherwise made available via the
+            Software, whether based on warranty, contract, tort (including
+            negligence), or any other legal theory, and whether or not
+            Licensor has been advised of the possibility of such damages.</li>
+        </ol>
+      </description>
+
+      <name lang="ru">7. Ограничение ответственности</name>
+      <description lang="ru">
+        <p>В любом случае Лицензиар не несет ответственности за любые косвенные,
+          случайные, специальные, последующие или штрафные убытки, или любые
+          убытки в виде упущенной выгоды или доходов, будь то прямые или
+          косвенные, или любые потери данных, использования, доброй воли или
+          других нематериальных убытков, возникающих в результате:</p>
+        <ol>
+          <li>использования или невозможности использования Программного
+            обеспечения Лицензиатом;</li>
+          <li>любого несанкционированного доступа к серверам Лицензиара и/или
+            любой личной информации, хранящейся на них;</li>
+          <li>любых ошибок, вирусов, троянских коней или подобных проблем,
+            которые могут быть переданы через Программное обеспечение третьими
+            сторонами; или</li>
+          <li>любых ошибок или упущений в любом контенте или любых убытков или
+            ущерба любого рода, возникших в результате использования Лицензиатом
+            любого контента, размещенного, отправленного по электронной почте,
+            переданного или иным образом доступного через Программное
+            обеспечение, независимо от того, основывается ли это на гарантии,
+            договоре, деликте (включая небрежность) или любой другой правовой
+            теории, и независимо от того, был ли Лицензиар уведомлен о
+            возможности таких убытков.</li>
+        </ol>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>8. Indemnification</name>
+      <description>
+        <p>Licensee agrees to indemnify, defend, and hold harmless Licensor,
+          its affiliates, officers, directors, employees, agents, and licensors
+          from and against any and all claims, liabilities, damages, losses,
+          costs, expenses, fees (including reasonable attorneys' fees) arising
+          from Licensee's use of the Software or violation of this Agreement.</p>
+      </description>
+
+      <name lang="ru">8. Возмещение убытков</name>
+      <description lang="ru">
+        <p>Лицензиат соглашается возместить, защищать и удерживать без ущерба
+          Лицензиару, его филиалы, должностных лиц, директоров, сотрудников,
+          агентов и лицензиаров от любых и всех претензий, обязательств, убытков,
+          затрат, расходов, сборов (включая разумные гонорары адвокатов),
+          возникающих в результате использования Лицензиатом Программного
+          обеспечения или нарушения настоящего Соглашения.</p>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>9. Governing Law</name>
+      <description>
+        <p>This Agreement shall be governed by and construed in accordance with
+          the laws of the State of California, without regard to its conflict of
+          law principles. Licensee agrees to submit to the exclusive jurisdiction
+          of the courts located in San Francisco, California to resolve any
+          dispute arising out of or relating to this Agreement or the Software.</p>
+      </description>
+
+      <name lang="ru">9. Применимое право</name>
+      <description lang="ru">
+        <p>Настоящее Соглашение регулируется и толкуется в соответствии с
+          законодательством штата Калифорния без учета его принципов
+          коллизионного права. Лицензиат соглашается подчиняться исключительной
+          юрисдикции судов, расположенных в Сан-Франциско, Калифорния, для
+          разрешения любых споров, возникающих в результате или связанных с
+          настоящим Соглашением или Программным обеспечением.</p>
+      </description>
+    </agreement_section>
+
+    <agreement_section>
+      <name>10. Miscellaneous</name>
+      <description>
+        <p>This Agreement constitutes the entire agreement between the parties
+          and supersedes all prior or contemporaneous understandings and
+          agreements, whether written or oral, regarding its subject matter.</p>
+        <p>If any provision of this Agreement is found to be unenforceable or
+          invalid, that provision will be limited or eliminated to the minimum
+          extent necessary so that this Agreement will otherwise remain in full
+          force and effect and enforceable.</p>
+        <p>Licensee may not assign this Agreement without the prior written
+          consent of Licensor. Any purported assignment in violation of this
+          section shall be void.</p>
+        <p>If you have any questions about this Agreement, please contact us
+          at legal@example.com.</p>
+      </description>
+
+      <name lang="ru">10. Разное</name>
+      <description lang="ru">
+        <p>Настоящее Соглашение составляет полное соглашение между сторонами и
+          заменяет все предыдущие или современные соглашения, письменные или
+          устные, касающиеся его предмета.</p>
+        <p>Если какое-либо положение настоящего Соглашения будет признано
+          недействительным или неисполнимым, это положение будет ограничено или
+          исключено в минимально необходимой степени, чтобы остальная часть
+          Соглашения оставалась в полной силе и действительности.</p>
+        <p>Лицензиат не может передавать настоящего Соглашения без
+          предварительного письменного согласия Лицензиара. Любая предполагаемая
+          передача в нарушение настоящего раздела будет недействительной.</p>
+        <p>Если у вас есть какие-либо вопросы по этому соглашению, пожалуйста,
+          свяжитесь с нами по адресу legal@example.com.</p>
+      </description>
+    </agreement_section>
+
+  </agreement>
+</component>
+
