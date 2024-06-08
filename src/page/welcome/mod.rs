@@ -23,8 +23,8 @@ impl Default for WelcomePage {
     }
 }
 
-impl NextTarget for WelcomePage {
-    fn page() -> BasePage {
+impl WelcomePage {
+    pub fn page() -> BasePage {
         Self::default().upcast()
     }
 }
@@ -93,7 +93,7 @@ mod imp {
     impl WelcomePage {
         #[template_callback]
         fn on_install(&self) {
-            self.obj().go_next::<Next>();
+            self.obj().go_next(Next::page());
         }
 
         #[template_callback]

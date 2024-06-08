@@ -25,13 +25,15 @@ impl BasePage {
 }
 
 pub trait BasePageExt: IsA<BasePage> {
-    fn go_next<T: NextTarget>(&self) {
-        self.upcast_ref::<BasePage>().imp().go_next(T::page());
+    fn go_next(&self, page: BasePage) {
+        // Convention: Types that are BasePages should have a associated function that looks like:
+        //      page(<any arguments>) -> BasePage
+        // This should return either a newly-constructed Self, or some other page's ::page()
+        // invocation. This is how we handle ordering and conditionally skipping pages.
+        // We can't use a trait to enforce this convention because some pages need args passed in.
+        // No `impl IsA<BasePage>` here to encourage the use of the ::page() convention.
+        self.upcast_ref::<BasePage>().imp().go_next(page);
     }
-}
-
-pub trait NextTarget {
-    fn page() -> BasePage;
 }
 
 pub mod subclass {

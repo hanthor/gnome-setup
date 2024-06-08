@@ -28,8 +28,8 @@ impl Default for LanguagePage {
     }
 }
 
-impl NextTarget for LanguagePage {
-    fn page() -> BasePage {
+impl LanguagePage {
+    pub fn page() -> BasePage {
         Self::default().upcast()
     }
 }
@@ -157,7 +157,7 @@ mod imp {
                 }
             });
 
-            self.obj().go_next::<Next>();
+            self.obj().go_next(Next::page());
         }
     }
 }

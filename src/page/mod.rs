@@ -18,5 +18,5 @@ pub use welcome::WelcomePage;
 pub mod prelude {
     use super::*;
 
-    pub use base::{BasePageExt, BasePagePropertiesExt, NextTarget};
+    pub use base::{BasePageExt, BasePagePropertiesExt};
 }

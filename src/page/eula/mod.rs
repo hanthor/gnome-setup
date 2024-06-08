@@ -30,8 +30,8 @@ impl Default for EulaPage {
     }
 }
 
-impl NextTarget for EulaPage {
-    fn page() -> BasePage {
+impl EulaPage {
+    pub fn page() -> BasePage {
         if read_xml().is_empty() {
             Next::page()
         } else {
@@ -116,7 +116,7 @@ mod imp {
 
         #[template_callback]
         fn next(&self) {
-            self.obj().go_next::<Next>();
+            self.obj().go_next(Next::page());
         }
     }
 }

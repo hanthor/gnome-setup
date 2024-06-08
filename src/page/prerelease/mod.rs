@@ -23,8 +23,8 @@ impl Default for PrereleasePage {
     }
 }
 
-impl NextTarget for PrereleasePage {
-    fn page() -> BasePage {
+impl PrereleasePage {
+    pub fn page() -> BasePage {
         use osinfo::ReleaseType as R;
         match osinfo::release_type() {
             R::PreRelease | R::Experimental { .. } => Self::default().upcast(),
@@ -109,7 +109,7 @@ mod imp {
     impl PrereleasePage {
         #[template_callback]
         fn next(&self) {
-            self.obj().go_next::<Next>();
+            self.obj().go_next(Next::page());
         }
     }
 }

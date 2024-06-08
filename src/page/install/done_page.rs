@@ -22,8 +22,8 @@ impl Default for DonePage {
     }
 }
 
-impl NextTarget for DonePage {
-    fn page() -> BasePage {
+impl DonePage {
+    pub fn page() -> BasePage {
         Self::default().upcast()
     }
 }

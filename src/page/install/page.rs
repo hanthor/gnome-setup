@@ -23,8 +23,8 @@ impl Default for InstallPage {
     }
 }
 
-impl NextTarget for InstallPage {
-    fn page() -> BasePage {
+impl InstallPage {
+    pub fn page() -> BasePage {
         Self::default().upcast()
     }
 }
@@ -75,7 +75,7 @@ mod imp {
             glib::timeout_add_local(
                 std::time::Duration::new(3, 0),
                 glib::clone!(@strong obj => move || {
-                    obj.go_next::<DonePage>();
+                    obj.go_next(DonePage::page());
                     glib::ControlFlow::Break
                 }),
             );
