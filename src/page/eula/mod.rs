@@ -13,7 +13,7 @@ use quick_xml::de::from_str;
 use serde::{Deserialize, Deserializer};
 
 use crate::config::PKGDATADIR;
-use crate::page::InstallPage as Next;
+use crate::page::WelcomePage as Next;
 
 const EULA_PATH: &str = concat!(PKGDATADIR, "/eula.xml");
 

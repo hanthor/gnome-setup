@@ -13,7 +13,7 @@ use super::localed::LocaledProxy;
 use super::model::POPULAR_LOCALES;
 use super::obj::Language;
 use super::picker::LanguagePicker;
-use crate::page::WelcomePage as Next;
+use crate::page::PrereleasePage as Next;
 
 glib::wrapper! {
     pub struct LanguagePage(ObjectSubclass<imp::LanguagePage>)
