@@ -53,9 +53,6 @@ pub enum LocaleParseError {
 
     #[error("non-utf8 locale")]
     NotUtf8,
-
-    #[error("GNOME is not translated into this locale")]
-    NoTranslations,
 }
 
 #[derive(Debug)]
@@ -74,10 +71,6 @@ impl ParsedLocale {
 
         if encoding.as_deref() != Some("UTF-8") {
             return Err(E::NotUtf8);
-        }
-
-        if !gutil::language_has_translations(&lang) {
-            return Err(E::NoTranslations);
         }
 
         Ok(ParsedLocale {
