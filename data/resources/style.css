@@ -10,6 +10,10 @@ statuspage.experimental .icon {
 	color: var(--red-2);
 }
 
+statuspage.opaque .icon {
+  color: var(--window-fg-color);
+}
+
 statuspage.larger-art .icon {
 	-gtk-icon-size: 192px;
 }

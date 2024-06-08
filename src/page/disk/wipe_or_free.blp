@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupWipeOrFreePage : $SetupBasePage {
+  title: _("Existing Data Found");
+  can-next: false;
+
+  child: Adw.StatusPage heading {
+    title: _("Existing Data Found");
+
+    Gtk.Box {
+      orientation: vertical;
+      spacing: 18;
+
+      Adw.PreferencesGroup {
+        Adw.ActionRow disk_info {
+          title: "Sandmug SSD 960 1TB";
+          subtitle: "128 GB Used / 768 GB Free";
+        }
+      }
+
+      Adw.PreferencesGroup {
+        Adw.ActionRow full_option {
+          title: _("Use Full Disk");
+          activatable: true;
+
+          activated => $use_full_disk() swapped;
+
+          [suffix]
+          Gtk.Image {
+            icon-name: "go-next-symbolic";
+          }
+        }
+
+        Adw.ActionRow free_option {
+          title: _("Use Free Space");
+          activatable: true;
+
+          activated => $use_free_space() swapped;
+
+          [suffix]
+          Gtk.Image {
+            icon-name: "go-next-symbolic";
+          }
+        }
+      }
+    }
+  };
+}

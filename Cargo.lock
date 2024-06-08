@@ -792,6 +792,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "glob"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
+
+[[package]]
 name = "gnome-desktop"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -829,6 +835,7 @@ dependencies = [
  "gettext-rs",
  "gettext-sys",
  "glib 0.19.7",
+ "glob",
  "gnome-desktop",
  "gtk4",
  "gvdb-macros",
@@ -838,6 +845,7 @@ dependencies = [
  "quick-xml",
  "serde",
  "thiserror",
+ "udisks2",
  "zbus",
 ]
 
@@ -1782,6 +1790,15 @@ name = "typenum"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
+
+[[package]]
+name = "udisks2"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b190689595fd29b4c34c79f8efed201b588cecd916879fde4934d6c96a4ee0a0"
+dependencies = [
+ "zbus",
+]
 
 [[package]]
 name = "uds_windows"

@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 mod base;
+mod disk;
 mod eula;
 mod install;
 mod language;
@@ -8,6 +9,7 @@ mod prerelease;
 mod welcome;
 
 pub use base::{subclass, BasePage};
+pub use disk::DiskPages;
 pub use eula::EulaPage;
 pub use install::InstallPage;
 pub use language::LanguagePage;

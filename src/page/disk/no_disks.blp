@@ -1,0 +1,23 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupNoDisksPage : $SetupBasePage {
+  title: _("No Disks Detected");
+  can-next: false;
+
+  child: Adw.StatusPage status {
+    icon-name: "drive-missing-symbolic";
+    title: _("No Disks Detected");
+    description: _("Setup could not detect any disks to install the operating system to. Make sure that all disks are properly connected, and that the device's firmware is configured correctly.");
+
+    Gtk.Button {
+      label: _("Power Off");
+      halign: center;
+      clicked => $power_off();
+      styles [ "pill", "suggested-action" ]
+    }
+
+    styles [ "opaque" ]
+  };
+}

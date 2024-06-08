@@ -8,7 +8,7 @@ use gettextrs::gettext;
 use gtk::glib;
 
 use crate::osinfo;
-use crate::page::InstallPage as Next;
+use crate::page::DiskPages as Next;
 
 glib::wrapper! {
     pub struct WelcomePage(ObjectSubclass<imp::WelcomePage>)
