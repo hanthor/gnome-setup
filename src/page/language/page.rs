@@ -29,7 +29,7 @@ impl Default for LanguagePage {
 }
 
 impl LanguagePage {
-    pub fn page() -> BasePage {
+    pub async fn page() -> BasePage {
         Self::default().upcast()
     }
 }

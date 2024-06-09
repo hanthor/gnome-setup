@@ -31,9 +31,9 @@ impl Default for EulaPage {
 }
 
 impl EulaPage {
-    pub fn page() -> BasePage {
+    pub async fn page() -> BasePage {
         if read_xml().is_empty() {
-            Next::page()
+            Next::page().await
         } else {
             Self::default().upcast()
         }

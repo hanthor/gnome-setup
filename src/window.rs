@@ -48,14 +48,16 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let page: BasePage = if crate::in_session() {
-                WelcomePage::page()
-            } else {
-                LanguagePage::page()
-            };
+            glib::spawn_future_local(glib::clone!(@strong self.nav as nav => async move {
+                let page: BasePage = if crate::in_session() {
+                    WelcomePage::page().await
+                } else {
+                    LanguagePage::page().await
+                };
 
-            page.set_can_pop(false);
-            self.nav.push(&page);
+                page.set_can_pop(false);
+                nav.push(&page);
+            }));
         }
     }
 

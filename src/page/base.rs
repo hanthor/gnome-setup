@@ -6,6 +6,7 @@ use adw::subclass::prelude::*;
 use std::cell::Cell;
 use std::marker::PhantomData;
 use std::sync::OnceLock;
+use std::future::IntoFuture;
 
 use gettextrs::gettext;
 use glib::subclass::Signal;
@@ -24,15 +25,35 @@ impl BasePage {
     }
 }
 
-pub trait BasePageExt: IsA<BasePage> {
-    fn go_next(&self, page: BasePage) {
-        // Convention: Types that are BasePages should have a associated function that looks like:
-        //      page(<any arguments>) -> BasePage
-        // This should return either a newly-constructed Self, or some other page's ::page()
-        // invocation. This is how we handle ordering and conditionally skipping pages.
-        // We can't use a trait to enforce this convention because some pages need args passed in.
-        // No `impl IsA<BasePage>` here to encourage the use of the ::page() convention.
-        self.upcast_ref::<BasePage>().imp().go_next(page);
+pub trait BasePageExt: IsA<BasePage> + IsA<gtk::Widget> {
+    fn go_next<F>(&self, next: F)
+    where
+        F: IntoFuture<Output = BasePage> + 'static
+    {
+        // Project Convention: Types that are BasePages should have a associated function that
+        // looks like:            pub async fn page(<any arguments>) -> BasePage
+        // This should return either a newly-constructed Self, or call some other page's ::page()
+        // function. This is how we handle the ordering of pages, conditional skipping, and so on.
+        // This function should only ever called w/ the return value of one of these page
+        // invocations.
+        //
+        // We're not using a trait to enforce this convention because some pages need additional
+        // data passed into them at construction time. It would get needlessly messy
+
+        let nav = self
+            .ancestor(adw::NavigationView::static_type())
+            .and_downcast::<adw::NavigationView>()
+            .unwrap();
+
+        glib::spawn_future_local(glib::clone!(@strong self as curr, @strong nav => async move {
+            nav.set_cursor_from_name(Some("wait"));
+            curr.set_sensitive(false);
+
+            nav.push(&next.await);
+
+            nav.set_cursor(None);
+            curr.set_sensitive(true);
+        }));
     }
 }
 
@@ -197,15 +218,6 @@ mod imp {
             self.toolbarview.top_bar_height()
         }
 
-        pub(super) fn go_next(&self, page: super::BasePage) {
-            let nav_view = self
-                .obj()
-                .ancestor(adw::NavigationView::static_type())
-                .and_downcast::<adw::NavigationView>()
-                .unwrap();
-            nav_view.push(&page);
-        }
-
         pub(super) fn reload_locale(&self) {
             self.back_btn.set_tooltip_text(Some(&gettext("Back")));
             self.next_btn.set_tooltip_text(Some(&gettext("Next")));
@@ -214,6 +226,6 @@ mod imp {
     }
 }
 
-impl<O: IsA<BasePage>> BasePageExt for O {}
+impl<O: IsA<BasePage> + IsA<gtk::Widget>> BasePageExt for O {}
 
 unsafe impl<T: subclass::BasePageImpl> IsSubclassable<T> for BasePage {}

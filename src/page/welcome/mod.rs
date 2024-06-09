@@ -24,7 +24,7 @@ impl Default for WelcomePage {
 }
 
 impl WelcomePage {
-    pub fn page() -> BasePage {
+    pub async fn page() -> BasePage {
         Self::default().upcast()
     }
 }
