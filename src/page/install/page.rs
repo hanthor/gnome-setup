@@ -23,7 +23,7 @@ impl Default for InstallPage {
 }
 
 impl InstallPage {
-    pub fn page() -> BasePage {
+    pub async fn page() -> BasePage {
         Self::default().upcast()
     }
 }

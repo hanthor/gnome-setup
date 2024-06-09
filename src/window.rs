@@ -47,15 +47,20 @@ mod imp {
     impl ObjectImpl for Window {
         fn constructed(&self) {
             self.parent_constructed();
+            glib::spawn_future_local(glib::clone!(
+                #[weak(rename_to = this)]
+                self,
+                async move {
+                    let page: BasePage = if crate::in_session() {
+                        WelcomePage::page().await
+                    } else {
+                        LanguagePage::page().await
+                    };
 
-            let page: BasePage = if crate::in_session() {
-                WelcomePage::page()
-            } else {
-                LanguagePage::page()
-            };
-
-            page.set_can_pop(false);
-            self.nav.push(&page);
+                    page.set_can_pop(false);
+                    this.nav.push(&page);
+                }
+            ));
         }
     }
 

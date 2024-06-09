@@ -23,11 +23,11 @@ impl Default for PrereleasePage {
 }
 
 impl PrereleasePage {
-    pub fn page() -> BasePage {
+    pub async fn page() -> BasePage {
         use osinfo::ReleaseType as R;
         match osinfo::release_type() {
             R::PreRelease | R::Experimental { .. } => Self::default().upcast(),
-            R::Stable | R::Lts => Next::page(),
+            R::Stable | R::Lts => Next::page().await,
         }
     }
 }
