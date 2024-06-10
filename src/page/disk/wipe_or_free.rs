@@ -7,7 +7,6 @@ use adw::subclass::prelude::*;
 use gettextrs::gettext;
 
 use super::confirm;
-use crate::osinfo;
 use crate::page::InstallPage;
 
 glib::wrapper! {
@@ -40,9 +39,9 @@ mod imp {
         #[template_child]
         disk_info: TemplateChild<adw::ActionRow>,
         #[template_child]
-        full_option: TemplateChild<adw::ActionRow>,
+        free_radio: TemplateChild<gtk::CheckButton>,
         #[template_child]
-        free_option: TemplateChild<adw::ActionRow>,
+        go_btn: TemplateChild<gtk::Button>,
     }
 
     #[glib::object_subclass]
@@ -65,8 +64,9 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let disk_name = "Sandmug SSD 960 1TB";
-            let disk_summary = "128 GB Used / 768 GB Free";
+            let disk_name = "Sandmug 960 EVO";
+            let disk_summary = "128 GB Used — 768 GB Free";
+            let disk_icon = "drive-harddisk-solidstate-symbolic";
 
             self.heading.set_description(Some(&gettext!(
                 "Data detected on <b>{}</b>. Setup can use the full disk for installation, which will erase all software, documents, and data, or install into the free space, preserving existing data.",
@@ -75,16 +75,9 @@ mod imp {
 
             self.disk_info.set_title(disk_name);
             self.disk_info.set_subtitle(disk_summary);
+            self.disk_info.set_icon_name(Some(disk_icon));
 
-            self.full_option.set_subtitle(&gettext!(
-                "Erase all software, documents, and data from the disk and do a fresh installation of {}",
-                osinfo::name()
-            ));
-
-            self.free_option.set_subtitle(&gettext!(
-                "Keep the existing data, and install {} into the free space on disk",
-                osinfo::name()
-            ));
+            self.selection_changed();
         }
     }
 
@@ -95,17 +88,27 @@ mod imp {
     #[gtk::template_callbacks]
     impl WipeOrFreePage {
         #[template_callback]
-        async fn use_full_disk(&self) {
-            if confirm::expected_wipe(&*self.obj()).await {
-                self.obj().go_next(InstallPage::page());
+        fn selection_changed(&self) {
+            if self.free_radio.is_active() {
+                // TRANSLATORS: This button immediately begins installation of the OS
+                self.go_btn.set_label(&gettext("_Install"));
+                self.go_btn.add_css_class("suggested-action");
+            } else {
+                // TRANSLATORS: This button prompts for confirmation before beginning installation
+                self.go_btn.set_label(&gettext("_Install..."));
+                self.go_btn.remove_css_class("suggested-action");
             }
         }
 
         #[template_callback]
-        async fn use_free_space(&self) {
-            if confirm::nondestructive(&*self.obj()).await {
-                self.obj().go_next(InstallPage::page());
+        async fn install(&self) {
+            if !self.free_radio.is_active() {
+                if !confirm::expected_wipe(&*self.obj()).await {
+                    return;
+                }
             }
+
+            self.obj().go_next(InstallPage::page());
         }
     }
 }

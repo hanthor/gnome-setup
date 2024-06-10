@@ -5,7 +5,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use futures::prelude::*;
 
-use std::collections::HashMap;
+use gettextrs::gettext;
 
 use super::confirm;
 use super::no_disks::NoDisksPage;
@@ -77,7 +77,7 @@ impl DiskSelectPage {
 
                 Some(drive)
             })
-            .collect()
+            .collect() // TODO: into a list store
             .await;
 
         //let devices = client.manager().get_block_devices(HashMap::new()).await.unwrap();
@@ -100,7 +100,11 @@ mod imp {
     #[template(file = "src/page/disk/select.blp")]
     pub struct DiskSelectPage {
         #[template_child]
+        header: TemplateChild<adw::StatusPage>,
+        #[template_child]
         disks: TemplateChild<gtk::ListBox>,
+        #[template_child]
+        unusable_disks: TemplateChild<gtk::ListBox>,
     }
 
     #[glib::object_subclass]
@@ -123,6 +127,10 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
+            // TODO: Connect to the changed signals of the listmodels
+            self.on_changed();
+            self.on_unusable_changed();
+
             // TODO: Enumerate the disks
         }
     }
@@ -133,29 +141,62 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl DiskSelectPage {
+        fn on_changed(&self) {
+            if true {
+                self.header.set_icon_name(None);
+                self.header.set_title(&gettext("Select a Disk"));
+                self.header.set_description(Some(&gettext(
+                    "Select the disk to install the operating system to. <b>Make sure any important documents and files have been backed up.</b>"
+                )));
+                self.disks.set_visible(true);
+            } else {
+                self.header.set_icon_name(Some("drive-missing-symbolic"));
+                self.header.set_title(&gettext("No Usable Disks Detected"));
+                self.header.set_description(Some(&gettext(
+                    "Setup could not detect any disks that are suitable to install the operating system to. Make sure that all disks are properly connected and meet the minimum requirements for Setup, and that the device's firmware is configured correctly."
+                )));
+                self.disks.set_visible(false);
+            }
+        }
+
+        fn on_unusable_changed(&self) {
+            self.unusable_disks.set_visible(false);
+        }
+
+        #[template_callback]
+        async fn data_detected(&self) {
+            self.obj().go_next(WipeOrFreePage::page());
+        }
+
+        #[template_callback]
+        async fn nondestructive(&self) {
+            if confirm::nondestructive(&*self.obj()).await {
+                self.obj().go_next(InstallPage::page());
+            }
+        }
+
+        #[template_callback]
+        async fn full_wipe(&self) {
+            if confirm::full_wipe(&*self.obj()).await {
+                self.obj().go_next(InstallPage::page());
+            }
+        }
+
+        #[template_callback]
+        async fn insufficient_wipe(&self) {
+            if confirm::insufficient_wipe(&*self.obj()).await {
+                self.obj().go_next(InstallPage::page());
+            }
+        }
+
         #[template_callback]
         async fn confirm(&self) {
-            match self.disks.selected_row().unwrap().index() {
-                0 => {
-                    self.obj().go_next(WipeOrFreePage::page());
-                }
-                1 => {
-                    if confirm::nondestructive(&*self.obj()).await {
-                        self.obj().go_next(InstallPage::page());
-                    }
-                }
-                2 => {
-                    if confirm::full_wipe(&*self.obj()).await {
-                        self.obj().go_next(InstallPage::page());
-                    }
-                }
-                3 => {
-                    if confirm::insufficient_wipe(&*self.obj()).await {
-                        self.obj().go_next(InstallPage::page());
-                    }
-                }
-                _ => (),
-            }
+            todo!();
+        }
+
+        #[template_callback]
+        fn power_off() {
+            todo!();
         }
     }
 }

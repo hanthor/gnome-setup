@@ -11,39 +11,45 @@ template $SetupWipeOrFreePage : $SetupBasePage {
 
     Gtk.Box {
       orientation: vertical;
-      spacing: 18;
+      spacing: 12;
 
       Adw.PreferencesGroup {
-        Adw.ActionRow disk_info {
-          title: "Sandmug SSD 960 1TB";
-          subtitle: "128 GB Used / 768 GB Free";
-        }
+        Adw.ActionRow disk_info {}
       }
 
       Adw.PreferencesGroup {
-        Adw.ActionRow full_option {
-          title: _("Use Full Disk");
-          activatable: true;
-
-          activated => $use_full_disk() swapped;
-
-          [suffix]
-          Gtk.Image {
-            icon-name: "go-next-symbolic";
-          }
-        }
-
         Adw.ActionRow free_option {
-          title: _("Use Free Space");
-          activatable: true;
-
-          activated => $use_free_space() swapped;
-
-          [suffix]
-          Gtk.Image {
-            icon-name: "go-next-symbolic";
+          [prefix]
+          Gtk.CheckButton free_radio {
+            active: true;
+            toggled => $selection_changed() swapped;
           }
+
+          title: _("Install to Free Space");
+          subtitle: _("Use free space on the disk for installation, preserving data");
+          activatable-widget: free_radio;
         }
+
+        Adw.ActionRow {
+          [prefix]
+          Gtk.CheckButton full_radio {
+            group: free_radio;
+          }
+
+          title: _("Use Entire Disk");
+          subtitle: _("Fully <b>erase all data</b> on disk and do a fresh installation");
+          activatable-widget: full_radio;
+        }
+      }
+
+      Gtk.Button go_btn {
+        use-underline: true;
+        halign: center;
+        margin-top: 24;
+
+        clicked => $install() swapped;
+
+        styles [ "pill" ]
       }
     }
   };

@@ -7,6 +7,7 @@ use gettextrs::gettext;
 fn base_expected_dialog() -> adw::AlertDialog {
     let dialog = adw::AlertDialog::builder()
         .heading(&gettext("Begin Installation?"))
+        .body_use_markup(true)
         .default_response("confirm")
         .close_response("cancel")
         .build();
@@ -19,6 +20,8 @@ fn base_expected_dialog() -> adw::AlertDialog {
 pub async fn nondestructive(parent: &impl IsA<gtk::Widget>) -> bool {
     let dialog = base_expected_dialog();
 
+    // TRANSLATORS: This appears in a dialog immediately before performing a nondestructive installation,
+    //              in other words either the disk is empty or we won't destroy any data
     dialog.set_body(&gettext("Once the installation begins, the changes to the selected disk are irreversible. Continue with installation?"));
 
     dialog.add_response("confirm", &gettext("Install"));
@@ -30,7 +33,9 @@ pub async fn nondestructive(parent: &impl IsA<gtk::Widget>) -> bool {
 pub async fn expected_wipe(parent: &impl IsA<gtk::Widget>) -> bool {
     let dialog = base_expected_dialog();
 
-    dialog.set_body(&gettext("Proceeding will fully erase all software, documents, and data from the disk. Continue with installation?"));
+    // TRANSLATORS: This appears in a dialog immediately before wiping the disk and installing the
+    //              OS. The user explicitly chose to wipe the disk before this dialog appears.
+    dialog.set_body(&gettext("Once the installation begins, the changes to the selected disk are irreversible. <b>Proceeding will fully erase all software, documents, and data from the disk.</b> Continue with installation?"));
 
     dialog.add_response("confirm", &gettext("Erase and Install"));
     dialog.set_response_appearance("confirm", adw::ResponseAppearance::Destructive);
@@ -74,13 +79,21 @@ fn base_surprise_dialog() -> adw::AlertDialog {
 pub async fn insufficient_wipe(parent: &impl IsA<gtk::Widget>) -> bool {
     let dialog = base_surprise_dialog();
     dialog.set_heading(Some(&gettext("Insufficient Free Space")));
-    dialog.set_body(&gettext("There is not enough free space on the selected disk to install the operating system. <b>Proceeding will fully erase all software, documents, and data from the disk.</b> Continue with installation?"));
+    // TRANSLATORS: This appears in a dialog immediately before wiping the disk and installing the
+    //              OS if the selected disk has some free space but not enough. The user didn't
+    //              actively choose to wipe the disk; this dialog is Setup informing the user that
+    //              this is their only option given the current state of the disks
+    dialog.set_body(&gettext("There is not enough free space on the selected disk to install the operating system to. <b>Proceeding will fully erase all software, documents, and data from the disk.</b> Continue with installation?"));
     dialog.choose_future(parent).await == "confirm"
 }
 
 pub async fn full_wipe(parent: &impl IsA<gtk::Widget>) -> bool {
     let dialog = base_surprise_dialog();
     dialog.set_heading(Some(&gettext("Disk is Full")));
-    dialog.set_body(&gettext("The selected disk has no free space to install the operating system. <b>Proceeding will fully erase all software, documents, and data from the disk.</b> Continue with installation?"));
+    // TRANSLATORS: This appears in a dialog immediately before wiping the disk and installing the
+    //              OS if the selected disk has no free space. The user didn't actively choose to
+    //              wipe the disk; this dialog is Setup informing the user that this is their only
+    //              option given the current state of the disks
+    dialog.set_body(&gettext("The selected disk has no free space to install the operating system to. <b>Proceeding will fully erase all software, documents, and data from the disk.</b> Continue with installation?"));
     dialog.choose_future(parent).await == "confirm"
 }

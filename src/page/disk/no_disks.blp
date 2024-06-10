@@ -12,7 +12,8 @@ template $SetupNoDisksPage : $SetupBasePage {
     description: _("Setup could not detect any disks to install the operating system to. Make sure that all disks are properly connected, and that the device's firmware is configured correctly.");
 
     Gtk.Button {
-      label: _("Power Off");
+      label: _("_Power Off");
+      use-underline: true;
       halign: center;
       clicked => $power_off();
       styles [ "pill", "suggested-action" ]

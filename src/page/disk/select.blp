@@ -4,66 +4,210 @@ using Adw 1;
 
 template $SetupDiskSelectPage : $SetupBasePage {
   title: _("Disk Selection");
+  can-next: false;
 
-  ready: true;
-  next => $confirm() swapped;
-
-  child: Adw.StatusPage {
-    title: _("Select A Disk");
-    description: _("Select the disk to install the operating system to. <b>Make sure any important documents and files have been backed up.</b>");
-
+  child: Adw.StatusPage header {
     Gtk.Box {
       orientation: vertical;
-      spacing: 12;
+      spacing: 18;
 
       Gtk.ListBox disks {
-        Adw.ActionRow {
-          [prefix]
-          Gtk.CheckButton radio-1 {}
+        visible: false;
+        selection-mode: none;
 
-          activatable-widget: radio-1;
-          title: "Sandmug SSD 960 1TB";
-          subtitle: "128 GB Used / 768 GB Free";
+        Adw.ActionRow {
+          title: "Sandmug 960 EVO";
+          subtitle: "128 GB Used — 768 GB Free";
+          icon-name: "drive-harddisk-solidstate-symbolic";
+          activatable: true;
+
+          activated => $data_detected() swapped;
+          //activated => $confirm() swapped;
+
+          [suffix]
+          Gtk.Image {
+            margin-start: 6;
+            icon-name: "go-next-symbolic";
+          }
         }
         Adw.ActionRow {
-          [prefix]
-          Gtk.CheckButton radio-3 {
-            group: radio-1;
-          }
+          title: "Sandmug 960 EVO";
+          subtitle: "Empty — 1.0 TB Free";
+          icon-name: "drive-harddisk-solidstate-symbolic";
+          activatable: true;
 
-          activatable-widget: radio-3;
-          title: "Sandmug SSD 960 1TB";
-          subtitle: "Empty / 1.0 TB Free";
+          activated => $nondestructive() swapped;
+          //activated => $confirm() swapped;
+
+          [suffix]
+          Gtk.Image {
+            margin-start: 6;
+            icon-name: "go-next-symbolic";
+          }
         }
         Adw.ActionRow {
-          [prefix]
-          Gtk.CheckButton radio-2 {
-            group: radio-1;
+          title: "OceanDoor Sharkfin";
+          subtitle: "4.0 TB Used — Full";
+          icon-name: "drive-harddisk-symbolic";
+          activatable: true;
+
+          activated => $full_wipe() swapped;
+          //activated => $confirm() swapped;
+
+          [suffix]
+          Gtk.MenuButton {
+            tooltip-text: _("Warning");
+            icon-name: "dialog-warning-symbolic";
+            valign: center;
+            styles ["flat", "warning"]
+
+            popover: Gtk.Popover {
+              Gtk.Box {
+                orientation: vertical;
+                spacing: 2;
+                margin-top: 6;
+                margin-bottom: 6;
+                margin-start: 6;
+                margin-end: 6;
+
+                Gtk.Label {
+                  label: _("Disk is Full");
+                  styles ["heading"]
+                }
+
+                Gtk.Label {
+                  label: _("This disk has no free space available. Setup will only offer to use the entire disk.");
+                  wrap: true;
+                  justify: center;
+                  max-width-chars: 32;
+                }
+              }
+            };
           }
 
-          activatable-widget: radio-2;
-          title: "OceanDoor Sharkfin HDD 4TB";
-          subtitle: "4.0 TB Used / Full";
+          [suffix]
+          Gtk.Image {
+            margin-start: 6;
+            icon-name: "go-next-symbolic";
+          }
         }
         Adw.ActionRow {
-          [prefix]
-          Gtk.CheckButton radio-4 {
-            group: radio-1;
+          title: "GrainyWind MP700";
+          subtitle: "1.99 TB Used — 10 GB Free";
+          icon-name: "drive-harddisk-solidstate-symbolic";
+          activatable: true;
+
+          activated => $insufficient_wipe() swapped;
+          //activated => $confirm() swapped;
+
+          [suffix]
+          Gtk.MenuButton {
+            tooltip-text: _("Warning");
+            icon-name: "dialog-warning-symbolic";
+            valign: center;
+            styles ["flat", "warning"]
+
+            popover: Gtk.Popover {
+              Gtk.Box {
+                orientation: vertical;
+                spacing: 2;
+                margin-top: 6;
+                margin-bottom: 6;
+                margin-start: 6;
+                margin-end: 6;
+
+                Gtk.Label {
+                  label: _("Insufficient Free Space");
+                  styles ["heading"]
+                }
+
+                Gtk.Label {
+                  label: _("This disk does not have enough free space for an installation of GNOME. Setup will only offer to use the entire disk.");
+                  wrap: true;
+                  justify: center;
+                  max-width-chars: 32;
+                }
+              }
+            };
           }
 
-          activatable-widget: radio-4;
-          title: "GrainyWind MP700 NVME 2TB";
-          subtitle: "1.99 TB Used / 10 GB Free";
+          [suffix]
+          Gtk.Image {
+            margin-start: 6;
+            icon-name: "go-next-symbolic";
+          }
         }
 
         styles [ "boxed-list" ]
       }
 
-      Gtk.Label {
-        label: _("Setup will scan the selected disk and offer partitioning options.");
-        wrap: true;
-        justify: center;
-        styles [ "dim-label" ]
+      Gtk.Box {
+        orientation: vertical;
+        spacing: 12;
+        visible: bind unusable_disks.visible;
+
+        Gtk.Label unusable_disks_title {
+          label: _("Unusable Disks");
+          halign: start;
+          styles [ "heading" ]
+        }
+
+        Gtk.ListBox unusable_disks {
+          selection-mode: none;
+
+          accessibility {
+            labelled-by: unusable_disks_title;
+          }
+
+          Adw.ActionRow {
+            title: "SansDrive USB Thumb Drive 16GB";
+            subtitle: "Empty — 16 GB Total";
+            icon-name: "drive-harddisk-usb-symbolic";
+
+            [suffix]
+            Gtk.MenuButton {
+              tooltip-text: _("More Information");
+              icon-name: "help-about-symbolic";
+              valign: center;
+              styles ["flat"]
+
+              popover: Gtk.Popover {
+                Gtk.Box {
+                  orientation: vertical;
+                  spacing: 2;
+                  margin-top: 6;
+                  margin-bottom: 6;
+                  margin-start: 6;
+                  margin-end: 6;
+
+                  Gtk.Label {
+                    label: _("Disk Too Small");
+                    styles ["heading"]
+                  }
+
+                  Gtk.Label {
+                    label: _("This disk cannot be used by Setup to perform an installation of GNOME as it requires at least 20 GB of space.");
+                    wrap: true;
+                    justify: center;
+                    max-width-chars: 32;
+                  }
+                }
+              };
+            }
+          }
+
+          styles [ "boxed-list" ]
+        }
+      }
+
+      Gtk.Button {
+        label: _("_Power Off");
+        use-underline: true;
+        margin-top: 6;
+        halign: center;
+        clicked => $power_off();
+        visible: bind disks.visible inverted;
+        styles [ "pill" ]
       }
 
     }
