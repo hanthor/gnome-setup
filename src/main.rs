@@ -20,12 +20,9 @@ use config::{GETTEXT_PACKAGE, LOCALEDIR};
 fn main() -> glib::ExitCode {
     // For debugging
     // TODO: Try to come up with a better way to do this?
-    env::set_var("SETUP_OVERRIDE_IN_SESSION", "false");
-    env::set_var("SETUP_OVERRIDE_OS_RELEASE_TYPE", "experiment");
-    env::set_var(
-        "SETUP_OVERRIDE_OS_EXPERIMENT",
-        "GNOME OS with @verdre's GNOME Shell Mobile patches applied",
-    );
+    env::set_var("SETUP_OVERRIDE_IN_SESSION", "true");
+    env::set_var("SETUP_OVERRIDE_OS_RELEASE_TYPE", "stable");
+    env::set_var("SETUP_OVERRIDE_OS_EXPERIMENT", "");
 
     // Set up gettext translations
     bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).expect("Unable to bind the text domain");
