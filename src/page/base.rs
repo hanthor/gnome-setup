@@ -4,9 +4,9 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 
 use std::cell::Cell;
+use std::future::IntoFuture;
 use std::marker::PhantomData;
 use std::sync::OnceLock;
-use std::future::IntoFuture;
 
 use gettextrs::gettext;
 use glib::subclass::Signal;
@@ -28,7 +28,7 @@ impl BasePage {
 pub trait BasePageExt: IsA<BasePage> + IsA<gtk::Widget> {
     fn go_next<F>(&self, next: F)
     where
-        F: IntoFuture<Output = BasePage> + 'static
+        F: IntoFuture<Output = BasePage> + 'static,
     {
         // Project Convention: Types that are BasePages should have a associated function that
         // looks like:            pub async fn page(<any arguments>) -> BasePage
@@ -45,15 +45,17 @@ pub trait BasePageExt: IsA<BasePage> + IsA<gtk::Widget> {
             .and_downcast::<adw::NavigationView>()
             .unwrap();
 
-        glib::spawn_future_local(glib::clone!(@strong self as curr, @strong nav => async move {
-            nav.set_cursor_from_name(Some("wait"));
-            curr.set_sensitive(false);
+        glib::spawn_future_local(
+            glib::clone!(@strong self as curr, @strong nav => async move {
+                nav.set_cursor_from_name(Some("wait"));
+                curr.set_sensitive(false);
 
-            nav.push(&next.await);
+                nav.push(&next.await);
 
-            nav.set_cursor(None);
-            curr.set_sensitive(true);
-        }));
+                nav.set_cursor(None);
+                curr.set_sensitive(true);
+            }),
+        );
     }
 }
 
