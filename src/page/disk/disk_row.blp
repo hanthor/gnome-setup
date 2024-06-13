@@ -1,0 +1,111 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+
+/*
+        Adw.ActionRow {
+          title: "GrainyWind MP700";
+          subtitle: "1.99 TB Used — 10 GB Free";
+          icon-name: "drive-harddisk-solidstate-symbolic";
+          activatable: true;
+
+          activated => $insufficient_wipe() swapped;
+          //activated => $confirm() swapped;
+
+          [suffix]
+          Gtk.MenuButton {
+            tooltip-text: _("Warning");
+            icon-name: "dialog-warning-symbolic";
+            valign: center;
+            styles ["flat", "warning"]
+
+            popover: Gtk.Popover {
+              Gtk.Box {
+                orientation: vertical;
+                spacing: 2;
+                margin-top: 6;
+                margin-bottom: 6;
+                margin-start: 6;
+                margin-end: 6;
+
+                Gtk.Label {
+                  label: _("Insufficient Free Space");
+                  styles ["heading"]
+                }
+
+                Gtk.Label {
+                  label: _("This disk does not have enough free space for an installation of GNOME. Setup will only offer to use the entire disk.");
+                  wrap: true;
+                  justify: center;
+                  max-width-chars: 32;
+                }
+              }
+            };
+          }
+
+          [suffix]
+          Gtk.Image {
+            margin-start: 6;
+            icon-name: "go-next-symbolic";
+          }
+        }
+*/
+
+
+
+template $SetupDiskRow : Adw.ActionRow {
+  [prefix]
+  Gtk.Image type_icon {
+    valign: center;
+  }
+
+  [suffix]
+  Gtk.MenuButton warning_button {
+    tooltip-text: _("Warning");
+    icon-name: "dialog-warning-symbolic";
+    valign: center;
+    visible: false;
+    styles ["flat", "warning"]
+  }
+
+  [suffix]
+  Gtk.MenuButton info_button {
+    tooltip-text: _("More Information");
+    icon-name: "help-about-symbolic";
+    valign: center;
+    visible: false;
+    styles ["flat"]
+  }
+
+  [suffix]
+  Gtk.Image {
+    margin-start: 6;
+    valign: center;
+    icon-name: "go-next-symbolic";
+    visible: bind template.activatable;
+  }
+}
+
+Gtk.Popover details {
+  Gtk.Box {
+    orientation: vertical;
+    spacing: 2;
+    margin-top: 6;
+    margin-bottom: 6;
+    margin-start: 6;
+    margin-end: 6;
+
+    Gtk.Label details_title {
+      label: _("Insufficient Free Space");
+      styles ["heading"]
+    }
+
+    Gtk.Label details_subtitle {
+      label: _("This disk does not have enough free space for an installation of GNOME. Setup will only offer to use the entire disk.");
+      wrap: true;
+      justify: center;
+      max-width-chars: 32;
+    }
+  }
+}

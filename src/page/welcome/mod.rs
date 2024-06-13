@@ -82,6 +82,9 @@ mod imp {
                 )));
                 self.try_btn.set_label(&gettext!("_Try {}", osinfo::name()));
             }
+
+            // Pre-load the list of disks, so that they're ready for the user to press next
+            Next::preload();
         }
     }
 

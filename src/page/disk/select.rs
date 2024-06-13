@@ -3,12 +3,10 @@
 use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use futures::prelude::*;
 
 use gettextrs::gettext;
 
 use super::confirm;
-use super::no_disks::NoDisksPage;
 use super::wipe_or_free::WipeOrFreePage;
 use crate::page::InstallPage;
 
@@ -27,69 +25,7 @@ impl Default for DiskSelectPage {
 
 impl DiskSelectPage {
     pub async fn page() -> BasePage {
-        // TODO: No unwraps on the client connection
-        // TODO: Check if there are any disks
-        let client =
-            udisks2::Client::new_for_connection(crate::system_bus().clone()).await.unwrap();
-        let objects = client.object_manager().get_managed_objects().await.unwrap();
-
-        let root_drive = stream::iter(objects.keys().cloned())
-            .filter_map(|path| {
-                Box::pin(async {
-                    // TODO: Cleanup once we have async blocks
-                    let obj = client.object(path).ok()?;
-                    let fs = obj.filesystem().await.ok()?;
-                    let mount_points = fs.mount_points().await.ok()?;
-
-                    if !mount_points
-                        .iter()
-                        .filter_map(|mount_point| std::str::from_utf8(mount_point.as_slice()).ok())
-                        .any(|mount_point| mount_point == "/usr\0")
-                    {
-                        return None;
-                    }
-
-                    let block = obj.block().await.ok()?;
-                    block.drive().await.ok()
-                })
-            })
-            .next()
-            .await;
-        let root_drive = root_drive.as_deref();
-
-        let drives: Vec<_> = stream::iter(objects.into_keys())
-            .filter_map(|path| async {
-                // https://github.com/rust-lang/futures-rs/issues/2464
-                if root_drive.is_some_and(|r| *r == *path) {
-                    return None;
-                }
-
-                let obj = client.object(path).ok()?;
-                let drive = obj.drive().await.ok()?;
-
-                if drive.optical().await.unwrap_or(false) {
-                    return None; // We can't/shouldn't write to optical media
-                }
-
-                if drive.size().await.unwrap_or(0) == 0 {
-                    return None; // It's an empty SD card slot
-                }
-
-                Some(drive)
-            })
-            .collect() // TODO: into a list store
-            .await;
-
-        //let devices = client.manager().get_block_devices(HashMap::new()).await.unwrap();
-        // TODO: Use Result.into_ok https://github.com/rust-lang/rust/issues/61695
-        // https://github.com/rust-lang/futures-rs/issues/2464
-        //dbg!(&drives);
-
-        if drives.is_empty() {
-            NoDisksPage::page().await
-        } else {
-            Self::default().upcast()
-        }
+        Self::default().upcast()
     }
 }
 
@@ -127,6 +63,11 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
+            self.disks.bind_model(Some(&super::super::model::DisksModel::default()), |obj| {
+                let disk = obj.downcast_ref::<super::super::obj::Disk>().unwrap();
+                super::super::disk_row::DiskRow::new(disk).upcast()
+            });
+
             // TODO: Connect to the changed signals of the listmodels
             self.on_changed();
             self.on_unusable_changed();
@@ -160,7 +101,7 @@ mod imp {
         }
 
         fn on_unusable_changed(&self) {
-            self.unusable_disks.set_visible(false);
+            self.unusable_disks.set_visible(true); // TODO
         }
 
         #[template_callback]
@@ -200,3 +141,4 @@ mod imp {
         }
     }
 }
+
