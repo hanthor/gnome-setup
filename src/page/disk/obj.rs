@@ -44,7 +44,7 @@ impl Disk {
 
         let mut used_space = 0u64;
 
-        partitions.sort_by_key(|p| p.offset().await);
+        //partitions.sort_by_key(|p| p.offset().await);
         let mut part_iter = partitions.into_iter().peekable();
         while let Some(part) = part_iter.next() {
             let part_size = part.size().await?;

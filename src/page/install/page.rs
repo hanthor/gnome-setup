@@ -69,11 +69,68 @@ mod imp {
             self.info.set_title(title);
 
             // Mockup Stuff
-            self.progress.set_fraction(0.5);
-            self.status.set_label("Copying (50% complete)");
+            //self.progress.set_fraction(0.5);
+            //self.status.set_label("Copying (50% complete)");
+            // TODO: Was experimenting while desinging JSON API for repart. Drop this.
+            //self.progress.set_pulse_step(0.5);
+            self.progress.pulse();
             let obj = self.obj();
             glib::timeout_add_local(
-                std::time::Duration::new(3, 0),
+                std::time::Duration::from_millis(500),
+                glib::clone!(@strong obj => move || {
+                    obj.imp().status.set_label("Getting Warmed Up...");
+                    obj.imp().progress.pulse();
+                    /*glib::timeout_add_local(
+                        std::time::Duration::from_millis(500),
+                        glib::clone!(@strong obj => move || {
+                            obj.imp().status.set_label("Getting Warmed Up...");
+                            glib::ControlFlow::Break
+                        }),
+                    );*/
+                    glib::ControlFlow::Break
+                }),
+            );
+            glib::timeout_add_local(
+                std::time::Duration::from_millis(1000),
+                glib::clone!(@strong obj => move || {
+                    obj.imp().progress.set_fraction(0.0);
+                    obj.imp().status.set_label("Copying");
+                    glib::timeout_add_local(
+                        std::time::Duration::from_millis(28),
+                        glib::clone!(@strong obj => move || {
+                            obj.imp().progress.set_fraction(obj.imp().progress.fraction() + 0.01);
+                            let percent = (obj.imp().progress.fraction() * 100.0) as u8;
+
+                            obj.imp().status.set_label(&format!("Copying ({percent}%)"));
+
+                            if percent >= 100 {
+                                glib::ControlFlow::Break
+                            } else {
+                                glib::ControlFlow::Continue
+                            }
+                        }),
+                    );
+                    glib::ControlFlow::Break
+                }),
+            ); // 2800 ms
+            glib::timeout_add_local(
+                std::time::Duration::from_millis(4000),
+                glib::clone!(@strong obj => move || {
+                    obj.imp().status.set_label("Writing Partition Table");
+                    obj.imp().progress.pulse();
+                    glib::ControlFlow::Break
+                }),
+            );
+            glib::timeout_add_local(
+                std::time::Duration::from_millis(4300),
+                glib::clone!(@strong obj => move || {
+                    obj.imp().status.set_label("Installing Bootloader");
+                    obj.imp().progress.pulse();
+                    glib::ControlFlow::Break
+                }),
+            );
+            glib::timeout_add_local(
+                std::time::Duration::from_millis(5000),
                 glib::clone!(@strong obj => move || {
                     obj.go_next(DonePage::page());
                     glib::ControlFlow::Break

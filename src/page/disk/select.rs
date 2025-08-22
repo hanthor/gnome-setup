@@ -63,10 +63,10 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            self.disks.bind_model(Some(&super::super::model::DisksModel::default()), |obj| {
-                let disk = obj.downcast_ref::<super::super::obj::Disk>().unwrap();
-                super::super::disk_row::DiskRow::new(disk).upcast()
-            });
+            // self.disks.bind_model(Some(&super::super::model::DisksModel::default()), |obj| {
+            //     let disk = obj.downcast_ref::<super::super::obj::Disk>().unwrap();
+            //     super::super::disk_row::DiskRow::new(disk).upcast()
+            // });
 
             // TODO: Connect to the changed signals of the listmodels
             self.on_changed();
