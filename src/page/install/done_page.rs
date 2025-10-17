@@ -4,6 +4,7 @@ use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
+use formatx::formatx;
 use gettextrs::gettext;
 use gtk::glib;
 
@@ -62,18 +63,22 @@ mod imp {
 
             self.cancel_btn.set_visible(crate::in_session());
             let msg = if crate::in_session() {
-                gettext!(
-                    "{} has been installed to this device. Reboot now to start using {} or \
-                    continue to test in this evaluation environment.",
+                formatx!(
+                    gettext(
+                        "{} has been installed to this device. Reboot now to start using {} or \
+                    continue to test in this evaluation environment."
+                    ),
                     osinfo::name(),
                     osinfo::name(),
                 )
+                .unwrap()
             } else {
-                gettext!(
-                    "{} has been installed to this device. Reboot now to start using {}",
+                formatx!(
+                    gettext("{} has been installed to this device. Reboot now to start using {}"),
                     osinfo::name(),
                     osinfo::name(),
                 )
+                .unwrap()
             };
             self.info.set_description(Some(msg.as_str()));
         }

@@ -131,9 +131,13 @@ mod imp {
             adj.connect_closure(
                 "value-changed",
                 false,
-                glib::closure_local!(@watch obj => move |adj: gtk::Adjustment| {
-                    obj.imp().headerbar.set_show_title(adj.value() > 0.0);
-                }),
+                glib::closure_local!(
+                    #[watch]
+                    obj,
+                    move |adj: gtk::Adjustment| {
+                        obj.imp().headerbar.set_show_title(adj.value() > 0.0);
+                    }
+                ),
             );
         }
     }

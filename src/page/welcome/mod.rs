@@ -4,6 +4,7 @@ use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
+use formatx::formatx;
 use gettextrs::gettext;
 use gtk::glib;
 
@@ -67,20 +68,29 @@ mod imp {
             if crate::in_session() {
                 self.obj().set_title(&gettext("Welcome"));
                 self.info.set_title(&gettext("Ready to Install?"));
-                self.info.set_description(Some(&gettext!(
-                    "You can start an installation while you continue testing {}",
-                    osinfo::name(),
-                )));
+                self.info.set_description(Some(
+                    &formatx!(
+                        gettext("You can start an installation while you continue testing {}"),
+                        osinfo::name(),
+                    )
+                    .unwrap(),
+                ));
                 self.try_btn.set_visible(false);
             } else {
                 self.obj().set_title(&gettext("Try or Install?"));
-                self.info.set_title(&gettext!("Welcome to {}!", osinfo::name()));
-                self.info.set_description(Some(&gettext!(
-                    "You can try {} in a temporary environment before you install, or \
-                    you can start an installation right away.",
-                    osinfo::name(),
-                )));
-                self.try_btn.set_label(&gettext!("_Try {}", osinfo::name()));
+                self.info
+                    .set_title(&formatx!(gettext("Welcome to {}!"), osinfo::name()).unwrap());
+                self.info.set_description(Some(
+                    &formatx!(
+                        gettext(
+                            "You can try {} in a temporary environment before you install, or \
+                    you can start an installation right away."
+                        ),
+                        osinfo::name(),
+                    )
+                    .unwrap(),
+                ));
+                self.try_btn.set_label(&formatx!(gettext("_Try {}"), osinfo::name()).unwrap());
             }
         }
     }

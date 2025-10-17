@@ -4,6 +4,7 @@ use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
+use formatx::formatx;
 use gettextrs::gettext;
 use gtk::glib;
 
@@ -64,9 +65,9 @@ mod imp {
             self.parent_constructed();
 
             osinfo::bind_logo(self.info.get(), "icon-name");
-            let title = &gettext!("Installing {}", osinfo::name());
-            self.obj().set_title(title);
-            self.info.set_title(title);
+            let title = formatx!(gettext("Installing {}"), osinfo::name()).unwrap();
+            self.obj().set_title(&title);
+            self.info.set_title(&title);
 
             // Mockup Stuff
             self.progress.set_fraction(0.5);
@@ -74,10 +75,14 @@ mod imp {
             let obj = self.obj();
             glib::timeout_add_local(
                 std::time::Duration::new(3, 0),
-                glib::clone!(@strong obj => move || {
-                    obj.go_next(DonePage::page());
-                    glib::ControlFlow::Break
-                }),
+                glib::clone!(
+                    #[strong]
+                    obj,
+                    move || {
+                        obj.go_next(DonePage::page());
+                        glib::ControlFlow::Break
+                    }
+                ),
             );
         }
     }

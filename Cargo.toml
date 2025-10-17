@@ -4,18 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.82"
+anyhow = "1.0"
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
 gettext-sys = { version = "*" }
-gnome-desktop = "0.4.2"
-gvdb-macros = "0.1.12"
-appstream = { package = "libappstream", version = "0.1.0" }
-log = "0.4.21"
-thiserror = "1.0.61"
-zbus = "4.2.2"
-quick-xml = { version = "0.31.0", features = ["serialize"] }
-serde = "1.0.203"
-constcat = "0.5.0"
+gvdb-macros = "0.1"
+appstream = { package = "libappstream", version = "0.4" }
+log = "0.4"
+thiserror = "2.0"
+zbus = "5.11"
+quick-xml = { version = "0.38", features = ["serialize"] }
+serde = "1.0"
+constcat = "0.6"
+formatx = "0.2"
 
 [dependencies.glib]
 version = "*"
@@ -24,9 +24,15 @@ features = ["log"]
 [dependencies.gtk]
 package = "gtk4"
 version = "*"
-features = ["gnome_46", "blueprint"]
+features = ["gnome_48", "blueprint"]
 
 [dependencies.adw]
 package = "libadwaita"
-version = "0.6"
+version = "0.8"
 features = ["v1_5"]
+
+
+[dependencies.gnome-desktop]
+git = "https://gitlab.gnome.org/jsparber/gnome-desktop-rs.git"
+branch = "update_everything"
+version = "0.5"
