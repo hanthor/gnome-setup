@@ -9,6 +9,11 @@ template $SetupPrereleasePage : $SetupBasePage {
   next => $next() swapped;
 
   child: Adw.StatusPage status {
+    title: bind $release_type(_("Experimental Software"), _("Pre-release Software"), "", "") as <string>;
+    icon-name: bind $release_type("experimental-symbolic", "dialog-warning-symbolic", "", "") as <string>;
+    description: bind $release_type(_("This is an experimental build of {os_name}, built to test new features that are still in development. Breaking changes and data loss are likely. We provide no stability or security guarantees. Do not store any important data. Do not use in a production environment."),
+                                    _("This is a pre-release build of {os_name}. Please be aware that breaking changes may still occur. You may need to manually migrate data after such a change. We provide no stability or security guarantees. Back up all important data. Do not use in a production environment."),
+                                    "", "") as <string>;
 
     child: Gtk.ListBox {
       accessible-role: generic; // Not really a list...

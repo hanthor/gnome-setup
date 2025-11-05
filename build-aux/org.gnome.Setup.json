@@ -39,6 +39,18 @@
         "*.a"
     ],
     "modules" : [
+        {
+	  "name": "blueprint-compiler",
+	  "buildsystem": "meson",
+	  "cleanup": ["*"],
+	  "sources": [
+	    {
+	      "type" : "git",
+	      "url" : "https://gitlab.gnome.org/GNOME/blueprint-compiler.git",
+	      "branch" : "main"
+	    }
+	  ]
+	},
 	{
 	  "name": "gnome-desktop",
 	  "buildsystem": "meson",

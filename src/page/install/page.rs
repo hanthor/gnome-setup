@@ -4,8 +4,6 @@ use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
-use formatx::formatx;
-use gettextrs::gettext;
 use gtk::glib;
 
 use super::done_page::DonePage;
@@ -53,6 +51,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
+            osinfo::OsInfoCallbacks::bind_template_callbacks(klass);
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -65,9 +64,6 @@ mod imp {
             self.parent_constructed();
 
             osinfo::bind_logo(self.info.get(), "icon-name");
-            let title = formatx!(gettext("Installing {}"), osinfo::name()).unwrap();
-            self.obj().set_title(&title);
-            self.info.set_title(&title);
 
             // Mockup Stuff
             self.progress.set_fraction(0.5);

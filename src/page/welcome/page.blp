@@ -4,8 +4,13 @@ using Adw 1;
 
 template $SetupWelcomePage : $SetupBasePage {
   can-next: false;
+  title: bind $in_session(_("Welcome"), _("Try or Install?")) as <string>;
 
   child: Adw.StatusPage info {
+    title: bind $apply_osinfo(_("Welcome {os_name}")) as <string>;
+    description: bind $in_session(_("You can start an installation while you continue testing {os_name}"),
+                                  _("You can try {os_name} in a temporary environment before you install, or you can start an installation right away."))
+                                  as <string>;
     Gtk.Box {
       spacing: 12;
       halign: center;
@@ -13,6 +18,8 @@ template $SetupWelcomePage : $SetupBasePage {
       Gtk.Button try_btn {
         use-underline: true;
         clicked => $on_try() swapped;
+        label: bind $apply_osinfo(_("_Try {os_name}")) as <string>;
+        visible: bind $in_session(false, true) as <bool>;
 
         styles [ "pill" ]
 

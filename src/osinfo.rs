@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use formatx::formatx;
 use glib::prelude::*;
 
 use std::env;
@@ -63,4 +64,46 @@ pub fn release_type() -> &'static ReleaseType {
             }
         }
     })
+}
+
+pub struct OsInfoCallbacks {}
+
+#[gtk::template_callbacks(functions)]
+impl OsInfoCallbacks {
+    #[template_callback]
+    fn apply_osinfo(string: &str) -> String {
+        formatx!(string, os_name = name()).unwrap()
+    }
+
+    #[template_callback]
+    fn in_session(value1: glib::Value, value2: glib::Value) -> glib::Value {
+        let result = if crate::in_session() { value1 } else { value2 };
+
+        if let Ok(string) = result.get::<&str>() {
+            Self::apply_osinfo(string).into()
+        } else {
+            result
+        }
+    }
+
+    #[template_callback]
+    fn release_type(
+        experimental: glib::Value,
+        pre_rlease: glib::Value,
+        stable: glib::Value,
+        lts: glib::Value,
+    ) -> glib::Value {
+        let result = match release_type() {
+            ReleaseType::Experimental { .. } => experimental,
+            ReleaseType::PreRelease => pre_rlease,
+            ReleaseType::Stable => stable,
+            ReleaseType::Lts => lts,
+        };
+
+        if let Ok(string) = result.get::<&str>() {
+            Self::apply_osinfo(string).into()
+        } else {
+            result
+        }
+    }
 }

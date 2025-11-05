@@ -4,8 +4,6 @@ use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
-use formatx::formatx;
-use gettextrs::gettext;
 use gtk::glib;
 
 use crate::osinfo;
@@ -55,6 +53,7 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
             klass.bind_template_callbacks();
+            osinfo::OsInfoCallbacks::bind_template_callbacks(klass);
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -68,29 +67,10 @@ mod imp {
 
             use osinfo::ReleaseType as R;
             match osinfo::release_type() {
-                R::Stable | R::Lts => unreachable!(), // Would have skipped this page entirely
                 R::PreRelease => {
-                    self.status.set_icon_name(Some("dialog-warning-symbolic"));
-                    self.status.set_title(&gettext("Pre-release Software"));
-                    self.status.set_description(Some(&formatx!(gettext(
-                        "This is a pre-release build of {}. Please be aware that breaking changes may \
-                        still occur. You may need to manually migrate data after such a change. We \
-                        provide no stability or security guarantees. Back up all important data. Do \
-                        not use in a production environment."),
-                        osinfo::name(),
-                    ).unwrap()));
                     self.status.add_css_class("prerelease");
                 }
                 R::Experimental { description } => {
-                    self.status.set_icon_name(Some("experimental-symbolic"));
-                    self.status.set_title(&gettext("Experimental Software"));
-                    self.status.set_description(Some(&formatx!(gettext(
-                        "This is an experimental build of {}, built to test new features that are \
-                        still in development. Breaking changes and data loss are likely. We provide \
-                        no stability or security guarantees. Do not store any important data. Do not \
-                        use in a production environment."),
-                        osinfo::name(),
-                    ).unwrap()));
                     self.status.add_css_class("experimental");
 
                     if let Some(description) = description {
@@ -98,6 +78,7 @@ mod imp {
                         self.experiment.set_subtitle(description);
                     }
                 }
+                _ => {}
             }
         }
     }

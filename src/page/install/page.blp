@@ -3,11 +3,13 @@ using Gtk 4.0;
 using Adw 1;
 
 template $SetupInstallPage : $SetupBasePage {
+  title: bind $apply_osinfo(_("Installing {os_name}")) as <string>;
   can-pop: false;
   can-next: false;
   can-close: false;
 
   child: Adw.StatusPage info {
+    title: bind $apply_osinfo(_("Installing {os_name}")) as <string>;
     Gtk.Box {
       orientation: vertical;
       spacing: 6;

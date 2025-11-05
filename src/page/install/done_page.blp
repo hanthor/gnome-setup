@@ -10,7 +10,9 @@ template $SetupInstallDonePage : $SetupBasePage {
 
   child: Adw.StatusPage info {
     title: _("Installation Complete!");
-
+    description: bind $in_session(_("{os_name} has been installed to this device. Reboot now to start using {os_name} or continue to test in this evaluation environment."),
+                                  _("{os_name} has been installed to this device. Reboot now to start using {os_name}"))
+                                        as <string>;
     icon-name: "ready-to-go";
 
     Gtk.Box {
@@ -18,6 +20,7 @@ template $SetupInstallDonePage : $SetupBasePage {
       halign: center;
 
       Gtk.Button cancel_btn {
+        visible: bind $in_session(true, false) as <bool>;
         label: _("_Not Now");
         use-underline: true;
         action-name: "window.close";

@@ -4,11 +4,9 @@ use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
-use formatx::formatx;
-use gettextrs::gettext;
 use gtk::glib;
 
-use crate::osinfo;
+use crate::osinfo::OsInfoCallbacks;
 
 glib::wrapper! {
     pub struct DonePage(ObjectSubclass<imp::DonePage>)
@@ -50,6 +48,7 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
             klass.bind_template_callbacks();
+            OsInfoCallbacks::bind_template_callbacks(klass);
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -57,33 +56,7 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for DonePage {
-        fn constructed(&self) {
-            self.parent_constructed();
-
-            self.cancel_btn.set_visible(crate::in_session());
-            let msg = if crate::in_session() {
-                formatx!(
-                    gettext(
-                        "{} has been installed to this device. Reboot now to start using {} or \
-                    continue to test in this evaluation environment."
-                    ),
-                    osinfo::name(),
-                    osinfo::name(),
-                )
-                .unwrap()
-            } else {
-                formatx!(
-                    gettext("{} has been installed to this device. Reboot now to start using {}"),
-                    osinfo::name(),
-                    osinfo::name(),
-                )
-                .unwrap()
-            };
-            self.info.set_description(Some(msg.as_str()));
-        }
-    }
-
+    impl ObjectImpl for DonePage {}
     impl WidgetImpl for DonePage {}
     impl NavigationPageImpl for DonePage {}
     impl BasePageImpl for DonePage {}
