@@ -90,7 +90,7 @@ mod imp {
                 gettextrs::setlocale(gettextrs::LocaleCategory::LcMessages, locale);
                 self.welcome.append(
                     &gtk::Label::builder()
-                        .label(&gettext("Welcome"))
+                        .label(gettext("Welcome"))
                         .css_classes(["title-1"])
                         .hexpand(true)
                         .build(),

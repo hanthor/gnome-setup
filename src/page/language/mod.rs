@@ -9,4 +9,3 @@ mod picker;
 mod picker_row;
 
 pub use page::LanguagePage;
-pub use picker::LanguagePicker;
