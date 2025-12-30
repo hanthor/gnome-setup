@@ -10,7 +10,7 @@ use crate::page::{BasePage, LanguagePage, WelcomePage};
 glib::wrapper! {
     pub struct Window(ObjectSubclass<imp::Window>)
         @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow, adw::ApplicationWindow,
-        @implements gio::ActionGroup, gio::ActionMap;
+        @implements gtk::Native, gtk::Root, gio::ActionGroup, gio::ActionMap, gtk::ConstraintTarget, gtk::Accessible, gtk::Buildable, gtk::ShortcutManager;
 }
 
 impl Window {

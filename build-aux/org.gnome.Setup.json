@@ -39,40 +39,14 @@
         "*.a"
     ],
     "modules" : [
-    	{
-	  "name": "blueprint-compiler",
-	  "buildsystem": "meson",
-	  "cleanup": ["*"],
-	  "sources": [
-	    {
-	      "type": "git",
-	      "url": "https://gitlab.gnome.org/jwestman/blueprint-compiler",
-	      "tag": "v0.12.0"
-	    }
-	  ]
-	},
 	{
 	  "name": "gnome-desktop",
 	  "buildsystem": "meson",
 	  "sources": [
 	    {
 	      "type": "git",
-	      "url": "https://gitlab.gnome.org/GNOME/gnome-desktop",
-	      "tag": "44.0"
-	    }
-	  ]
-	},
-	{
-	  "name": "libappstream",
-	  "buildsystem": "meson",
-	  "build-options": {
-	  	"config-opts": ["-Dstemming=false", "-Dapidocs=false"]
-	  },
-	  "sources": [
-	    {
-	      "type": "git",
-	      "url": "https://github.com/ximion/appstream",
-	      "tag": "v1.0.3"
+	      "url": "https://gitlab.gnome.org/GNOME/gnome-desktop.git",
+	      "branch": "master"
 	    }
 	  ]
 	},

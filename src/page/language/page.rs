@@ -15,6 +15,20 @@ use super::obj::Language;
 use super::picker::LanguagePicker;
 use crate::page::PrereleasePage as Next;
 
+/*
+use zbus::{proxy};
+#[proxy(
+    interface = "org.freedesktop.locale1",
+    default_service = "org.freedesktop.locale1",
+    default_path = "/org/freedesktop/locale1"
+)]
+pub trait Localed {
+    #[zbus(property(emits_changed_signal = "true"))]
+    fn locale(&self) -> zbus::Result<Vec<String>>;
+    fn set_locale(&self, locale: Vec<String>, interactive: bool) -> zbus::Result<()>;
+}
+*/
+
 glib::wrapper! {
     pub struct LanguagePage(ObjectSubclass<imp::LanguagePage>)
         @extends gtk::Widget, adw::NavigationPage, BasePage,
@@ -100,11 +114,15 @@ mod imp {
             let obj = self.obj();
             *self.welcome_anim.borrow_mut() = Some(glib::timeout_add_local(
                 Duration::new(8, 0),
-                glib::clone!(@strong obj => move || {
-                    let welcome = &obj.imp().welcome;
-                    welcome.scroll_to(&welcome.nth_page(1), true);
-                    glib::ControlFlow::Continue
-                }),
+                glib::clone!(
+                    #[strong]
+                    obj,
+                    move || {
+                        let welcome = &obj.imp().welcome;
+                        welcome.scroll_to(&welcome.nth_page(1), true);
+                        glib::ControlFlow::Continue
+                    }
+                ),
             ));
         }
 

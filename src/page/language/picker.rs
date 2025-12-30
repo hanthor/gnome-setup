@@ -99,9 +99,11 @@ mod imp {
             });
 
             let obj = self.obj();
-            self.model.connect_items_changed(
-                glib::clone!(@strong obj => move |_, _, _, _| obj.imp().on_changed()),
-            );
+            self.model.connect_items_changed(glib::clone!(
+                #[strong]
+                obj,
+                move |_, _, _, _| obj.imp().on_changed()
+            ));
         }
     }
 
