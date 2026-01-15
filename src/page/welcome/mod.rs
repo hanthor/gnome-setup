@@ -7,7 +7,7 @@ use adw::subclass::prelude::*;
 use gtk::glib;
 
 use crate::osinfo;
-use crate::page::InstallPage as Next;
+use crate::page::DiskPages as Next;
 
 glib::wrapper! {
     pub struct WelcomePage(ObjectSubclass<imp::WelcomePage>)
@@ -62,6 +62,9 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             osinfo::bind_logo(self.info.get(), "icon-name");
+
+            // Pre-load the list of disks, so that they're ready for the user to press next
+            Next::preload();
         }
     }
 
