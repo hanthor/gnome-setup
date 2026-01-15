@@ -16,9 +16,18 @@ template $SetupInstallPage : $SetupBasePage {
 
       Gtk.ProgressBar progress {}
 
-      Gtk.Label status {
-        halign: start;
-        styles [ "dim-label" ]
+      Gtk.Box {
+        orientation: horizontal;
+        spacing: 6;
+
+        Gtk.Spinner {
+          spinning: true;
+        }
+
+        Gtk.Label status {
+          halign: start;
+          styles [ "dim-label" ]
+        }
       }
     }
 
