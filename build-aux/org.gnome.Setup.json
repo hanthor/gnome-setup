@@ -86,12 +86,6 @@
                     "type" : "git",
                     "path" : "."
                 }
-            ],
-            "post-install" : [
-                "ls /app/share/gnome-setup"
-            ],
-            "config-opts" : [
-                "--libdir=lib"
             ]
         }
     ]
