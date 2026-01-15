@@ -5,7 +5,7 @@
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
         "org.gnome.Sdk.Debug",
-    	"org.gnome.Sdk.Locale",
+        "org.gnome.Sdk.Locale",
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
     "command" : "gnome-setup",
@@ -40,39 +40,41 @@
     ],
     "modules" : [
         {
-	  "name": "blueprint-compiler",
-	  "buildsystem": "meson",
-	  "cleanup": ["*"],
-	  "sources": [
-	    {
-	      "type" : "git",
-	      "url" : "https://gitlab.gnome.org/GNOME/blueprint-compiler.git",
-	      "branch" : "main"
-	    }
-	  ]
-	},
-	{
-	  "name": "gnome-desktop",
-	  "buildsystem": "meson",
-	  "sources": [
-	    {
-	      "type": "git",
-	      "url": "https://gitlab.gnome.org/GNOME/gnome-desktop.git",
-	      "branch": "master"
-	    }
-	  ]
-	},
-	{
+            "name" : "blueprint-compiler",
+            "buildsystem" : "meson",
+            "cleanup" : [
+                "*"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/blueprint-compiler.git",
+                    "branch" : "main"
+                }
+            ]
+        },
+        {
+            "name" : "gnome-desktop",
+            "buildsystem" : "meson",
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/gnome-desktop.git",
+                    "branch" : "master"
+                }
+            ]
+        },
+        {
             "name" : "demo-content",
             "buildsystem" : "simple",
             "sources" : [
-            	{
-            	    "type" : "dir",
-            	    "path" : "."
-            	}
+                {
+                    "type" : "dir",
+                    "path" : "."
+                }
             ],
             "build-commands" : [
-            	"install -Dm644 demo-eula.xml /app/share/gnome-setup/eula.xml"
+                "install -Dm644 demo-eula.xml /app/share/gnome-setup/eula.xml"
             ]
         },
         {
@@ -85,7 +87,12 @@
                     "path" : "."
                 }
             ],
-            "post-install": ["ls /app/share/gnome-setup"]
+            "post-install" : [
+                "ls /app/share/gnome-setup"
+            ],
+            "config-opts" : [
+                "--libdir=lib"
+            ]
         }
     ]
 }
