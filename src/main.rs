@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 mod config;
+mod interfaces;
+mod models;
 mod osinfo;
 mod page;
 mod window;
