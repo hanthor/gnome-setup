@@ -1,0 +1,47 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupDiskRow : Adw.ActionRow {
+  title: bind template.disk as <$SetupDisk>.display_name;
+  subtitle: bind template.disk as <$SetupDisk>.display_desc;
+  icon-name: bind template.disk as <$SetupDisk>.icon_name;
+  activatable: true;
+
+  //activated => $full_wipe() swapped;
+  //activated => $confirm() swapped;
+
+  [suffix]
+  Gtk.MenuButton details_button {
+    valign: center;
+    styles ["flat"]
+
+    popover: Gtk.Popover {
+      Gtk.Box {
+        orientation: vertical;
+        spacing: 2;
+        margin-top: 6;
+        margin-bottom: 6;
+        margin-start: 6;
+        margin-end: 6;
+
+        Gtk.Label details_title {
+          styles ["heading"]
+        }
+
+        Gtk.Label details_desc {
+          wrap: true;
+          justify: center;
+          max-width-chars: 32;
+        }
+      }
+    };
+  }
+
+  [suffix]
+  Gtk.Image {
+    margin-start: 6;
+    icon-name: "go-next-symbolic";
+    visible: bind template.activatable;
+  }
+}

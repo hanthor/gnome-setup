@@ -1,0 +1,54 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupDiskSelectPage : $SetupBasePage {
+  title: _("Disk Selection");
+  can-next: false;
+
+  child: Adw.StatusPage header {
+    Gtk.Box {
+      orientation: vertical;
+      spacing: 18;
+
+      Gtk.ListBox disks {
+        visible: false;
+        selection-mode: none;
+
+        styles [ "boxed-list" ]
+      }
+
+      Gtk.Box {
+        orientation: vertical;
+        spacing: 12;
+        visible: bind unusable_disks.visible;
+
+        Gtk.Label unusable_disks_title {
+          label: _("Unusable Disks");
+          halign: start;
+          styles [ "heading" ]
+        }
+
+        Gtk.ListBox unusable_disks {
+          selection-mode: none;
+
+          accessibility {
+            labelled-by: unusable_disks_title;
+          }
+
+          styles [ "boxed-list" ]
+        }
+      }
+
+      Gtk.Button power_off_button {
+        label: _("_Power Off");
+        use-underline: true;
+        margin-top: 6;
+        halign: center;
+        clicked => $power_off();
+        styles [ "pill" ]
+      }
+
+    }
+  };
+}

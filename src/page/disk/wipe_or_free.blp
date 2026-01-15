@@ -1,0 +1,60 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupWipeOrFreePage : $SetupBasePage {
+  title: _("Existing Data Found");
+  can-next: false;
+
+  child: Adw.StatusPage heading {
+    title: _("Existing Data Found");
+    description: bind $apply_disk_name(template.disk as <$SetupDisk>.display_name, "Data detected on <b>{disk_name}</b>. Setup can use the entire disk, erasing all documents, software, and data on the disk, or install into available free space, preserving the existing data.") as <string>;
+
+    Gtk.Box {
+      orientation: vertical;
+      spacing: 12;
+
+      Adw.PreferencesGroup {
+        $SetupDiskRow {
+          disk: bind template.disk;
+          activatable: false;
+        }
+      }
+
+      Adw.PreferencesGroup {
+        Adw.ActionRow free_option {
+          [prefix]
+          Gtk.CheckButton free_radio {
+            active: true;
+          }
+
+          title: _("Install to Free Space");
+          subtitle: _("Use free space on the disk for installation, preserving data");
+          activatable-widget: free_radio;
+        }
+
+        Adw.ActionRow {
+          [prefix]
+          Gtk.CheckButton full_radio {
+            group: free_radio;
+          }
+
+          title: _("Use Entire Disk");
+          subtitle: _("Fully <b>erase all data</b> on disk and do a fresh installation");
+          activatable-widget: full_radio;
+        }
+      }
+
+      Gtk.Button go_btn {
+        label: _("Start _Installation");
+        use-underline: true;
+        halign: center;
+        margin-top: 24;
+
+        clicked => $install() swapped;
+
+        styles [ "pill", "suggested-action" ]
+      }
+    }
+  };
+}

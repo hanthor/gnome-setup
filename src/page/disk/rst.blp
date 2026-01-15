@@ -1,0 +1,20 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupRstPage : $SetupBasePage {
+  title: _("Intel RST");
+
+  ready: true;
+  next => $next() swapped;
+
+  child: Adw.StatusPage status {
+    icon-name: "drive-configuration-warning-symbolic";
+    title: _("Unsupported Disk Configuration");
+    description: _("Setup has detected that this device is using Intel Rapid Storage Technology (RST), which may interfere with Setup's ability to detect and display disks for installation. If the disk you want to install to is missing from the list in the next step, you may need to reconfigure Intel RST in the device's firmware settings.");
+
+    // TODO: This role is technically wrong (this isn't an alert), but it's
+    // the only way I could get the screen reader to read this...
+    accessible-role: alert;
+  };
+}
