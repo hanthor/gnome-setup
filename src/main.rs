@@ -23,6 +23,7 @@ fn main() -> glib::ExitCode {
     env::set_var("SETUP_OVERRIDE_IN_SESSION", "true");
     env::set_var("SETUP_OVERRIDE_OS_RELEASE_TYPE", "stable");
     env::set_var("SETUP_OVERRIDE_OS_EXPERIMENT", "");
+    env::set_var("SETUP_DEMO", "true");
 
     // Set up gettext translations
     bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).expect("Unable to bind the text domain");
@@ -80,6 +81,22 @@ pub fn in_session() -> bool {
         }
 
         env::var("XDG_SESSION_CLASS").map(|val| val == "user").unwrap_or(false)
+    })
+}
+
+pub fn is_demo() -> bool {
+    static ONCE: OnceLock<bool> = OnceLock::new();
+    *ONCE.get_or_init(|| {
+        let Ok(var) = env::var("SETUP_DEMO") else {
+            return false;
+        };
+        match var.parse() {
+            Ok(val) => val,
+            Err(e) => {
+                log::warn!("Failed to parse $SETUP_OVERRIDE_IN_SESSION: {e}");
+                false
+            }
+        }
     })
 }
 
