@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use crate::page::base::{BasePage, BasePageImpl};
-use adw::prelude::*;
 use adw::subclass::prelude::*;
 
+use glib::object::Cast;
 use gtk::glib;
 
 use crate::osinfo::OsInfoCallbacks;
+use crate::page::base::{BasePage, BasePageImpl};
 
 glib::wrapper! {
     pub struct DonePage(ObjectSubclass<imp::DonePage>)
@@ -14,16 +14,13 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-// https://github.com/gtk-rs/gtk-rs-core/issues/658
-impl Default for DonePage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
 impl DonePage {
     pub fn page() -> BasePage {
-        Self::default().upcast()
+        Self::new().upcast()
+    }
+
+    pub fn new() -> Self {
+        glib::Object::new()
     }
 }
 
@@ -31,7 +28,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/install/done_page.blp")]
+    #[template(file = "src/page/done/done_page.blp")]
     pub struct DonePage {
         #[template_child]
         info: TemplateChild<adw::StatusPage>,

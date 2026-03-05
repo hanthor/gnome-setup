@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use adw::prelude::*;
+use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 use adw::subclass::prelude::*;
+use glib::object::Cast;
 
 use super::select::DiskSelectPage as Next;
-use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 
 glib::wrapper! {
     pub struct RstPage(ObjectSubclass<imp::RstPage>)
@@ -12,15 +12,16 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-// https://github.com/gtk-rs/gtk-rs-core/issues/658
-impl Default for RstPage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
 impl RstPage {
     pub fn page() -> BasePage {
+        if let Some(page) = Self::new() {
+            page.upcast()
+        } else {
+            Next::page()
+        }
+    }
+
+    pub fn new() -> Option<Self> {
         // Adapted from https://github.com/canonical/subiquity/blob/3b8f018/subiquity/server/controllers/filesystem.py#L1000-L1006
         let using_rst = glob::glob("/sys/module/ahci/drivers/pci:ahci/*/remapped_nvme")
             .unwrap()
@@ -30,9 +31,9 @@ impl RstPage {
             .any(|num_remapped| num_remapped > 0);
 
         if using_rst {
-            Self::default().upcast()
+            Some(glib::Object::new())
         } else {
-            Next::page()
+            None
         }
     }
 }
@@ -41,7 +42,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/disk/rst.blp")]
+    #[template(file = "src/page/installer/disk/rst.blp")]
     pub struct RstPage;
 
     #[glib::object_subclass]

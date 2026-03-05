@@ -7,12 +7,12 @@ use glib::clone;
 
 use gettextrs::gettext;
 
+use super::super::install::InstallPage;
 use super::confirm;
 use super::disk_row::DiskRow;
 use super::wipe_or_free::WipeOrFreePage;
 use crate::models::disk::{Disk, DiskStatus, DisksModel};
 use crate::osinfo;
-use crate::page::InstallPage;
 
 glib::wrapper! {
     pub struct DiskSelectPage(ObjectSubclass<imp::DiskSelectPage>)
@@ -20,16 +20,13 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-// https://github.com/gtk-rs/gtk-rs-core/issues/658
-impl Default for DiskSelectPage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
 impl DiskSelectPage {
     pub fn page() -> BasePage {
-        Self::default().upcast()
+        Self::new().upcast()
+    }
+
+    pub fn new() -> Self {
+        glib::Object::new()
     }
 }
 
@@ -37,7 +34,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "src/page/disk/select.blp")]
+    #[template(file = "src/page/installer/disk/select.blp")]
     pub struct DiskSelectPage {
         #[template_child]
         header: TemplateChild<adw::StatusPage>,
@@ -188,7 +185,7 @@ mod imp {
                 self.obj(),
                 async move {
                     if confirm::nondestructive(&obj).await {
-                        obj.go_subpage(InstallPage::page(disk).await);
+                        obj.go_subpage(InstallPage::new(&disk, false));
                     }
                 }
             ));
@@ -200,7 +197,7 @@ mod imp {
                 self.obj(),
                 async move {
                     if confirm::full_wipe(&obj).await {
-                        obj.go_subpage(InstallPage::page(disk).await);
+                        obj.go_subpage(InstallPage::new(&disk, true));
                     }
                 }
             ));
@@ -212,7 +209,7 @@ mod imp {
                 self.obj(),
                 async move {
                     if confirm::insufficient_wipe(&obj).await {
-                        obj.go_subpage(InstallPage::page(disk).await);
+                        obj.go_subpage(InstallPage::new(&disk, true));
                     }
                 }
             ));

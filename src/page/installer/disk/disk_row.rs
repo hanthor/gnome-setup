@@ -26,7 +26,7 @@ mod imp {
     use std::cell::RefCell;
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(file = "src/page/disk/disk_row.blp")]
+    #[template(file = "src/page/installer/disk/disk_row.blp")]
     #[properties(wrapper_type = super::DiskRow)]
     pub struct DiskRow {
         #[property(get, set = Self::set_disk, explicit_notify)]

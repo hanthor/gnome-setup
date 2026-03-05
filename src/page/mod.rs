@@ -1,16 +1,16 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 mod base;
-mod disk;
+mod done;
 mod eula;
-mod install;
+mod installer;
 mod language;
 mod prerelease;
 mod welcome;
 
 pub use base::BasePage;
+pub use done::DonePage;
 pub use eula::EulaPage;
-pub use install::InstallPage;
 pub use language::LanguagePage;
 pub use prerelease::PrereleasePage;
 pub use welcome::WelcomePage;

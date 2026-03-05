@@ -1,14 +1,14 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
 use formatx::formatx;
 
+use super::super::install::InstallPage;
 use super::confirm;
 use crate::models::disk::Disk;
-use crate::page::InstallPage;
+use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 
 glib::wrapper! {
     pub struct WipeOrFreePage(ObjectSubclass<imp::WipeOrFreePage>)
@@ -32,7 +32,7 @@ mod imp {
     use std::cell::RefCell;
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(file = "src/page/disk/wipe_or_free.blp")]
+    #[template(file = "src/page/installer/disk/wipe_or_free.blp")]
     #[properties(wrapper_type = super::WipeOrFreePage)]
     pub struct WipeOrFreePage {
         #[property(get, set)]
@@ -77,8 +77,8 @@ mod imp {
             if !self.free_radio.is_active() && !confirm::expected_wipe(&*self.obj()).await {
                 return;
             }
-
-            self.obj().go_subpage(InstallPage::page(disk).await);
+            let wipe = !self.free_radio.is_active();
+            self.obj().go_subpage(InstallPage::new(&disk, wipe));
         }
 
         #[template_callback(function)]

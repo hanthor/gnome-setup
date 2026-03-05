@@ -7,7 +7,7 @@ use gtk::glib;
 
 use crate::osinfo;
 use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
-use crate::page::disk::DiskPages as Next;
+use crate::page::installer::InstallerPage as Next;
 
 glib::wrapper! {
     pub struct WelcomePage(ObjectSubclass<imp::WelcomePage>)
@@ -55,9 +55,6 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             osinfo::bind_logo(self.info.get(), "icon-name");
-
-            // Pre-load the list of disks, so that they're ready for the user to press next
-            Next::preload();
         }
     }
 
@@ -69,7 +66,7 @@ mod imp {
     impl WelcomePage {
         #[template_callback]
         fn on_install(&self) {
-            self.obj().go_subpage(Next::page());
+            self.obj().go_subpage(Next::new());
         }
 
         #[template_callback]
