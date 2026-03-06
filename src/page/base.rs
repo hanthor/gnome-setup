@@ -65,7 +65,7 @@ pub trait BasePageExt: IsA<BasePage> + IsA<gtk::Widget> {
 
 pub mod subclass {
     pub use super::*;
-    pub use adw::subclass::prelude::*;
+    
 
     pub trait BasePageImpl: NavigationPageImpl {}
 }
