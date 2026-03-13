@@ -7,7 +7,7 @@ use gtk::glib;
 
 use crate::osinfo;
 use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
-use crate::page::DiskPages as Next;
+use crate::page::disk::DiskPages as Next;
 
 glib::wrapper! {
     pub struct WelcomePage(ObjectSubclass<imp::WelcomePage>)
@@ -15,16 +15,9 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-// https://github.com/gtk-rs/gtk-rs-core/issues/658
-impl Default for WelcomePage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
 impl WelcomePage {
-    pub async fn page() -> BasePage {
-        Self::default().upcast()
+    pub fn page() -> BasePage {
+        glib::Object::new::<WelcomePage>().upcast()
     }
 }
 
@@ -76,7 +69,7 @@ mod imp {
     impl WelcomePage {
         #[template_callback]
         fn on_install(&self) {
-            self.obj().go_next(Next::page());
+            self.obj().go_subpage(Next::page());
         }
 
         #[template_callback]

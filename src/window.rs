@@ -52,9 +52,9 @@ mod imp {
                 self,
                 async move {
                     let page: BasePage = if crate::in_session() {
-                        WelcomePage::page().await
+                        WelcomePage::page()
                     } else {
-                        LanguagePage::page().await
+                        LanguagePage::page()
                     };
 
                     page.set_can_pop(false);

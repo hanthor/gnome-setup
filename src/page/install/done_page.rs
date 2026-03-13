@@ -22,7 +22,7 @@ impl Default for DonePage {
 }
 
 impl DonePage {
-    pub async fn page() -> BasePage {
+    pub fn page() -> BasePage {
         Self::default().upcast()
     }
 }

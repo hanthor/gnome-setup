@@ -21,7 +21,7 @@ impl WipeOrFreePage {
         glib::Object::builder().property("disk", disk).build()
     }
 
-    pub async fn page(disk: Disk) -> BasePage {
+    pub fn page(disk: Disk) -> BasePage {
         Self::new(&disk).upcast()
     }
 }
@@ -78,7 +78,7 @@ mod imp {
                 return;
             }
 
-            self.obj().go_next(InstallPage::page(disk));
+            self.obj().go_subpage(InstallPage::page(disk).await);
         }
 
         #[template_callback(function)]

@@ -10,8 +10,8 @@ mod wipe_or_free;
 pub struct DiskPages;
 
 impl DiskPages {
-    pub async fn page() -> crate::page::BasePage {
-        rst::RstPage::page().await
+    pub fn page() -> crate::page::BasePage {
+        rst::RstPage::page()
     }
 
     pub fn preload() {

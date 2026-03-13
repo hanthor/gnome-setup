@@ -70,7 +70,7 @@ impl InstallPage {
 
         disk.install(false).await;
         // TODO: show error page if install failed
-        self.go_next(DonePage::page());
+        self.go_subpage(DonePage::page());
     }
 
     fn update_install_progress(&self) {

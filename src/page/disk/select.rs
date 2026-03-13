@@ -28,7 +28,7 @@ impl Default for DiskSelectPage {
 }
 
 impl DiskSelectPage {
-    pub async fn page() -> BasePage {
+    pub fn page() -> BasePage {
         Self::default().upcast()
     }
 }
@@ -179,7 +179,7 @@ mod imp {
         }
 
         fn data_detected(&self, disk: Disk) {
-            self.obj().go_next(WipeOrFreePage::page(disk));
+            self.obj().go_subpage(WipeOrFreePage::page(disk));
         }
 
         fn nondestructive(&self, disk: Disk) {
@@ -188,7 +188,7 @@ mod imp {
                 self.obj(),
                 async move {
                     if confirm::nondestructive(&obj).await {
-                        obj.go_next(InstallPage::page(disk));
+                        obj.go_subpage(InstallPage::page(disk).await);
                     }
                 }
             ));
@@ -200,7 +200,7 @@ mod imp {
                 self.obj(),
                 async move {
                     if confirm::full_wipe(&obj).await {
-                        obj.go_next(InstallPage::page(disk));
+                        obj.go_subpage(InstallPage::page(disk).await);
                     }
                 }
             ));
@@ -212,7 +212,7 @@ mod imp {
                 self.obj(),
                 async move {
                     if confirm::insufficient_wipe(&obj).await {
-                        obj.go_next(InstallPage::page(disk));
+                        obj.go_subpage(InstallPage::page(disk).await);
                     }
                 }
             ));

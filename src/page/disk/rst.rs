@@ -20,7 +20,7 @@ impl Default for RstPage {
 }
 
 impl RstPage {
-    pub async fn page() -> BasePage {
+    pub fn page() -> BasePage {
         // Adapted from https://github.com/canonical/subiquity/blob/3b8f018/subiquity/server/controllers/filesystem.py#L1000-L1006
         let using_rst = glob::glob("/sys/module/ahci/drivers/pci:ahci/*/remapped_nvme")
             .unwrap()
@@ -32,7 +32,7 @@ impl RstPage {
         if using_rst {
             Self::default().upcast()
         } else {
-            Next::page().await
+            Next::page()
         }
     }
 }
@@ -69,7 +69,7 @@ mod imp {
     impl RstPage {
         #[template_callback]
         fn next(&self) {
-            self.obj().go_next(Next::page());
+            self.obj().go_subpage(Next::page());
         }
     }
 }

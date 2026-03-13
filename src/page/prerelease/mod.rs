@@ -15,19 +15,14 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-// https://github.com/gtk-rs/gtk-rs-core/issues/658
-impl Default for PrereleasePage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
 impl PrereleasePage {
-    pub async fn page() -> BasePage {
+    pub fn page() -> BasePage {
         use osinfo::ReleaseType as R;
         match osinfo::release_type() {
-            R::PreRelease | R::Experimental { .. } => Self::default().upcast(),
-            R::Stable | R::Lts => Next::page().await,
+            R::PreRelease | R::Experimental { .. } => {
+                glib::Object::new::<PrereleasePage>().upcast()
+            }
+            R::Stable | R::Lts => Next::page(),
         }
     }
 }
@@ -91,7 +86,7 @@ mod imp {
     impl PrereleasePage {
         #[template_callback]
         fn next(&self) {
-            self.obj().go_next(Next::page());
+            self.obj().go_subpage(Next::page());
         }
     }
 }

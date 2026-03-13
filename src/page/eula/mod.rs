@@ -23,19 +23,12 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-// https://github.com/gtk-rs/gtk-rs-core/issues/658
-impl Default for EulaPage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
 impl EulaPage {
-    pub async fn page() -> BasePage {
+    pub fn page() -> BasePage {
         if read_xml().is_empty() {
-            Next::page().await
+            Next::page().upcast()
         } else {
-            Self::default().upcast()
+            glib::Object::new::<EulaPage>().upcast()
         }
     }
 }
@@ -116,7 +109,7 @@ mod imp {
 
         #[template_callback]
         fn next(&self) {
-            self.obj().go_next(Next::page());
+            self.obj().go_subpage(Next::page());
         }
     }
 }

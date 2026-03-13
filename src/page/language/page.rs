@@ -35,16 +35,9 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-// https://github.com/gtk-rs/gtk-rs-core/issues/658
-impl Default for LanguagePage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
 impl LanguagePage {
-    pub async fn page() -> BasePage {
-        Self::default().upcast()
+    pub fn page() -> BasePage {
+        glib::Object::new::<LanguagePage>().upcast()
     }
 }
 
@@ -175,7 +168,7 @@ mod imp {
                 }
             });
 
-            self.obj().go_next(Next::page());
+            self.obj().go_subpage(Next::page());
         }
     }
 }

@@ -4,7 +4,6 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 
 use std::cell::Cell;
-use std::future::IntoFuture;
 use std::marker::PhantomData;
 use std::sync::OnceLock;
 
@@ -25,41 +24,16 @@ impl BasePage {
     }
 }
 
-pub trait BasePageExt: IsA<BasePage> + IsA<gtk::Widget> {
-    fn go_next<F>(&self, next: F)
-    where
-        F: IntoFuture<Output = BasePage> + 'static,
-    {
-        // Project Convention: Types that are BasePages should have a associated function that
-        // looks like:            pub async fn page(<any arguments>) -> BasePage
-        // This should return either a newly-constructed Self, or call some other page's ::page()
-        // function. This is how we handle the ordering of pages, conditional skipping, and so on.
-        // This function should only ever called w/ the return value of one of these page
-        // invocations.
-        //
-        // We're not using a trait to enforce this convention because some pages need additional
-        // data passed into them at construction time. It would get needlessly messy
-
+pub trait BasePageExt: IsA<BasePage> {
+    /// Convenience method to add a new subpage to the `adw::NavigationView`
+    fn go_subpage(&self, page: impl IsA<BasePage>) {
         let nav = self
+            .upcast_ref::<BasePage>()
             .ancestor(adw::NavigationView::static_type())
             .and_downcast::<adw::NavigationView>()
             .unwrap();
 
-        glib::spawn_future_local(glib::clone!(
-            #[strong(rename_to = curr)]
-            self,
-            #[strong]
-            nav,
-            async move {
-                nav.set_cursor_from_name(Some("wait"));
-                curr.set_sensitive(false);
-
-                nav.push(&next.await);
-
-                nav.set_cursor(None);
-                curr.set_sensitive(true);
-            }
-        ));
+        nav.push(&page.upcast());
     }
 }
 
@@ -231,6 +205,6 @@ mod imp {
     }
 }
 
-impl<O: IsA<BasePage> + IsA<gtk::Widget>> BasePageExt for O {}
+impl<O: IsA<BasePage>> BasePageExt for O {}
 
 unsafe impl<T: BasePageImpl> IsSubclassable<T> for BasePage {}

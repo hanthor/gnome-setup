@@ -9,7 +9,6 @@ mod prerelease;
 mod welcome;
 
 pub use base::BasePage;
-pub use disk::DiskPages;
 pub use eula::EulaPage;
 pub use install::InstallPage;
 pub use language::LanguagePage;
