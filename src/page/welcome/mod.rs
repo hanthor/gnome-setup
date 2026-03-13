@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use crate::page::subclass::*;
-use adw::prelude::*;
 use adw::subclass::prelude::*;
+use glib::object::Cast;
 
 use gtk::glib;
 
 use crate::osinfo;
+use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 use crate::page::DiskPages as Next;
 
 glib::wrapper! {

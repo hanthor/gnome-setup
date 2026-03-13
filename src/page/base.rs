@@ -63,12 +63,7 @@ pub trait BasePageExt: IsA<BasePage> + IsA<gtk::Widget> {
     }
 }
 
-pub mod subclass {
-    pub use super::*;
-    
-
-    pub trait BasePageImpl: NavigationPageImpl {}
-}
+pub trait BasePageImpl: NavigationPageImpl {}
 
 mod imp {
     use super::*;
@@ -238,4 +233,4 @@ mod imp {
 
 impl<O: IsA<BasePage> + IsA<gtk::Widget>> BasePageExt for O {}
 
-unsafe impl<T: subclass::BasePageImpl> IsSubclassable<T> for BasePage {}
+unsafe impl<T: BasePageImpl> IsSubclassable<T> for BasePage {}

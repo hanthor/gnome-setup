@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
 use super::select::DiskSelectPage as Next;
+use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 
 glib::wrapper! {
     pub struct RstPage(ObjectSubclass<imp::RstPage>)

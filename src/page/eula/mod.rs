@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use crate::page::subclass::*;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use appstream::prelude::*;
@@ -13,6 +12,7 @@ use quick_xml::de::from_str;
 use serde::{Deserialize, Deserializer};
 
 use crate::config::PKGDATADIR;
+use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 use crate::page::WelcomePage as Next;
 
 const EULA_PATH: &str = concat!(PKGDATADIR, "/eula.xml");

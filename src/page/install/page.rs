@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use crate::page::subclass::*;
+use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use formatx::formatx;
