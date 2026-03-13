@@ -7,7 +7,7 @@ project('gnome-setup', 'rust',
 i18n = import('i18n')
 gnome = import('gnome')
 
-repart_definitions_dir = get_option('prefix') / get_option('libdir') / meson.project_name() / 'definitions'
+config_dir = get_option('prefix') / get_option('libdir') / meson.project_name()
 
 subdir('data')
 subdir('src')

@@ -13,7 +13,6 @@ use serde::{Deserialize, Deserializer};
 
 use crate::config::PKGDATADIR;
 use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
-use crate::page::WelcomePage as Next;
 
 const EULA_PATH: &str = concat!(PKGDATADIR, "/eula.xml");
 
@@ -24,11 +23,11 @@ glib::wrapper! {
 }
 
 impl EulaPage {
-    pub fn page() -> BasePage {
+    pub fn new() -> Option<Self> {
         if read_xml().is_empty() {
-            Next::page().upcast()
+            None
         } else {
-            glib::Object::new::<EulaPage>().upcast()
+            Some(glib::Object::new())
         }
     }
 }
@@ -109,7 +108,7 @@ mod imp {
 
         #[template_callback]
         fn next(&self) {
-            self.obj().go_subpage(Next::page());
+            self.obj().go_next();
         }
     }
 }

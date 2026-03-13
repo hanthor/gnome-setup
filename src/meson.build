@@ -6,7 +6,8 @@ conf.set_quoted('LOCALEDIR', get_option('prefix') / get_option('localedir'))
 conf.set_quoted('PKGDATADIR',
 	get_option('prefix') / get_option('datadir') / meson.project_name()
 )
-conf.set_quoted('REPART_DEFINITIONS_DIR', repart_definitions_dir)
+conf.set_quoted('REPART_DEFINITIONS_DIR', config_dir / 'definitions')
+conf.set_quoted('PAGES_CONFIG_DIR', config_dir)
 
 configure_file(
     input: 'config.rs.in',

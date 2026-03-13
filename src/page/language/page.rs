@@ -15,7 +15,6 @@ use crate::models::language::POPULAR_LOCALES;
 use crate::window::Window;
 
 use super::picker::LanguagePicker;
-use crate::page::PrereleasePage as Next;
 
 /*
 use zbus::{proxy};
@@ -38,8 +37,8 @@ glib::wrapper! {
 }
 
 impl LanguagePage {
-    pub fn page() -> BasePage {
-        glib::Object::new::<LanguagePage>().upcast()
+    pub fn new() -> Self {
+        glib::Object::new()
     }
 }
 
@@ -190,7 +189,7 @@ mod imp {
         #[template_callback]
         fn on_next(&self) {
             let Some(selected) = self.picker.selected() else {
-                self.obj().go_subpage(Next::page());
+                self.obj().go_next();
                 return;
             };
 
@@ -208,7 +207,7 @@ mod imp {
                 }
             });
 
-            self.obj().go_subpage(Next::page());
+            self.obj().go_next();
         }
     }
 }

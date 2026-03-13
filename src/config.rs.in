@@ -2,3 +2,4 @@ pub const GETTEXT_PACKAGE: &str = @GETTEXT_PACKAGE@;
 pub const LOCALEDIR: &str = @LOCALEDIR@;
 pub const REPART_DEFINITIONS_DIR: &str = @REPART_DEFINITIONS_DIR@;
 pub const PKGDATADIR: &str = @PKGDATADIR@;
+pub const PAGES_CONFIG_DIR: &str = @PAGES_CONFIG_DIR@;

@@ -11,7 +11,6 @@ use std::cell::RefCell;
 
 use crate::models::disk::{Disk, InstallPhase};
 use crate::osinfo;
-use crate::page::DonePage;
 
 glib::wrapper! {
     pub struct InstallPage(ObjectSubclass<imp::InstallPage>)
@@ -70,7 +69,7 @@ impl InstallPage {
         disk.disconnect(handle2);
 
         // TODO: show error page if install failed
-        self.go_subpage(DonePage::page());
+        self.go_next();
     }
 }
 

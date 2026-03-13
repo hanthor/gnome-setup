@@ -1,13 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 use adw::subclass::prelude::*;
-use glib::object::Cast;
 
 use gtk::glib;
 
 use crate::osinfo;
 use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
-use crate::page::installer::InstallerPage as Next;
 
 glib::wrapper! {
     pub struct WelcomePage(ObjectSubclass<imp::WelcomePage>)
@@ -16,8 +14,8 @@ glib::wrapper! {
 }
 
 impl WelcomePage {
-    pub fn page() -> BasePage {
-        glib::Object::new::<WelcomePage>().upcast()
+    pub fn new() -> Self {
+        glib::Object::new()
     }
 }
 
@@ -66,7 +64,7 @@ mod imp {
     impl WelcomePage {
         #[template_callback]
         fn on_install(&self) {
-            self.obj().go_subpage(Next::new());
+            self.obj().go_next();
         }
 
         #[template_callback]

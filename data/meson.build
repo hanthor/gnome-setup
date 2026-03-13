@@ -36,7 +36,11 @@ test('Validate schema file',
 install_subdir(
   'definitions',
   strip_directory: true,
-  install_dir: repart_definitions_dir,
+  install_dir:  config_dir / 'definitions',
+)
+
+install_data('pages.conf',
+  install_dir: config_dir,
 )
 
 subdir('icons')

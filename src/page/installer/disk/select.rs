@@ -21,10 +21,6 @@ glib::wrapper! {
 }
 
 impl DiskSelectPage {
-    pub fn page() -> BasePage {
-        Self::new().upcast()
-    }
-
     pub fn new() -> Self {
         glib::Object::new()
     }
@@ -176,7 +172,7 @@ mod imp {
         }
 
         fn data_detected(&self, disk: Disk) {
-            self.obj().go_subpage(WipeOrFreePage::page(disk));
+            self.obj().go_subpage(WipeOrFreePage::new(&disk));
         }
 
         fn nondestructive(&self, disk: Disk) {

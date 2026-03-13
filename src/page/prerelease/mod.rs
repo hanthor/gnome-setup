@@ -7,7 +7,6 @@ use adw::subclass::prelude::*;
 use gtk::glib;
 
 use crate::osinfo;
-use crate::page::EulaPage as Next;
 
 glib::wrapper! {
     pub struct PrereleasePage(ObjectSubclass<imp::PrereleasePage>)
@@ -16,13 +15,11 @@ glib::wrapper! {
 }
 
 impl PrereleasePage {
-    pub fn page() -> BasePage {
+    pub fn new() -> Option<Self> {
         use osinfo::ReleaseType as R;
         match osinfo::release_type() {
-            R::PreRelease | R::Experimental { .. } => {
-                glib::Object::new::<PrereleasePage>().upcast()
-            }
-            R::Stable | R::Lts => Next::page(),
+            R::PreRelease | R::Experimental { .. } => Some(glib::Object::new()),
+            R::Stable | R::Lts => None,
         }
     }
 }
@@ -86,7 +83,7 @@ mod imp {
     impl PrereleasePage {
         #[template_callback]
         fn next(&self) {
-            self.obj().go_subpage(Next::page());
+            self.obj().go_next();
         }
     }
 }

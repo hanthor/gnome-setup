@@ -2,7 +2,6 @@
 
 use adw::subclass::prelude::*;
 
-use glib::object::Cast;
 use gtk::glib;
 
 use crate::osinfo::OsInfoCallbacks;
@@ -15,10 +14,6 @@ glib::wrapper! {
 }
 
 impl DonePage {
-    pub fn page() -> BasePage {
-        Self::new().upcast()
-    }
-
     pub fn new() -> Self {
         glib::Object::new()
     }

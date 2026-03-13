@@ -2,9 +2,8 @@
 
 use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 use adw::subclass::prelude::*;
-use glib::object::Cast;
 
-use super::select::DiskSelectPage as Next;
+use super::select::DiskSelectPage;
 
 glib::wrapper! {
     pub struct RstPage(ObjectSubclass<imp::RstPage>)
@@ -13,14 +12,6 @@ glib::wrapper! {
 }
 
 impl RstPage {
-    pub fn page() -> BasePage {
-        if let Some(page) = Self::new() {
-            page.upcast()
-        } else {
-            Next::page()
-        }
-    }
-
     pub fn new() -> Option<Self> {
         // Adapted from https://github.com/canonical/subiquity/blob/3b8f018/subiquity/server/controllers/filesystem.py#L1000-L1006
         let using_rst = glob::glob("/sys/module/ahci/drivers/pci:ahci/*/remapped_nvme")
@@ -70,7 +61,7 @@ mod imp {
     impl RstPage {
         #[template_callback]
         fn next(&self) {
-            self.obj().go_subpage(Next::page());
+            self.obj().go_subpage(DiskSelectPage::new());
         }
     }
 }

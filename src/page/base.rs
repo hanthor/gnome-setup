@@ -10,6 +10,7 @@ use std::sync::OnceLock;
 
 use glib::subclass::Signal;
 
+use crate::window::Window;
 pub use imp::BasePagePropertiesExt;
 
 glib::wrapper! {
@@ -19,6 +20,13 @@ glib::wrapper! {
 }
 
 pub trait BasePageExt: IsA<BasePage> {
+    /// Convenience method to go to the next page in the `adw::NavigationView`
+    fn go_next(&self) {
+        let window = self.upcast_ref::<BasePage>().root().and_downcast::<Window>().unwrap();
+
+        window.next_page()
+    }
+
     /// Convenience method to add a new subpage to the `adw::NavigationView`
     fn go_subpage(&self, page: impl IsA<BasePage>) {
         let nav = self

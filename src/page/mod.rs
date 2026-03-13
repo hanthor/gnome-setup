@@ -11,6 +11,7 @@ mod welcome;
 pub use base::{BasePage, BasePageExt};
 pub use done::DonePage;
 pub use eula::EulaPage;
+pub use installer::InstallerPage;
 pub use language::LanguagePage;
 pub use prerelease::PrereleasePage;
 pub use welcome::WelcomePage;
