@@ -5,7 +5,8 @@ use adw::subclass::prelude::*;
 
 use gtk::gio;
 
-use crate::page::{BasePage, LanguagePage, WelcomePage};
+use crate::models::language::LanguageModel;
+use crate::page::{BasePage, BasePageExt, LanguagePage, WelcomePage};
 
 glib::wrapper! {
     pub struct Window(ObjectSubclass<imp::Window>)
@@ -16,6 +17,32 @@ glib::wrapper! {
 impl Window {
     pub fn new(application: &impl IsA<gtk::Application>) -> Self {
         glib::Object::builder().property("application", application).build()
+    }
+
+    pub fn locale_changed(&self) {
+        for lang in LanguageModel::default().iter() {
+            lang.reload_locale();
+        }
+
+        let stack: Vec<adw::NavigationPage> = self
+            .imp()
+            .nav
+            .navigation_stack()
+            .iter::<adw::NavigationPage>()
+            .map(|page| {
+                page.ok()
+                    .and_downcast::<BasePage>()
+                    .unwrap()
+                    .rebuild()
+                    .upcast::<adw::NavigationPage>()
+            })
+            .collect();
+
+        if let Some(first_page) = stack.first() {
+            first_page.set_can_pop(false);
+        }
+
+        self.imp().nav.replace(&stack);
     }
 }
 

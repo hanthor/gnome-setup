@@ -8,7 +8,7 @@ mod language;
 mod prerelease;
 mod welcome;
 
-pub use base::BasePage;
+pub use base::{BasePage, BasePageExt};
 pub use done::DonePage;
 pub use eula::EulaPage;
 pub use language::LanguagePage;

@@ -3,6 +3,7 @@ using Gtk 4.0;
 using Adw 1;
 
 template $SetupLanguagePage : $SetupBasePage {
+  title: _("Language");
   default-clamp: false;
   ready: true;
 
@@ -27,6 +28,7 @@ template $SetupLanguagePage : $SetupBasePage {
 
       $SetupLanguagePicker picker {
         notify::selected => $selected_changed() swapped;
+        notify::languages => $languages_changed() swapped;
       }
     }
   };

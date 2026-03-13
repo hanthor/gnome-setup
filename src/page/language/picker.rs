@@ -4,7 +4,6 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 
 use crate::models::language::{Language, LanguageModel};
-use gettextrs::gettext;
 
 use super::filter::LanguageFilter;
 use super::picker_row::LanguagePickerRow;
@@ -13,12 +12,6 @@ glib::wrapper! {
     pub struct LanguagePicker(ObjectSubclass<imp::LanguagePicker>)
         @extends gtk::Widget, gtk::Box,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
-}
-
-impl LanguagePicker {
-    pub fn reload_locale(&self) {
-        self.imp().load_locale()
-    }
 }
 
 mod imp {
@@ -142,16 +135,6 @@ mod imp {
                 self.empty.get().upcast()
             };
             self.switcher.set_visible_child(&child);
-        }
-
-        pub(super) fn load_locale(&self) {
-            self.searchbox.set_placeholder_text(Some(&gettext("Search languages")));
-            self.empty.set_title(&gettext("No Results Found"));
-            self.empty.set_description(Some(&gettext("Try a different search")));
-
-            for lang in LanguageModel::default().iter() {
-                lang.reload_locale();
-            }
         }
 
         fn selected(&self) -> Option<String> {

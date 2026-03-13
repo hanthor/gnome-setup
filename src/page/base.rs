@@ -2,12 +2,12 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+use glib::object::ObjectBuilder;
 
 use std::cell::Cell;
 use std::marker::PhantomData;
 use std::sync::OnceLock;
 
-use gettextrs::gettext;
 use glib::subclass::Signal;
 
 pub use imp::BasePagePropertiesExt;
@@ -16,12 +16,6 @@ glib::wrapper! {
     pub struct BasePage(ObjectSubclass<imp::BasePage>)
         @extends gtk::Widget, adw::NavigationPage,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
-}
-
-impl BasePage {
-    pub fn reload_locale(&self) {
-        self.imp().reload_locale();
-    }
 }
 
 pub trait BasePageExt: IsA<BasePage> {
@@ -35,9 +29,33 @@ pub trait BasePageExt: IsA<BasePage> {
 
         nav.push(&page.upcast());
     }
+
+    fn rebuild(&self) -> BasePage {
+        let this = self.upcast_ref();
+        let class = this.class();
+
+        (class.as_ref().rebuild_widget)(this).build().downcast().unwrap()
+    }
 }
 
-pub trait BasePageImpl: NavigationPageImpl {}
+pub trait BasePageImplExt: BasePageImpl {
+    fn parent_rebuild_widget(&self) -> ObjectBuilder<'static, glib::Object> {
+        let data = Self::type_data();
+        let parent_class = unsafe { &*(data.as_ref().parent_class() as *const ffi::Class) };
+        let rebuild_widget = parent_class.rebuild_widget;
+
+        unsafe { rebuild_widget(self.obj().unsafe_cast_ref()) }
+    }
+}
+
+impl<T: IsA<BasePage>> BasePageExt for T {}
+impl<T: BasePageImpl> BasePageImplExt for T {}
+
+pub trait BasePageImpl: NavigationPageImpl + ObjectSubclass<Type: IsA<BasePage>> {
+    fn rebuild_widget(&self) -> ObjectBuilder<'static, glib::Object> {
+        self.parent_rebuild_widget()
+    }
+}
 
 mod imp {
     use super::*;
@@ -92,6 +110,7 @@ mod imp {
 
         type Type = super::BasePage;
         type ParentType = adw::NavigationPage;
+        type Class = super::ffi::Class;
 
         fn new() -> Self {
             Self {
@@ -103,12 +122,20 @@ mod imp {
         }
 
         fn class_init(klass: &mut Self::Class) {
+            klass.rebuild_widget = |obj| obj.imp().rebuild_widget_default();
+
             klass.bind_template();
             klass.bind_template_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
             obj.init_template();
+        }
+    }
+
+    impl BasePage {
+        fn rebuild_widget_default(&self) -> ObjectBuilder<'static, glib::Object> {
+            glib::Object::builder_with_type(self.obj().type_())
         }
     }
 
@@ -148,8 +175,6 @@ mod imp {
                 .and_downcast::<gtk::Window>()
                 .unwrap();
             window.set_deletable(self.can_close.get() && crate::in_session());
-
-            self.reload_locale();
         }
     }
 
@@ -196,15 +221,44 @@ mod imp {
         fn get_top_bar_height(&self) -> i32 {
             self.toolbarview.top_bar_height()
         }
-
-        pub(super) fn reload_locale(&self) {
-            self.back_btn.set_tooltip_text(Some(&gettext("Back")));
-            self.next_btn.set_tooltip_text(Some(&gettext("Next")));
-            self.mobile_next_btn.set_label(&gettext("_Next"));
-        }
     }
 }
 
-impl<O: IsA<BasePage>> BasePageExt for O {}
+unsafe impl<Obj: BasePageImpl> IsSubclassable<Obj> for BasePage {
+    fn class_init(class: &mut glib::Class<Self>) {
+        Self::parent_class_init::<Obj>(class);
 
-unsafe impl<T: BasePageImpl> IsSubclassable<T> for BasePage {}
+        let klass = class.as_mut();
+
+        klass.rebuild_widget = |obj| {
+            let this = unsafe { obj.unsafe_cast_ref::<<Obj as ObjectSubclass>::Type>().imp() };
+            BasePageImpl::rebuild_widget(this)
+        };
+    }
+}
+
+#[allow(dead_code)]
+pub mod ffi {
+    use glib::object::ObjectBuilder;
+
+    pub type Instance = <super::BasePage as super::ObjectSubclass>::Instance;
+
+    #[derive(Copy, Clone)]
+    #[repr(C)]
+    pub struct Class {
+        parent_class: adw::ffi::AdwNavigationPageClass,
+        pub(super) rebuild_widget: fn(&super::BasePage) -> ObjectBuilder<'static, glib::Object>,
+    }
+
+    unsafe impl glib::subclass::types::ClassStruct for Class {
+        type Type = super::imp::BasePage;
+    }
+
+    impl std::ops::Deref for Class {
+        type Target = adw::ffi::AdwNavigationPageClass;
+
+        fn deref(&self) -> &Self::Target {
+            &self.parent_class
+        }
+    }
+}

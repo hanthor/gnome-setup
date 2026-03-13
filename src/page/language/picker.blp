@@ -8,6 +8,7 @@ template $SetupLanguagePicker : Gtk.Box {
 
   Gtk.SearchEntry searchbox {
     search-changed => $on_search() swapped;
+    placeholder-text: _("Search languages");
   }
 
   Gtk.Stack switcher {
@@ -19,6 +20,8 @@ template $SetupLanguagePicker : Gtk.Box {
     }
 
     Adw.StatusPage empty {
+      title: _("No Results Found");
+      description: _("Try a different search");
       icon-name: "edit-find-symbolic";
     }
   }

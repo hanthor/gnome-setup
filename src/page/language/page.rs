@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
+use crate::page::base::{BasePage, BasePageExt, BasePageImpl, BasePageImplExt};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
@@ -11,6 +11,7 @@ use gettextrs::gettext;
 
 use crate::interfaces::LocaledProxy;
 use crate::models::language::POPULAR_LOCALES;
+use crate::window::Window;
 
 use super::picker::LanguagePicker;
 use crate::page::PrereleasePage as Next;
@@ -82,9 +83,6 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            // Populate UI w/ initial language
-            self.load_locale();
-
             let init_locale = crate::locale();
 
             // Setup the welcome switcher
@@ -105,7 +103,15 @@ mod imp {
 
     impl WidgetImpl for LanguagePage {}
     impl NavigationPageImpl for LanguagePage {}
-    impl BasePageImpl for LanguagePage {}
+    impl BasePageImpl for LanguagePage {
+        fn rebuild_widget(&self) -> glib::object::ObjectBuilder<'static, glib::Object> {
+            let builder = self.parent_rebuild_widget();
+
+            builder
+                .property("selected-language", self.obj().selected_language())
+                .property("languages", self.obj().languages())
+        }
+    }
 
     #[gtk::template_callbacks]
     impl LanguagePage {
@@ -146,13 +152,6 @@ mod imp {
             welcome.reorder(&welcome.nth_page(0), -1); // Infinite scrolling
         }
 
-        fn load_locale(&self) {
-            self.obj().upcast_ref::<BasePage>().reload_locale();
-
-            self.obj().set_title(&gettext("Language"));
-            self.picker.reload_locale();
-        }
-
         #[template_callback]
         fn selected_changed(&self) {
             let Some(locale) = self.picker.selected() else {
@@ -162,6 +161,12 @@ mod imp {
 
             // TODO: Change to the default recommended keyboard layout, if known
             gettextrs::setlocale(gettextrs::LocaleCategory::LcMessages, locale);
+
+            if self.init_locale.get().unwrap() != &crate::locale() {
+                if let Some(window) = self.obj().root().and_downcast::<Window>() {
+                    window.locale_changed();
+                }
+            }
 
             self.obj().notify("selected-language");
         }
