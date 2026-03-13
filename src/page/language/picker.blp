@@ -13,7 +13,8 @@ template $SetupLanguagePicker : Gtk.Box {
   Gtk.Stack switcher {
     Gtk.ListBox list {
       valign: start;
-      row-selected => $on_row_selected() swapped;
+      selection-mode: none;
+      row-activated => $on_row_activated() swapped;
       styles ["boxed-list"]
     }
 

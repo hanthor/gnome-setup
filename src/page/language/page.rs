@@ -1,16 +1,16 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-use crate::page::base::{BasePage, BasePageExt, BasePageImpl, BasePagePropertiesExt};
+use crate::page::base::{BasePage, BasePageExt, BasePageImpl};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell};
 use std::time::Duration;
 
 use gettextrs::gettext;
 
 use crate::interfaces::LocaledProxy;
-use crate::models::language::{Language, POPULAR_LOCALES};
+use crate::models::language::POPULAR_LOCALES;
 
 use super::picker::LanguagePicker;
 use crate::page::PrereleasePage as Next;
@@ -43,9 +43,11 @@ impl LanguagePage {
 
 mod imp {
     use super::*;
+    use std::marker::PhantomData;
 
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(file = "src/page/language/page.blp")]
+    #[properties(wrapper_type = super::LanguagePage)]
     pub struct LanguagePage {
         #[template_child]
         welcome: TemplateChild<adw::Carousel>,
@@ -53,6 +55,10 @@ mod imp {
 
         #[template_child]
         picker: TemplateChild<LanguagePicker>,
+
+        #[property(get = Self::selected_language, set = Self::set_selected_language, nullable)]
+        selected_language: PhantomData<Option<String>>,
+        init_locale: OnceCell<String>,
     }
 
     #[glib::object_subclass]
@@ -71,12 +77,15 @@ mod imp {
         }
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for LanguagePage {
         fn constructed(&self) {
             self.parent_constructed();
 
             // Populate UI w/ initial language
             self.load_locale();
+
+            let init_locale = crate::locale();
 
             // Setup the welcome switcher
             for &locale in POPULAR_LOCALES {
@@ -89,10 +98,8 @@ mod imp {
                         .build(),
                 );
             }
-            gettextrs::setlocale(gettextrs::LocaleCategory::LcMessages, "");
-
-            // Pre-select the locale if already set by something
-            self.picker.set_selected(Language::system_default_id());
+            gettextrs::setlocale(gettextrs::LocaleCategory::LcMessages, init_locale.clone());
+            self.init_locale.set(init_locale).unwrap();
         }
     }
 
@@ -102,6 +109,14 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl LanguagePage {
+        fn selected_language(&self) -> Option<String> {
+            self.picker.selected()
+        }
+
+        fn set_selected_language(&self, language: Option<String>) {
+            self.picker.set_selected(language);
+        }
+
         #[template_callback]
         fn on_shown(&self) {
             let obj = self.obj();
@@ -139,20 +154,24 @@ mod imp {
         }
 
         #[template_callback]
-        fn on_selected(&self, locale: Option<String>) {
-            self.obj().set_ready(locale.is_some());
+        fn selected_changed(&self) {
+            let Some(locale) = self.picker.selected() else {
+                self.obj().notify("selected-language");
+                return;
+            };
 
-            if let Some(locale) = locale {
-                gettextrs::setlocale(gettextrs::LocaleCategory::LcMessages, locale);
-                self.load_locale();
+            // TODO: Change to the default recommended keyboard layout, if known
+            gettextrs::setlocale(gettextrs::LocaleCategory::LcMessages, locale);
 
-                // TODO: Change to the default recommended keyboard layout, if known
-            }
+            self.obj().notify("selected-language");
         }
 
         #[template_callback]
         fn on_next(&self) {
-            let selected = self.picker.selected().unwrap();
+            let Some(selected) = self.picker.selected() else {
+                self.obj().go_subpage(Next::page());
+                return;
+            };
 
             glib::spawn_future_local(async move {
                 let localed = match LocaledProxy::new(crate::system_bus()).await {

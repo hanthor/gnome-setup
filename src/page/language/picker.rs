@@ -5,9 +5,6 @@ use adw::subclass::prelude::*;
 
 use crate::models::language::{Language, LanguageModel};
 use gettextrs::gettext;
-use glib::subclass::Signal;
-use std::marker::PhantomData;
-use std::sync::OnceLock;
 
 use super::filter::LanguageFilter;
 use super::picker_row::LanguagePickerRow;
@@ -26,6 +23,9 @@ impl LanguagePicker {
 
 mod imp {
     use super::*;
+
+    use glib::clone;
+    use std::cell::RefCell;
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(file = "src/page/language/picker.blp")]
@@ -46,8 +46,8 @@ mod imp {
         #[template_child]
         empty: TemplateChild<adw::StatusPage>,
 
-        #[property(get = Self::get_selected, set = Self::set_selected, nullable)]
-        selected: PhantomData<Option<String>>,
+        #[property(get = Self::selected, set = Self::set_selected, nullable, explicit_notify)]
+        selected: RefCell<Option<String>>,
     }
 
     #[glib::object_subclass]
@@ -79,22 +79,29 @@ mod imp {
 
     #[glib::derived_properties]
     impl ObjectImpl for LanguagePicker {
-        fn signals() -> &'static [Signal] {
-            static SIGNALS: OnceLock<Vec<Signal>> = OnceLock::new();
-            SIGNALS.get_or_init(|| {
-                vec![Signal::builder("selected").param_types([String::static_type()]).build()]
-            })
-        }
-
         fn constructed(&self) {
             self.parent_constructed();
 
             self.load_locale(); // Populate UI w/ initial language
 
-            self.list.bind_model(Some(&self.model), |obj| {
-                let lang = obj.downcast_ref::<Language>().unwrap();
-                LanguagePickerRow::new(lang).upcast()
-            });
+            self.list.bind_model(
+                Some(&self.model),
+                clone!(
+                    #[weak(rename_to = this)]
+                    self,
+                    #[upgrade_or_panic]
+                    move |obj| {
+                        let lang = obj.downcast_ref::<Language>().unwrap();
+
+                        let row = LanguagePickerRow::new(lang);
+                        if this.selected.borrow().as_ref() == Some(&lang.id()) {
+                            this.select_row(&row);
+                        }
+
+                        row.upcast()
+                    }
+                ),
+            );
 
             let obj = self.obj();
             self.model.connect_items_changed(glib::clone!(
@@ -117,11 +124,12 @@ mod imp {
         }
 
         #[template_callback]
-        fn on_row_selected(&self, row: Option<&gtk::ListBoxRow>) {
-            let lang: Option<String> = row
-                .map(|r| r.downcast_ref::<LanguagePickerRow>().unwrap())
-                .map(|r| r.language().id());
-            self.obj().emit_by_name::<()>("selected", &[&lang]);
+        fn on_row_activated(&self, row: &LanguagePickerRow) {
+            let selected = row.language().id();
+
+            self.selected.replace(Some(selected));
+            self.select_row(row);
+            self.obj().notify("selected");
         }
 
         fn on_changed(&self) {
@@ -146,21 +154,34 @@ mod imp {
             }
         }
 
-        fn get_selected(&self) -> Option<String> {
-            self.list
-                .selected_row()
-                .map(|r| r.downcast::<LanguagePickerRow>().unwrap())
-                .map(|r| r.language().id())
+        fn selected(&self) -> Option<String> {
+            self.selected.borrow().to_owned()
         }
 
         fn set_selected(&self, selection: Option<String>) {
-            let row: Option<LanguagePickerRow> = selection.and_then(|id| {
-                (0i32..)
-                    .zip(LanguageModel::default().iter())
-                    .find(|(_, lang)| lang.id() == id)
-                    .map(|(idx, _)| self.list.row_at_index(idx).unwrap().downcast().unwrap())
-            });
-            self.list.select_row(row.as_ref());
+            let row: Option<LanguagePickerRow> = if let Some(ref selection) = selection {
+                self.model
+                    .iter::<glib::Object>()
+                    .enumerate()
+                    .find(|(_, lang)| {
+                        &lang.as_ref().unwrap().downcast_ref::<Language>().unwrap().id()
+                            == selection
+                    })
+                    .map(|(idx, _)| self.list.row_at_index(idx as i32).unwrap().downcast().unwrap())
+            } else {
+                None
+            };
+
+            self.selected.replace(selection);
+            if let Some(row) = row {
+                self.select_row(&row);
+            }
+            self.obj().notify("selected");
+        }
+
+        fn select_row(&self, row: &LanguagePickerRow) {
+            row.set_state_flags(gtk::StateFlags::SELECTED, false);
+            row.update_state(&[gtk::accessible::State::Selected(Some(true))]);
         }
     }
 }
