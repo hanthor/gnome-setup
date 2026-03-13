@@ -18,6 +18,7 @@ mod imp {
     use super::*;
 
     use glib::clone;
+    use glib::collections::strv::StrV;
     use std::cell::RefCell;
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
@@ -41,6 +42,9 @@ mod imp {
 
         #[property(get = Self::selected, set = Self::set_selected, nullable, explicit_notify)]
         selected: RefCell<Option<String>>,
+        #[property(get = Self::languages, set = Self::set_languages)]
+        languages: RefCell<StrV>,
+        languages_filter: gtk::CustomFilter,
     }
 
     #[glib::object_subclass]
@@ -48,17 +52,6 @@ mod imp {
         const NAME: &'static str = "SetupLanguagePicker";
         type Type = super::LanguagePicker;
         type ParentType = gtk::Box;
-
-        fn new() -> Self {
-            let filter = LanguageFilter::default();
-            let model =
-                gtk::FilterListModel::new(Some(LanguageModel::default()), Some(filter.clone()));
-            Self {
-                filter,
-                model,
-                ..Default::default()
-            }
-        }
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -75,7 +68,13 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            self.load_locale(); // Populate UI w/ initial language
+            let filtered = gtk::FilterListModel::builder()
+                .model(&LanguageModel::default())
+                .filter(&self.languages_filter)
+                .build();
+
+            self.model.set_filter(Some(&self.filter));
+            self.model.set_model(Some(&filtered));
 
             self.list.bind_model(
                 Some(&self.model),
@@ -110,6 +109,23 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl LanguagePicker {
+        fn languages(&self) -> StrV {
+            self.languages.borrow().clone()
+        }
+
+        fn set_languages(&self, languages: StrV) {
+            self.languages.replace(languages.clone());
+
+            if languages.is_empty() {
+                self.languages_filter.unset_filter_func();
+            } else {
+                self.languages_filter.set_filter_func(move |item| {
+                    let lang = item.downcast_ref::<Language>().unwrap();
+                    languages.contains(lang.id().strip_suffix(".UTF-8").unwrap())
+                });
+            }
+        }
+
         #[template_callback]
         fn on_search(&self) {
             self.searchbox.grab_focus();

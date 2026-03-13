@@ -3,6 +3,7 @@
 use crate::page::base::{BasePage, BasePageExt, BasePageImpl, BasePageImplExt};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+use glib::collections::strv::StrV;
 
 use std::cell::{OnceCell, RefCell};
 use std::time::Duration;
@@ -59,6 +60,8 @@ mod imp {
 
         #[property(get = Self::selected_language, set = Self::set_selected_language, nullable)]
         selected_language: PhantomData<Option<String>>,
+        #[property(get = Self::languages, set = Self::set_languages)]
+        languages: PhantomData<StrV>,
         init_locale: OnceCell<String>,
     }
 
@@ -123,6 +126,14 @@ mod imp {
             self.picker.set_selected(language);
         }
 
+        fn languages(&self) -> StrV {
+            self.picker.languages()
+        }
+
+        fn set_languages(&self, languages: StrV) {
+            self.picker.set_languages(languages);
+        }
+
         #[template_callback]
         fn on_shown(&self) {
             let obj = self.obj();
@@ -169,6 +180,11 @@ mod imp {
             }
 
             self.obj().notify("selected-language");
+        }
+
+        #[template_callback]
+        fn languages_changed(&self) {
+            self.obj().notify("languages");
         }
 
         #[template_callback]
