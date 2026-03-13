@@ -13,8 +13,7 @@ use zlink::connection::{Connection, Socket};
 use zlink::service::{MethodReply, Service};
 use zlink::{Call, Server};
 
-use crate::interfaces::systemd_repart::{CandidateDevice, RunOutput};
-use crate::interfaces::{EmptyMode, ProgressPhase, RepartError};
+use super::systemd_repart::{CandidateDevice, EmptyMode, ProgressPhase, RepartError, RunOutput};
 
 const GIGA_BYTES: i64 = 1024 * 1024 * 1024;
 const MIN_DISK_SIZE: i64 = 20 * GIGA_BYTES;

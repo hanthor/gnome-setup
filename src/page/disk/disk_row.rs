@@ -5,7 +5,7 @@ use adw::subclass::prelude::*;
 use formatx::formatx;
 use gettextrs::gettext;
 
-use crate::models::{Disk, DiskStatus};
+use crate::models::disk::{Disk, DiskStatus};
 use crate::osinfo;
 
 glib::wrapper! {

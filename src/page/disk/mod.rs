@@ -15,6 +15,6 @@ impl DiskPages {
     }
 
     pub fn preload() {
-        crate::models::DisksModel::default(); // Constructing the model starts loading it
+        crate::models::disk::DisksModel::default(); // Constructing the model starts loading it
     }
 }

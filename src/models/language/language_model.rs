@@ -8,7 +8,7 @@ use std::cmp::Ordering;
 use gnome_desktop as gutil;
 use gtk::gio;
 
-use super::obj::{Language, LocaleParseError};
+use super::language::{Language, LocaleParseError};
 
 glib::wrapper! {
     pub struct LanguageModel(ObjectSubclass<imp::LanguageModel>)

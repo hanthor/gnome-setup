@@ -7,7 +7,7 @@ use adw::subclass::prelude::*;
 use formatx::formatx;
 
 use super::confirm;
-use crate::models::Disk;
+use crate::models::disk::Disk;
 use crate::page::InstallPage;
 
 glib::wrapper! {

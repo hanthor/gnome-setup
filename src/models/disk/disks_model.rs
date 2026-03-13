@@ -7,7 +7,7 @@ use gio::subclass::prelude::*;
 
 use gtk::gio;
 
-use crate::models::Disk;
+use super::disk::Disk;
 
 glib::wrapper! {
     pub struct DisksModel(ObjectSubclass<imp::DisksModel>)

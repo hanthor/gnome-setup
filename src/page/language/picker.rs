@@ -3,15 +3,13 @@
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 
+use crate::models::language::{Language, LanguageModel};
+use gettextrs::gettext;
+use glib::subclass::Signal;
 use std::marker::PhantomData;
 use std::sync::OnceLock;
 
-use gettextrs::gettext;
-use glib::subclass::Signal;
-
 use super::filter::LanguageFilter;
-use super::model::LanguageModel;
-use super::obj::Language;
 use super::picker_row::LanguagePickerRow;
 
 glib::wrapper! {

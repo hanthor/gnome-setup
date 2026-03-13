@@ -5,7 +5,7 @@ use gtk::subclass::prelude::*;
 
 use std::cell::RefCell;
 
-use super::obj::Language;
+use crate::models::language::{tokenize_and_casefold, Language};
 
 glib::wrapper! {
     pub struct LanguageFilter(ObjectSubclass<imp::LanguageFilter>)
@@ -90,46 +90,4 @@ mod imp {
             true
         }
     }
-}
-
-fn tokenize_and_casefold_internal(
-    arg: &str,
-    translit_locale: Option<&str>,
-    alts: bool,
-) -> (glib::StrV, Option<glib::StrV>) {
-    // https://github.com/gtk-rs/gtk-rs-core/issues/1418
-    use glib::translate::*;
-    arg.run_with_gstr(|arg| {
-        translit_locale.run_with_gstr(|translit_locale| {
-            let mut alternates: *mut *mut std::ffi::c_char = std::ptr::null_mut();
-            let alternates_ptr = if alts {
-                &mut alternates
-            } else {
-                std::ptr::null_mut()
-            };
-            unsafe {
-                let result = glib::ffi::g_str_tokenize_and_fold(
-                    arg.to_glib_none().0,
-                    translit_locale.to_glib_none().0,
-                    alternates_ptr,
-                );
-                (
-                    glib::StrV::from_glib_full(result),
-                    alts.then(|| glib::StrV::from_glib_full(alternates)),
-                )
-            }
-        })
-    })
-}
-
-pub fn tokenize_and_casefold(arg: &str) -> glib::StrV {
-    tokenize_and_casefold_internal(arg, None, false).0
-}
-
-pub fn tokenize_and_casefold_with_alts(
-    arg: &str,
-    translit_locale: Option<&str>,
-) -> (glib::StrV, glib::StrV) {
-    let res = tokenize_and_casefold_internal(arg, translit_locale, true);
-    (res.0, res.1.unwrap())
 }

@@ -9,8 +9,7 @@ use gtk::glib;
 use std::cell::RefCell;
 
 use super::done_page::DonePage;
-//use crate::interfaces::{InstallProgress, ProgressPhase};
-use crate::models::{Disk, InstallPhase};
+use crate::models::disk::{Disk, InstallPhase};
 use crate::osinfo;
 
 glib::wrapper! {

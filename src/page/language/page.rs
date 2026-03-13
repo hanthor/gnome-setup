@@ -9,9 +9,9 @@ use std::time::Duration;
 
 use gettextrs::gettext;
 
-use super::localed::LocaledProxy;
-use super::model::POPULAR_LOCALES;
-use super::obj::Language;
+use crate::interfaces::LocaledProxy;
+use crate::models::language::{Language, POPULAR_LOCALES};
+
 use super::picker::LanguagePicker;
 use crate::page::PrereleasePage as Next;
 

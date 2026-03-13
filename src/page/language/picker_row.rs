@@ -5,7 +5,7 @@ use adw::subclass::prelude::*;
 
 use std::cell::OnceCell;
 
-use super::obj::Language;
+use crate::models::language::Language;
 
 glib::wrapper! {
     pub struct LanguagePickerRow(ObjectSubclass<imp::LanguagePickerRow>)

@@ -3,47 +3,9 @@
 use gettextrs::gettext;
 use glib::prelude::*;
 use glib::subclass::prelude::*;
-use log::error;
 
 use std::cell::{Cell, OnceCell};
 use std::marker::PhantomData;
-
-use crate::interfaces::CandidateDevice;
-
-glib::wrapper! {
-    pub struct Disk(ObjectSubclass<imp::Disk>);
-}
-
-impl Disk {
-    pub fn from_candidate_device(device: &CandidateDevice) -> Self {
-        let CandidateDevice {
-            node,
-            subsystem,
-            vendor,
-            model,
-            size_bytes,
-            ..
-        } = device;
-        glib::Object::builder()
-            .property("node", node)
-            .property("subsystem", subsystem.as_ref().filter(|s| !s.is_empty()))
-            .property("vendor", vendor.as_ref().filter(|s| !s.is_empty()))
-            .property("model", model.as_ref().filter(|s| !s.is_empty()))
-            .property("size", size_bytes.unwrap_or_default())
-            .build()
-    }
-
-    pub fn demo() -> Self {
-        glib::Object::builder().property("node", "some device demo").build()
-    }
-
-    pub async fn install(&self, erase: bool) {
-        let repart = crate::interfaces::Repart::new();
-        if let Err(error) = repart.install(self, erase).await {
-            error!("Failed to install {error}");
-        }
-    }
-}
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, glib::Enum)]
 #[enum_type(name = "SetupDiskStatus")]
@@ -199,5 +161,18 @@ mod imp {
             //todo!()
             "drive-harddisk-usb-symbolic".into()
         }
+    }
+}
+
+glib::wrapper! {
+    pub struct Disk(ObjectSubclass<imp::Disk>);
+}
+
+impl Disk {
+    pub async fn install(&self, erase: bool) -> anyhow::Result<()> {
+        let repart = crate::interfaces::Repart::new();
+        repart.install(self, erase).await?;
+
+        Ok(())
     }
 }

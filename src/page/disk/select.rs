@@ -10,7 +10,7 @@ use gettextrs::gettext;
 use super::confirm;
 use super::disk_row::DiskRow;
 use super::wipe_or_free::WipeOrFreePage;
-use crate::models::{Disk, DiskStatus, DisksModel};
+use crate::models::disk::{Disk, DiskStatus, DisksModel};
 use crate::osinfo;
 use crate::page::InstallPage;
 
