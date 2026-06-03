@@ -43,4 +43,9 @@ install_data('pages.conf',
   install_dir: config_dir,
 )
 
+install_data(
+  'io.systemd.sysinstall.rules',
+  install_dir: get_option('datadir') / 'polkit-1' / 'rules.d',
+)
+
 subdir('icons')

@@ -146,7 +146,7 @@ mod imp {
                     self.progress.set_fraction(0.0);
                 }
                 InstallPhase::CopyingPartition => {
-                    // Repart gives us progress only when copying partititon
+                    // SysInstall gives us progress only when copying partititon
                     let percent = disk.install_progress();
                     self.status.set_label(
                         &formatx!(gettext("Copying Partition ({percent}%)"), percent = percent)
@@ -164,6 +164,10 @@ mod imp {
                 }
                 InstallPhase::WritingTable => {
                     self.status.set_label(&gettext("Writing Partition Table"));
+                    self.progress.set_fraction(1.0);
+                }
+                InstallPhase::InstallBootloader => {
+                    self.status.set_label(&gettext("Installing Bootloader"));
                     self.progress.set_fraction(1.0);
                 }
                 InstallPhase::Finished => {

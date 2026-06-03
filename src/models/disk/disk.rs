@@ -46,6 +46,7 @@ pub enum InstallPhase {
     FormattingPartition,
     AdjustingPartition,
     WritingTable,
+    InstallBootloader,
     Finished,
 }
 
@@ -170,8 +171,8 @@ glib::wrapper! {
 
 impl Disk {
     pub async fn install(&self, erase: bool) -> anyhow::Result<()> {
-        let repart = crate::interfaces::Repart::new();
-        repart.install(self, erase).await?;
+        let sysinstall = crate::interfaces::SysInstall::new();
+        sysinstall.install(self, erase).await?;
 
         Ok(())
     }

@@ -1,5 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+use std::cell::RefCell;
+
+use indexmap::IndexMap;
 use log::error;
 
 use gio::prelude::*;
@@ -24,9 +27,9 @@ impl Default for DisksModel {
 mod imp {
     use super::*;
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     pub struct DisksModel {
-        store: gio::ListStore,
+        pub(super) disks: RefCell<IndexMap<String, Disk>>,
     }
 
     #[glib::object_subclass]
@@ -34,24 +37,11 @@ mod imp {
         const NAME: &'static str = "SetupDisksModel";
         type Type = super::DisksModel;
         type Interfaces = (gio::ListModel,);
-
-        fn new() -> Self {
-            Self {
-                store: gio::ListStore::new::<Disk>(),
-            }
-        }
     }
 
     impl ObjectImpl for DisksModel {
         fn constructed(&self) {
             self.parent_constructed();
-
-            // Pass through the items changed signal
-            self.store.connect_items_changed(glib::clone!(
-                #[weak(rename_to = this)]
-                self,
-                move |_, pos, rm, add| this.obj().items_changed(pos, rm, add)
-            ));
 
             // Populate the list in the background
             glib::spawn_future_local(glib::clone!(
@@ -68,28 +58,51 @@ mod imp {
         }
 
         fn n_items(&self) -> u32 {
-            self.store.n_items()
+            self.disks.borrow().len() as u32
         }
 
-        fn item(&self, pos: u32) -> Option<glib::Object> {
-            self.store.item(pos)
+        fn item(&self, position: u32) -> Option<glib::Object> {
+            self.disks
+                .borrow()
+                .get_index(position as usize)
+                .map(|(_node, disk)| disk.clone().upcast())
         }
     }
 
     impl DisksModel {
         async fn populate(&self) {
-            // FIXME: we don't get devices changes from repart
-            let repart = crate::interfaces::Repart::new();
-            let devices = match repart.candidate_devices().await {
-                Ok(devices) => devices,
-                Err(error) => {
-                    error!("Failed to talk to systemd-repart: {error}");
-                    return;
-                }
-            };
-
-            for disk in devices {
-                self.store.append(&disk);
+            let sysinstall = crate::interfaces::SysInstall::new();
+            let result = sysinstall
+                .candidate_devices(
+                    glib::clone!(
+                        #[weak(rename_to = this)]
+                        self,
+                        move |disk| {
+                            let index = this
+                                .disks
+                                .borrow_mut()
+                                .entry(disk.node())
+                                .insert_entry(disk)
+                                .index();
+                            this.obj().items_changed(index as u32, 0, 1)
+                        }
+                    ),
+                    glib::clone!(
+                        #[weak(rename_to = this)]
+                        self,
+                        move |node| {
+                            let Some((index, _, _)) =
+                                this.disks.borrow_mut().shift_remove_full(node)
+                            else {
+                                return;
+                            };
+                            this.obj().items_changed(index as u32, 1, 0)
+                        }
+                    ),
+                )
+                .await;
+            if let Err(error) = result {
+                error!("Failed to fetch candidate devices {error:?}");
             }
         }
     }
