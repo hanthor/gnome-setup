@@ -6,8 +6,16 @@ project('gnome-setup', 'rust',
 
 i18n = import('i18n')
 gnome = import('gnome')
+prefix = get_option('prefix')
+bin_dir = join_paths(prefix, get_option('bindir'))
+libexec_dir = join_paths(prefix, get_option('libexecdir'))
 
 config_dir = get_option('prefix') / get_option('libdir') / meson.project_name()
+
+systemd_dep = dependency('systemd', version: '>= 242', required: false)
+systemd_userunitdir = systemd_dep.get_variable(pkgconfig: 'systemduserunitdir',
+                                               pkgconfig_define: ['prefix', prefix],
+                                               default_value: prefix / 'lib' / 'systemd' / 'user')
 
 subdir('data')
 subdir('src')

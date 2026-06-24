@@ -1,0 +1,15 @@
+[Unit]
+Description=GNOME Setup
+RefuseManualStart=true
+RefuseManualStop=true
+ConditionPathExists=/run/gnomeos/is-live
+
+BindsTo=gnome-session.target
+After=gnome-session.target
+#Conflicts=gnome-initial-setup.service
+
+[Service]
+Type=simple
+ExecStart=@bindir@/gnome-setup
+ExecStopPost=-@libexecdir@/gnome-session-ctl --shutdown
+Restart=no

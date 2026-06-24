@@ -48,4 +48,21 @@ install_data(
   install_dir: get_option('datadir') / 'polkit-1' / 'rules.d',
 )
 
+configure_file(
+    input: 'gnome-setup.service.in',
+    output: 'gnome-setup.service',
+    configuration: {
+        'bindir': bin_dir,
+        'libexecdir': libexec_dir,
+    },
+    install_dir: systemd_userunitdir
+)
+
+configure_file(
+    input: 'gnome-setup.session.conf.in',
+    output: 'gnome-setup.conf',
+    configuration: {},
+    install_dir: systemd_userunitdir / 'gnome-session@gnome-initial-setup.target.d',
+)
+
 subdir('icons')
