@@ -12,13 +12,13 @@ appstream = { package = "libappstream", version = "0.4" }
 log = "0.4"
 thiserror = "2.0"
 zbus = "5.11"
+zlink = { version = "0.5", default-features = false, features = ["server", "service", "proxy", "defmt", "smol"] }
 quick-xml = { version = "0.38", features = ["serialize"] }
 serde = "1.0"
 constcat = "0.6"
 formatx = "0.2"
 glob = "0.3.1"
-tokio = { version = "1.48.0", features = ["rt", "time"] }
-futures-util = { version = "0.3.31", features = ["channel"] }
+async-io = "2.6.0"
 
 [dependencies.glib]
 version = "*"
@@ -33,10 +33,6 @@ features = ["gnome_48", "blueprint"]
 package = "libadwaita"
 version = "0.8"
 features = ["v1_5"]
-
-[dependencies.zlink]
-git = "https://github.com/z-galaxy/zlink.git"
-branch = "main"
 
 [dependencies.gnome-desktop]
 git = "https://gitlab.gnome.org/jsparber/gnome-desktop-rs.git"

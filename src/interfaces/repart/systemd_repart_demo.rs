@@ -1,15 +1,16 @@
 use std::collections::HashMap;
+use std::os::fd::OwnedFd;
+use std::os::unix::net::UnixStream;
 use std::pin::Pin;
 use std::sync::LazyLock;
 use std::task::{Context, Poll};
+use std::time::Duration;
 
-use futures_util::future::{pending, FutureExt, RemoteHandle};
-use futures_util::{Future, Stream};
+use async_io::{Async, Timer};
 use serde::{Deserialize, Serialize};
-use tokio::runtime::Builder;
-use tokio::sync::oneshot;
-use tokio::time::{Duration, Instant};
-use zlink::connection::{Connection, Socket};
+use zlink::connection::Connection;
+use zlink::futures_util::future::{pending, Future};
+use zlink::futures_util::stream::Stream;
 use zlink::service::{MethodReply, Service};
 use zlink::{Call, Server};
 
@@ -143,38 +144,30 @@ impl zlink::Listener for AnonListener {
 
 #[derive(Debug)]
 pub struct RepartDemo {
-    #[allow(dead_code)]
-    handle: RemoteHandle<Result<(), zlink::Error>>,
     connection: zlink::unix::Connection,
+    handle: glib::JoinHandle<()>,
+}
+
+impl Drop for RepartDemo {
+    fn drop(&mut self) {
+        self.handle.abort();
+    }
 }
 
 impl RepartDemo {
     pub async fn run() -> Self {
-        let (tx, rx) = oneshot::channel();
-        let rt = Builder::new_current_thread()
-            .enable_io()
-            .enable_time()
-            .build()
-            .expect("Unable to create tokio runtime");
+        let (stream1, stream2) = Async::<UnixStream>::pair().unwrap();
+        let listener = AnonListener::new(stream1.into());
 
-        std::thread::spawn(move || {
-            rt.block_on(async move {
-                let (stream1, stream2) = tokio::net::UnixStream::pair().unwrap();
-                let listener = AnonListener::new(stream1.into());
+        let service = RepartService {};
+        let server = Server::new(listener, service);
 
-                let service = RepartService {};
-                let server = Server::new(listener, service);
-
-                let (fut, handle) = server.run().remote_handle();
-                let connection = zlink::unix::Connection::new(stream2.into());
-
-                tx.send(Self { handle, connection }).unwrap();
-
-                fut.await;
-            })
+        let handle = glib::spawn_future_local(async move {
+            server.run().await.unwrap();
         });
+        let connection = zlink::unix::Connection::new(stream2.into());
 
-        rx.await.unwrap()
+        Self { handle, connection }
     }
 
     pub fn connection(&mut self) -> &mut zlink::unix::Connection {
@@ -184,43 +177,53 @@ impl RepartDemo {
 
 struct RepartService {}
 
-impl Service for RepartService {
+impl Service<zlink::unix::Stream> for RepartService {
     type MethodCall<'de> = RepartServiceMethod<'de>;
     type ReplyParams<'ser> = RepartServiceReply;
     type ReplyStreamParams = RepartServiceReply;
     type ReplyStream = DemoStream;
     type ReplyError<'ser> = RepartError;
+    type ReplyStreamError = RepartError;
 
-    async fn handle<'service, Sock: Socket>(
-        &'service mut self,
-        call: &'service Call<Self::MethodCall<'_>>,
-        _conn: &mut Connection<Sock>,
-    ) -> MethodReply<Self::ReplyParams<'service>, Self::ReplyStream, Self::ReplyError<'service>>
-    {
-        match call.method() {
-            RepartServiceMethod::ListCandidateDevices { .. } => {
-                MethodReply::Multi(DemoStream::for_list_candidate_devices())
-            }
+    async fn handle<'ser>(
+        &'ser mut self,
+        method: &'ser Call<Self::MethodCall<'_>>,
+        _conn: &mut Connection<zlink::unix::Stream>,
+        _fds: Vec<OwnedFd>,
+    ) -> (
+        MethodReply<Self::ReplyParams<'ser>, Self::ReplyStream, Self::ReplyError<'ser>>,
+        Vec<OwnedFd>,
+    ) {
+        let fds_out = Vec::new();
+        match method.method() {
+            RepartServiceMethod::ListCandidateDevices { .. } => (
+                MethodReply::Multi(DemoStream::for_list_candidate_devices()),
+                fds_out,
+            ),
             RepartServiceMethod::Run {
                 node,
                 empy,
                 dry_run,
                 ..
-            } if call.more() && !dry_run => MethodReply::Multi(DemoStream::for_run()),
+            } if method.more() && !dry_run => (MethodReply::Multi(DemoStream::for_run()), fds_out),
             RepartServiceMethod::Run { node, dry_run, .. } if *dry_run => {
                 let Some(node) = node else {
-                    return MethodReply::Single(Some(RepartServiceReply::RunOutput(RunOutput {
-                        minimal_size_bytes: Some(MIN_DISK_SIZE),
-                        ..Default::default()
-                    })));
+                    return (
+                        MethodReply::Single(Some(RepartServiceReply::RunOutput(RunOutput {
+                            minimal_size_bytes: Some(MIN_DISK_SIZE),
+                            ..Default::default()
+                        }))),
+                        fds_out,
+                    );
                 };
                 let device = DEVICES.get(*node).expect("mocked device to exist");
 
                 match device.1.clone() {
-                    DryRunResponse::RunOutput(output) => {
-                        MethodReply::Single(Some(RepartServiceReply::RunOutput(output)))
-                    }
-                    DryRunResponse::Error(error) => MethodReply::Error(error),
+                    DryRunResponse::RunOutput(output) => (
+                        MethodReply::Single(Some(RepartServiceReply::RunOutput(output))),
+                        fds_out,
+                    ),
+                    DryRunResponse::Error(error) => (MethodReply::Error(error), fds_out),
                 }
             }
             RepartServiceMethod::Run { .. } => {
@@ -270,7 +273,7 @@ enum RepartServiceReply {
 struct RunProducer {
     current: Vec<(ProgressPhase, u64)>,
     progress: i64,
-    delay: Pin<Box<tokio::time::Sleep>>,
+    delay: Pin<Box<Timer>>,
 }
 
 impl RunProducer {
@@ -295,7 +298,7 @@ impl RunProducer {
         Self {
             current,
             progress: -1,
-            delay: Box::pin(tokio::time::sleep(Duration::ZERO)),
+            delay: Box::pin(Timer::after(Duration::ZERO)),
         }
     }
 }
@@ -311,7 +314,7 @@ impl Stream for RunProducer {
         match self.delay.as_mut().poll(cx) {
             Poll::Ready(_) => {
                 let (phase, delay) = self.current.pop().unwrap();
-                self.delay.as_mut().reset(Instant::now() + Duration::from_millis(delay));
+                self.delay.as_mut().set_after(Duration::from_millis(delay));
 
                 // Systemd-repart only gives progress percentage for CopyPartition
                 let progress = if phase == ProgressPhase::CopyingPartition {
@@ -385,9 +388,15 @@ impl DemoStream {
 }
 
 impl Stream for DemoStream {
-    type Item = zlink::Reply<RepartServiceReply>;
+    type Item = (
+        Result<zlink::Reply<RepartServiceReply>, RepartError>,
+        Vec<OwnedFd>,
+    );
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        self.producer.as_mut().poll_next(cx)
+        self.producer
+            .as_mut()
+            .poll_next(cx)
+            .map(|value| value.map(|inner| (Ok(inner), Vec::new())))
     }
 }

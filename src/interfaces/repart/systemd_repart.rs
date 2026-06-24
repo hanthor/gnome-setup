@@ -5,8 +5,8 @@
 
 //! API for declaratively re-partitioning disks using systemd-repart.
 
-use futures_util::Stream;
 use serde::{Deserialize, Serialize};
+use zlink::futures_util::Stream;
 use zlink::{proxy, ReplyError};
 
 /// Proxy trait for calling methods on the interface.

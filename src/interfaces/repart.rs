@@ -6,11 +6,8 @@ mod systemd_repart_demo;
 use systemd_repart_demo::RepartDemo;
 
 use crate::config::REPART_DEFINITIONS_DIR;
-use futures_util::future::{FutureExt, RemoteHandle};
-use futures_util::{StreamExt, TryStreamExt};
 use log::error;
-use tokio::pin;
-use tokio::runtime::Builder;
+use zlink::futures_util::{StreamExt, TryStreamExt};
 
 use crate::models::disk::{Disk, DiskStatus, InstallPhase};
 
@@ -41,38 +38,14 @@ impl Disk {
     }
 }
 
-pub struct Repart {
-    handle: tokio::runtime::Handle,
-    #[allow(dead_code)]
-    pending_remote_handle: RemoteHandle<()>,
-}
+pub struct Repart {}
 
 impl Repart {
     pub fn new() -> Self {
-        // FIXME: zlink currently only supports tokio, would be nice to spawn tasks directly on the glib main loop
-        let rt = Builder::new_current_thread()
-            .enable_io()
-            .build()
-            .expect("Unable to create tokio runtime");
-
-        let handle = rt.handle().clone();
-        let (pending, pending_remote_handle) = std::future::pending().remote_handle();
-
-        // Create a thread to run the tokio scheduler and eventually spawned tasks
-        // Dropping pending_remote_handle will abort the pending future and then terminate the thread
-        std::thread::spawn(move || {
-            rt.block_on(pending);
-        });
-
-        Self {
-            handle,
-            pending_remote_handle,
-        }
+        Self {}
     }
 
     pub async fn candidate_devices(&self) -> zlink::Result<Vec<Disk>> {
-        let _guard = self.handle.enter();
-
         let mut demo_server = if crate::is_demo() {
             Some(RepartDemo::run().await)
         } else {
@@ -117,8 +90,7 @@ impl Repart {
             )?;
         }
 
-        let replies = chain.send::<RunOutput, RepartError>().await?;
-        pin!(replies);
+        let mut replies = chain.send::<RunOutput, RepartError>().await?;
         // The first reply is without any node.
         // FIXME: Repart doesn't report the correct minimal disk size
         // See: https://github.com/systemd/systemd/issues/39788
@@ -176,8 +148,6 @@ impl Repart {
     }
 
     pub async fn install(&self, disk: &Disk, erase: bool) -> zlink::Result<()> {
-        let _guard = self.handle.enter();
-
         let mut demo_server = if crate::is_demo() {
             Some(RepartDemo::run().await)
         } else {
@@ -197,7 +167,7 @@ impl Repart {
         };
         let node = disk.node();
 
-        let stream = connection
+        let mut stream = connection
             .run_with_progress(
                 Some(&node),               // node
                 &empy_mode,                // empty_mode
@@ -207,7 +177,6 @@ impl Repart {
             )
             .await?;
 
-        tokio::pin!(stream);
         while let Some(progress) = stream.try_next().await? {
             if let Ok(progress) = progress {
                 let phase: InstallPhase = progress.phase.into();
