@@ -122,8 +122,11 @@ mod imp {
                     self.details_desc.set_label(&gettext("This disk has an unsupported partition table. Only GTP is supported by Setup."));
                 }
                 DiskStatus::TooSmall => {
+                    let os_name = osinfo::name();
+                    let min_disk_size = glib::format_size(disk.min_disk_size() as u64);
+
                     self.details_title.set_label(&gettext("Disk Too Small"));
-                    self.details_desc.set_label(&formatx!(gettext("This disk cannot be used by Setup to perform  an installation of {os_name} as it requires at least {min_disk_size} GB of available space."), os_name = osinfo::name(), min_disk_size = glib::format_size(disk.min_disk_size() as u64)).expect("Proper translated format string"));
+                    self.details_desc.set_label(&formatx!(gettext("This disk cannot be used by Setup to perform  an installation of {os_name} as it requires at least {min_disk_size} GB of available space."), os_name = os_name, min_disk_size = min_disk_size).expect("Proper translated format string"));
                 }
             }
 

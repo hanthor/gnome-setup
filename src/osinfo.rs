@@ -72,7 +72,8 @@ pub struct OsInfoCallbacks {}
 impl OsInfoCallbacks {
     #[template_callback]
     fn apply_osinfo(string: &str) -> String {
-        formatx!(string, os_name = name()).unwrap()
+        let os_name = name();
+        formatx!(string, os_name = os_name).unwrap()
     }
 
     #[template_callback]
