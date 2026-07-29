@@ -1,0 +1,21 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+
+template $SetupKeyboardPickerRow : Gtk.ListBoxRow {
+  Gtk.Box {
+    spacing: 6;
+    valign: center;
+    styles ["header"]
+
+    Gtk.Label title {
+      xalign: 0;
+      styles ["title"]
+    }
+
+    Gtk.Image {
+      icon-name: "object-select-symbolic";
+      styles ["accent", "check"]
+    }
+
+  }
+}

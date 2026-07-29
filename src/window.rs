@@ -10,10 +10,11 @@ use gtk::gio;
 use gtk::glib::clone;
 use log::{error, warn};
 
+use crate::models::keyboard::KeyboardModel;
 use crate::models::language::{Language, LanguageModel};
 use crate::page::{
-    BasePage, BasePageExt, DonePage, EulaPage, InstallerPage, LanguagePage, PrereleasePage,
-    WelcomePage,
+    BasePage, BasePageExt, DonePage, EulaPage, InstallerPage, KeyboardPage, LanguagePage,
+    PrereleasePage, WelcomePage,
 };
 
 use crate::config::PAGES_CONFIG_DIR;
@@ -33,6 +34,8 @@ impl Window {
         for lang in LanguageModel::default().iter() {
             lang.reload_locale();
         }
+
+        KeyboardModel::default().reload_keyboards();
 
         let stack: Vec<adw::NavigationPage> = self
             .imp()
@@ -162,6 +165,23 @@ mod imp {
                             page.set_languages(languages);
                         }
                         page.set_selected_language(Language::system_default_id());
+                    }
+                    page.upcast()
+                }
+                "keyboard" => {
+                    let page = KeyboardPage::new();
+                    let config_group = format!("page:{}", page_name);
+
+                    if config.has_group(&config_group) {
+                        if let Ok(layouts) = config.string_list(&config_group, "layouts") {
+                            let len = layouts.len();
+                            // FIXME: There is no conversation: https://github.com/gtk-rs/gtk-rs-core/pull/1915
+                            use glib::translate::IntoGlibPtr;
+                            let layouts: glib::StrV = unsafe {
+                                glib::StrV::from_glib_full_num(layouts.into_glib_ptr(), len, true)
+                            };
+                            page.set_keyboards(layouts);
+                        }
                     }
                     page.upcast()
                 }

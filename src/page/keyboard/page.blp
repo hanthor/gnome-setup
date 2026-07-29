@@ -1,0 +1,26 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupKeyboardPage : $SetupBasePage {
+  title: _("Keyboard Layout");
+  default-clamp: false;
+  ready: true;
+
+  next => $on_next() swapped;
+
+  child: Adw.StatusPage {
+    title: bind template.title;
+
+    Adw.Clamp {
+      // Make sure these values are in sync w/ the defaults in page.rs
+      maximum-size: 450;
+      tightening-threshold: 200;
+
+      $SetupKeyboardPicker picker {
+        notify::selected => $selected_changed() swapped;
+        notify::keyboards => $keyboards_changed() swapped;
+      }
+    }
+  };
+}

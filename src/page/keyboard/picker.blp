@@ -1,0 +1,28 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupKeyboardPicker : Gtk.Box {
+  orientation: vertical;
+  spacing: 24;
+
+  Gtk.SearchEntry searchbox {
+    search-changed => $on_search() swapped;
+    placeholder-text: _("Search keyboards");
+  }
+
+  Gtk.Stack switcher {
+    Gtk.ListBox list {
+      valign: start;
+      selection-mode: none;
+      row-activated => $on_row_activated() swapped;
+      styles ["boxed-list"]
+    }
+
+    Adw.StatusPage empty {
+      title: _("No Results Found");
+      description: _("Try a different search");
+      icon-name: "edit-find-symbolic";
+    }
+  }
+}
