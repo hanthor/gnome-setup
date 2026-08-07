@@ -39,7 +39,6 @@ impl KeyboardPicker {
 mod imp {
     use super::*;
 
-    
     use glib::collections::strv::StrV;
     use std::cell::RefCell;
 
