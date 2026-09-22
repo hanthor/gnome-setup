@@ -22,6 +22,10 @@ impl DonePage {
 mod imp {
     use super::*;
 
+    use log::error;
+
+    use crate::interfaces::Shutdown;
+
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(file = "src/page/done/done_page.blp")]
     pub struct DonePage {
@@ -56,8 +60,12 @@ mod imp {
     #[gtk::template_callbacks]
     impl DonePage {
         #[template_callback]
-        fn on_reboot(&self) {
-            todo!();
+        async fn on_reboot(&self) {
+            let interface = Shutdown::new();
+
+            if let Err(error) = interface.reboot().await {
+                error!("Failed to reboot system: {error}");
+            }
         }
     }
 }
