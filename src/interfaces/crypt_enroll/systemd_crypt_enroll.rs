@@ -12,7 +12,7 @@ pub trait CryptEnroll {
         &mut self,
         node: &str,
         mechanism: &EnrollMechanism,
-        recovery_key: Option<&str>,
+        #[zlink(rename = "recoveryKey")] recovery_key: Option<&str>,
         #[zlink(rename = "unlockPassword")] unlock_password: Option<&str>,
         #[zlink(rename = "wipeSlots")] wipe_slots: Option<&[i64]>,
     ) -> zlink::Result<Result<EnrollOutput<'_>, CryptEnrollError>>;
