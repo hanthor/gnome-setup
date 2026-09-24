@@ -44,7 +44,7 @@ install_data('pages.conf',
 )
 
 install_data(
-  'io.systemd.sysinstall.rules',
+  '20-gnome-setup.rules',
   install_dir: get_option('datadir') / 'polkit-1' / 'rules.d',
 )
 
