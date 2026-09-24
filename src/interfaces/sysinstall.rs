@@ -215,7 +215,10 @@ impl SysInstall {
                     if let Ok(progress) = progress {
                         let phase: InstallPhase = progress.phase.into();
                         disk.set_install_phase(phase);
-                        disk.set_install_progress(progress.progress.unwrap_or_default());
+                        // Only update the progress if sysinstall reported progress
+                        if let Some(progress) = progress.progress {
+                            disk.set_install_progress(progress);
+                        }
                     } else {
                         error!("Received unexpected error during installation");
                     }
