@@ -12,7 +12,8 @@ polkit.addRule(function(action, subject) {
         return undefined;
 
     if (action.id == "io.systemd.sysinstall.Run" ||
-        action.id == "io.systemd.sysinstall.ListCandidateDevices") {
+        action.id == "io.systemd.sysinstall.ListCandidateDevices" ||
+        action.id == "io.systemd.cryptenroll.enroll") {
         return polkit.Result.YES;
     }
 });
