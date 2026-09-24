@@ -1,0 +1,100 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupRecoveryKeyPage : $SetupBasePage {
+  title: _("Done");
+
+  can-next: false;
+  can-pop: false;
+
+  child: Adw.StatusPage {
+    title: _("Back Up Recovery Key");
+    description: _("Write down or save this secret recovery key to a secure location, such as on paper in your safe or in a password manager.");
+
+    icon-name: "recovery-key-symbolic";
+
+    Gtk.Box {
+      spacing: 12;
+      orientation: vertical;
+
+      Gtk.Box {
+            spacing: 12;
+            Gtk.Label recovery_key_label {
+                selectable: true;
+                wrap: true;
+                lines: 2;
+                accessibility {
+                    label: _("Recovery Key");
+                }
+            }
+            Gtk.Button qr_code_dialog_btn {
+                    hexpand: true;
+                    sensitive: false;
+                    halign: end;
+                    icon-name: "qr-code-symbolic";
+                    clicked => $show_qr_code_dialog() swapped;
+                    accessibility {
+                        label: _("Show QR Code for Recovery Key");
+                    }
+                    styles [ "flat" ]
+                }
+            styles [ "card" ]
+          }
+
+      Gtk.CheckButton confirm_btn {
+            label: _("I backed up my recovery key");
+      }
+
+      Gtk.Button done_btn {
+        label: _("_Done");
+        halign: center;
+        use-underline: true;
+        clicked => $on_done() swapped;
+        sensitive: bind confirm_btn.active;
+        styles [ "pill", "suggested-action" ]
+      }
+    }
+  };
+}
+
+Adw.Dialog qr_code_dialog {
+    title: _("QR Code");
+    default-widget: dialog_done_btn;
+    content-width: 400;
+
+    Gtk.Box {
+        orientation: vertical;
+        spacing: 12;
+        margin-top: 48;
+        margin-bottom: 48;
+        margin-start: 48;
+        margin-end: 48;
+
+        Gtk.Picture qr_code_picture {
+            valign: center;
+            halign: center;
+            width-request: 200;
+            height-request: 200;
+        }
+
+        Gtk.Label {
+            label: _("Scan to Back Up");
+            styles [ "title-1" ]
+        }
+
+        Gtk.Label {
+            label: _("Scan this code with your phone and store the key in a password manager");
+            wrap: true;
+            lines: 2;
+            justify: center;
+        }
+
+        Gtk.Button dialog_done_btn {
+            label: _("Done");
+            clicked => $close_qr_code_dialog() swapped;
+
+            styles [ "pill", "suggested-action" ]
+        }
+    }
+}

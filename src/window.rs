@@ -14,7 +14,7 @@ use crate::models::keyboard::KeyboardModel;
 use crate::models::language::{Language, LanguageModel};
 use crate::page::{
     BasePage, BasePageExt, DonePage, EulaPage, InstallerPage, KeyboardPage, LanguagePage,
-    PrereleasePage, WelcomePage,
+    PrereleasePage, RecoveryKeyPage, WelcomePage,
 };
 
 use crate::config::PAGES_CONFIG_DIR;
@@ -149,6 +149,7 @@ mod imp {
             let page = match page_name.as_str() {
                 "installer-welcome" => WelcomePage::new().upcast(),
                 "installer" => InstallerPage::new().upcast(),
+                "recovery-key" => RecoveryKeyPage::new().upcast(),
                 "installer-done" => DonePage::new().upcast(),
                 "language" => {
                     let page = LanguagePage::new();

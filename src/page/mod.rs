@@ -7,6 +7,7 @@ mod installer;
 mod keyboard;
 mod language;
 mod prerelease;
+mod recovery_key;
 mod welcome;
 
 pub use base::{BasePage, BasePageExt};
@@ -16,6 +17,7 @@ pub use installer::InstallerPage;
 pub use keyboard::KeyboardPage;
 pub use language::LanguagePage;
 pub use prerelease::PrereleasePage;
+pub use recovery_key::RecoveryKeyPage;
 pub use welcome::WelcomePage;
 
 #[allow(unused_imports)]
