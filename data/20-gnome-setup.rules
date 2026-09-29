@@ -6,7 +6,13 @@
  // being interrupted by password dialogs
 
 polkit.addRule(function(action, subject) {
-     if (!subject.isInGroup('gnome-initial-setup'))
+    var is_live = false;
+    try {
+        polkit.spawn(["/usr/bin/cat", "/run/gnomeos/is-live"]);
+        is_live = true;
+     } catch (error) {}
+
+     if (!(subject.isInGroup('gnome-initial-setup') || is_live))
          return undefined;
      if (subject.active == false || subject.local == false)
         return undefined;
