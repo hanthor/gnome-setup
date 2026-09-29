@@ -9,7 +9,8 @@ After=gnome-session.target
 #Conflicts=gnome-initial-setup.service
 
 [Service]
-Type=simple
+Type=oneshot
 ExecStart=@bindir@/gnome-setup
+ExecStart=@libexecdir@/gnome-initial-setup
 ExecStopPost=-@libexecdir@/gnome-session-ctl --shutdown
 Restart=no
