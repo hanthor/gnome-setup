@@ -2,6 +2,8 @@
 
 use adw::subclass::prelude::*;
 
+use gtk::gio::prelude::ApplicationExt;
+use gtk::gio::Application;
 use gtk::glib;
 
 use crate::osinfo;
@@ -69,7 +71,7 @@ mod imp {
 
         #[template_callback]
         fn on_try(&self) {
-            todo!("Start demo session");
+            Application::default().unwrap().quit();
         }
     }
 }

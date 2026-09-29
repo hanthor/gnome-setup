@@ -19,7 +19,6 @@ template $SetupWelcomePage : $SetupBasePage {
         use-underline: true;
         clicked => $on_try() swapped;
         label: bind $apply_osinfo(_("_Try {os_name}")) as <string>;
-        visible: bind $in_session(false, true) as <bool>;
 
         styles [ "pill" ]
 
