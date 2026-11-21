@@ -61,14 +61,17 @@ impl InstallPage {
             }
         ));
 
-        if let Err(error) = disk.install(wipe).await {
-            error!("Failed to install {error}");
-        }
+        let result = disk.install(wipe).await;
 
         disk.disconnect(handle1);
         disk.disconnect(handle2);
 
-        // TODO: show error page if install failed
+        if let Err(error) = result {
+            error!("Failed to install: {error:#}");
+            self.imp().show_error(&error);
+            return;
+        }
+
         self.go_next();
     }
 }
@@ -118,6 +121,12 @@ mod imp {
     }
 
     impl InstallPage {
+        pub fn show_error(&self, error: &anyhow::Error) {
+            self.info.set_title(&gettext("Installation Failed"));
+            self.progress.set_visible(false);
+            self.status.set_label(&format!("{error:#}"));
+        }
+
         pub fn update_install_progress(&self) {
             let Some(disk) = self.obj().disk() else {
                 return;

@@ -5,7 +5,10 @@ mod systemd_sysinstall_demo;
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::sync::LazyLock;
+use std::path::Path;
+use std::sync::{LazyLock, Mutex, OnceLock};
+
+use anyhow::anyhow;
 
 use systemd_sysinstall_demo::SysInstallDemo;
 
@@ -20,6 +23,44 @@ use systemd_sysinstall::{
 };
 
 const SOCKET_PATH: &str = "/run/systemd/io.systemd.SysInstall";
+
+/// Unit the distribution wants started (with the target disk as its instance) after
+/// systemd-sysinstall copied the OS, e.g. to fix up what a block copy cannot get right.
+static POST_INSTALL_UNIT: OnceLock<Option<String>> = OnceLock::new();
+
+/// The disk the OS was installed to, once the installation succeeded.
+static INSTALLED_NODE: Mutex<Option<String>> = Mutex::new(None);
+
+pub fn set_post_install_unit(unit: Option<String>) {
+    let _ = POST_INSTALL_UNIT.set(unit.filter(|u| !u.is_empty()));
+}
+
+pub fn installed_node() -> Option<String> {
+    INSTALLED_NODE.lock().unwrap().clone()
+}
+
+/// The LUKS2 partition on `disk`, from the udev database.
+pub fn luks_partition(disk: &str) -> Option<String> {
+    let disk = std::fs::canonicalize(disk).ok()?;
+    let name = disk.file_name()?.to_str()?.to_owned();
+    let sysfs = Path::new("/sys/class/block").join(&name);
+
+    let mut partitions: Vec<String> = std::fs::read_dir(&sysfs)
+        .ok()?
+        .flatten()
+        .filter(|entry| entry.path().join("partition").exists())
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .collect();
+    partitions.sort();
+
+    partitions.into_iter().find_map(|partition| {
+        let dev = std::fs::read_to_string(sysfs.join(&partition).join("dev")).ok()?;
+        let udev = std::fs::read_to_string(format!("/run/udev/data/b{}", dev.trim())).ok()?;
+        udev.lines()
+            .any(|line| line == "E:ID_FS_TYPE=crypto_LUKS")
+            .then(|| format!("/dev/{partition}"))
+    })
+}
 
 static KERNEL_IAMGE_PATH: LazyLock<Option<String>> = LazyLock::new(|| {
     let file = match File::open("/etc/os-release") {
@@ -181,7 +222,7 @@ impl SysInstall {
         Ok(())
     }
 
-    pub async fn install(&self, disk: &Disk, erase: bool) -> zlink::Result<()> {
+    pub async fn install(&self, disk: &Disk, erase: bool) -> anyhow::Result<()> {
         let mut demo_server = if crate::is_demo() {
             Some(SysInstallDemo::run().await)
         } else {
@@ -211,27 +252,38 @@ impl SysInstall {
 
         while let Some(result) = stream.next().await {
             match result {
-                Ok(progress) => {
-                    if let Ok(progress) = progress {
-                        let phase: InstallPhase = progress.phase.into();
-                        disk.set_install_phase(phase);
-                        // Only update the progress if sysinstall reported progress
-                        if let Some(progress) = progress.progress {
-                            disk.set_install_progress(progress);
-                        }
-                    } else {
-                        error!("Received unexpected error during installation");
+                Ok(Ok(progress)) => {
+                    let phase: InstallPhase = progress.phase.into();
+                    disk.set_install_phase(phase);
+                    // Only update the progress if sysinstall reported progress
+                    if let Some(progress) = progress.progress {
+                        disk.set_install_progress(progress);
                     }
+                }
+                Ok(Err(error)) => {
+                    return Err(anyhow!("systemd-sysinstall failed: {error:?}"));
                 }
                 Err(zlink::Error::MissingParameters) => {
                     // SysInstall sends a empty reply once the installation is
                     // finished and zlink reports it as an error, so ignore it.
                 }
                 Err(error) => {
-                    error!("Received unexpected error during installation: {error}");
+                    return Err(anyhow!("systemd-sysinstall failed: {error}"));
                 }
             }
         }
+
+        if let Some(unit) = POST_INSTALL_UNIT.get().cloned().flatten() {
+            if crate::is_demo() {
+                log::info!("Not starting {unit} since setup is run in demo mode");
+            } else {
+                let instance = super::systemd_manager::template_instance(&unit, &node)?;
+                disk.set_install_phase(InstallPhase::InstallBootloader);
+                super::systemd_manager::start_unit_and_wait(&instance).await?;
+            }
+        }
+
+        *INSTALLED_NODE.lock().unwrap() = Some(node.to_string());
 
         disk.set_install_phase(InstallPhase::Finished);
         disk.set_install_progress(100);

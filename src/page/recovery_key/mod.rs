@@ -105,13 +105,17 @@ mod imp {
         }
 
         async fn enroll_recovery_key(&self) {
-            // FIXME: Get the node we need to set the recovery key dynamically
-            let node = "/dev/disk/by-label/root";
+            // The LUKS2 partition on the disk we just installed to, falling back to the root
+            // partition label of the GNOME OS definitions.
+            let node = crate::interfaces::installed_node()
+                .and_then(|disk| crate::interfaces::luks_partition(&disk))
+                .unwrap_or_else(|| "/dev/disk/by-label/root".to_string());
+            log::info!("Enrolling the recovery key on {node}");
             let recovery_key = self.recovery_key.get();
             let interface = self.interface.get().unwrap();
 
             let result =
-                interface.enroll_recovery_key(node, recovery_key.map(|x| x.as_str())).await;
+                interface.enroll_recovery_key(&node, recovery_key.map(|x| x.as_str())).await;
             match result {
                 Ok(Some(_)) => {}
                 Ok(None) => warn!("Systemd-cryptenroll didn't report a recovery key"),
