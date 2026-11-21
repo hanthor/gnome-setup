@@ -14,6 +14,8 @@
 >   (`[page:installer] post-install-unit=` in `pages.conf`), enroll the
 >   recovery key on the installed disk
 > - polkit-rules: Allow listing cryptenroll keyslots
+> - installer: Ask for a disk passphrase when there is no TPM
+>   (`disk-passphrase` page, kept next to the recovery key)
 
 Setup performs two important functions:
 
