@@ -121,6 +121,10 @@ mod imp {
                 log::error!("Failed to read pages config: {error}");
             }
 
+            crate::interfaces::set_post_install_unit(
+                key_file.string("page:installer", "post-install-unit").ok().map(Into::into),
+            );
+
             // TODO: get from env
             let mode = "live-initial-setup";
 
