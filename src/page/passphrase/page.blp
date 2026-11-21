@@ -1,0 +1,46 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+using Gtk 4.0;
+using Adw 1;
+
+template $SetupPassphrasePage : $SetupBasePage {
+  title: _("Disk Passphrase");
+
+  can-pop: false;
+  ready: false;
+  next => $next() swapped;
+
+  child: Adw.StatusPage {
+    title: _("Choose a Disk Passphrase");
+    description: bind $apply_osinfo(_("This computer has no security chip (TPM) to unlock its disk automatically. Enter this passphrase each time {os_name} starts. The recovery key on the next page unlocks the disk too.")) as <string>;
+    icon-name: "dialog-password-symbolic";
+
+    Gtk.Box {
+      orientation: vertical;
+      spacing: 12;
+
+      Gtk.ListBox {
+        selection-mode: none;
+
+        Adw.PasswordEntryRow passphrase_row {
+          title: _("Passphrase");
+          changed => $update_ready() swapped;
+        }
+
+        Adw.PasswordEntryRow confirm_row {
+          title: _("Confirm Passphrase");
+          changed => $update_ready() swapped;
+          entry-activated => $next() swapped;
+        }
+
+        styles [ "boxed-list" ]
+      }
+
+      Gtk.Label error_label {
+        visible: false;
+        wrap: true;
+        xalign: 0;
+        styles [ "error" ]
+      }
+    }
+  };
+}
