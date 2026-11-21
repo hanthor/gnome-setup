@@ -18,13 +18,6 @@ use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
 use config::{GETTEXT_PACKAGE, LOCALEDIR};
 
 fn main() -> glib::ExitCode {
-    // For debugging
-    // TODO: Try to come up with a better way to do this?
-    env::set_var("SETUP_OVERRIDE_IN_SESSION", "true");
-    env::set_var("SETUP_OVERRIDE_OS_RELEASE_TYPE", "stable");
-    env::set_var("SETUP_OVERRIDE_OS_EXPERIMENT", "");
-    env::set_var("SETUP_DEMO", "true");
-
     // Set up gettext translations
     bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).expect("Unable to bind the text domain");
     bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8")
