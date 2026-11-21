@@ -105,11 +105,7 @@ mod imp {
         }
 
         async fn enroll_recovery_key(&self) {
-            // The LUKS2 partition on the disk we just installed to, falling back to the root
-            // partition label of the GNOME OS definitions.
-            let node = crate::interfaces::installed_node()
-                .and_then(|disk| crate::interfaces::luks_partition(&disk))
-                .unwrap_or_else(|| "/dev/disk/by-label/root".to_string());
+            let node = crate::interfaces::installed_luks_node();
             log::info!("Enrolling the recovery key on {node}");
             let recovery_key = self.recovery_key.get();
             let interface = self.interface.get().unwrap();
