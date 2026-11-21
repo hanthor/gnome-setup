@@ -13,6 +13,7 @@
 > - installer: Report failures, support a distro post-install unit
 >   (`[page:installer] post-install-unit=` in `pages.conf`), enroll the
 >   recovery key on the installed disk
+> - polkit-rules: Allow listing cryptenroll keyslots
 
 Setup performs two important functions:
 
