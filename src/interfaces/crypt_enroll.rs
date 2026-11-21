@@ -17,7 +17,7 @@ impl CryptEnroll {
         Self {}
     }
 
-    pub async fn make_recovery_key(&self) -> zlink::Result<String> {
+    pub async fn make_recovery_key(&self) -> anyhow::Result<String> {
         // TODO: Would be nice to have a demo implementation for the crytpenroll interface
         if crate::is_demo() {
             return Ok(
@@ -26,7 +26,10 @@ impl CryptEnroll {
         }
 
         let mut connection = zlink::unix::connect(SOCKET_PATH).await?;
-        let result = connection.make_recovery_key().await?.unwrap();
+        let result = connection
+            .make_recovery_key()
+            .await?
+            .map_err(|error| anyhow::anyhow!("MakeRecoveryKey failed: {error:?}"))?;
 
         Ok(result.recovery_key.to_string())
     }
@@ -35,7 +38,7 @@ impl CryptEnroll {
         &self,
         node: &str,
         recovery_key: Option<&str>,
-    ) -> zlink::Result<Option<String>> {
+    ) -> anyhow::Result<Option<String>> {
         // TODO: Would be nice to have a demo implementation for the crytpenroll interface
         if crate::is_demo() {
             info!("Not enrolling a recovery key since setup is run in demo mode");
@@ -80,8 +83,7 @@ impl CryptEnroll {
                 Some(wipe_slots.as_ref()), // wipe_slots
             )
             .await?
-            // FIXME: We should not unwrap here since it might fail
-            .unwrap();
+            .map_err(|error| anyhow::anyhow!("Enroll on {node} failed: {error:?}"))?;
 
         Ok(result.recovery_key.map(|key| key.to_string()))
     }
