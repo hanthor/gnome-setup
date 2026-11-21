@@ -1,5 +1,19 @@
 # gnome-setup
 
+> **This is a mirror.** The upstream project is
+> <https://gitlab.gnome.org/Teams/STF/setup> (GNOME STF); `main` and the other
+> upstream branches here are unmodified copies of it. Issues and merge requests
+> belong upstream. The `utah` branch carries the small patches that
+> [Project Bluefin's Utah](https://github.com/projectbluefin/utah) image-based
+> installer builds from (pinned by commit in `iso/raw/Containerfile`), each
+> meant to go upstream:
+>
+> - main: Don't force demo mode and the debug overrides
+> - crypt-enroll: Return errors instead of panicking
+> - installer: Report failures, support a distro post-install unit
+>   (`[page:installer] post-install-unit=` in `pages.conf`), enroll the
+>   recovery key on the installed disk
+
 Setup performs two important functions:
 
 1. It acts as a graphical OS installer, to deploy an OS image from installation
