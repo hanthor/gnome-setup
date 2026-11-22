@@ -28,6 +28,43 @@ So far, this has been developed as a prototype under the STF grant. Only the
 installer portions of this project are planned under the STF grant. Eventually,
 with more time and funding, we will implement the initial-setup too.
 
+# Building
+
+Setup is built with Meson (version 0.62 or newer), which calls `cargo build`
+for the Rust code. You need the following installed first:
+
+- a Rust toolchain (`cargo`) and Meson with Ninja
+- `blueprint-compiler`, for the `.blp` UI files
+- development files for GTK 4, libadwaita (1.5 or newer), gnome-desktop and
+  libappstream, plus gettext
+
+The first build also needs network access, because the `gnome-desktop` crate is
+fetched from a git branch on GNOME's GitLab (see `Cargo.toml`).
+
+```sh
+meson setup builddir
+meson compile -C builddir
+```
+
+The binary is written to `builddir/src/gnome-setup`.
+
+At runtime Setup reads `pages.conf` from `/etc/gnome-setup/`, falling back to
+the install libdir, and the `systemd-repart` definitions from the installed
+`definitions/` directory (see `REPART_DEFINITIONS_DIR` in `src/meson.build`). An
+uninstalled build will not find them, so use `meson install` into a prefix to
+try the installer pages for real.
+
+`build-aux/org.gnome.Setup.json` is a Flatpak manifest (GNOME `master` runtime
+with the `rust-stable` SDK extension) for development builds.
+
+## Prototype state
+
+While Setup is a prototype, `src/main.rs` sets `SETUP_OVERRIDE_IN_SESSION`,
+`SETUP_OVERRIDE_OS_RELEASE_TYPE`, `SETUP_OVERRIDE_OS_EXPERIMENT` and
+`SETUP_DEMO` itself at startup, and `src/window.rs` always runs the
+`live-initial-setup` mode from `pages.conf`. Setting those variables from
+outside therefore has no effect until the debugging overrides are removed.
+
 # Distro Customization
 
 Setup tries to customize itself based on the distro and environment available
