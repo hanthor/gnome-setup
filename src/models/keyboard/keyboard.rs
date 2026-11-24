@@ -105,3 +105,37 @@ fn tokenize_and_casefold_with_alts(
     let res = tokenize_and_casefold_internal(arg, translit_locale, true);
     (res.0, res.1.unwrap())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tokens(keyboard: &Keyboard) -> Vec<String> {
+        keyboard
+            .search_tokens()
+            .iter()
+            .map(|t| t.as_str().to_owned())
+            .collect()
+    }
+
+    #[test]
+    fn new_stores_all_fields() {
+        let keyboard = Keyboard::new("xkb:us::eng", "English (US)", "us", "");
+        assert_eq!(keyboard.id(), "xkb:us::eng");
+        assert_eq!(keyboard.display_name(), "English (US)");
+        assert_eq!(keyboard.layout(), "us");
+        assert_eq!(keyboard.variant(), "");
+    }
+
+    #[test]
+    fn search_tokens_cover_name_layout_and_variant() {
+        let keyboard = Keyboard::new("xkb:us:dvorak:eng", "English (Dvorak)", "us", "dvorak");
+        let tokens = tokens(&keyboard);
+        for expected in ["english", "dvorak", "us"] {
+            assert!(
+                tokens.iter().any(|t| t == expected),
+                "{expected:?} missing from {tokens:?}"
+            );
+        }
+    }
+}
