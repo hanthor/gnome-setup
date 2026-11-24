@@ -300,3 +300,57 @@ fn tokenize_and_casefold_with_alts(
 pub fn tokenize_and_casefold(arg: &str) -> glib::StrV {
     tokenize_and_casefold_internal(arg, None, false).0
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tokens(arg: &str) -> Vec<String> {
+        tokenize_and_casefold(arg)
+            .iter()
+            .map(|t| t.as_str().to_owned())
+            .collect()
+    }
+
+    #[test]
+    fn tokenize_splits_and_casefolds() {
+        assert_eq!(tokens("Hello  World"), ["hello", "world"]);
+    }
+
+    #[test]
+    fn tokenize_empty_input_has_no_tokens() {
+        assert!(tokens("").is_empty());
+    }
+
+    #[test]
+    fn parsed_locale_splits_components() {
+        let parsed = ParsedLocale::new("en_US.UTF-8").unwrap();
+        assert_eq!(parsed.id, "en_US.UTF-8");
+        assert_eq!(parsed.lang, "en");
+        assert_eq!(parsed.country.as_deref(), Some("US"));
+        assert_eq!(parsed.modifier, None);
+    }
+
+    #[test]
+    fn parsed_locale_keeps_modifier() {
+        let parsed = ParsedLocale::new("sr_RS.UTF-8@latin").unwrap();
+        assert_eq!(parsed.lang, "sr");
+        assert_eq!(parsed.modifier.as_deref(), Some("latin"));
+    }
+
+    #[test]
+    fn parsed_locale_rejects_non_utf8_encodings() {
+        assert!(matches!(
+            ParsedLocale::new("en_US.ISO-8859-1"),
+            Err(LocaleParseError::NotUtf8)
+        ));
+    }
+
+    #[test]
+    fn parsed_locale_rejects_missing_encoding() {
+        assert!(matches!(
+            ParsedLocale::new("en_US"),
+            Err(LocaleParseError::NotUtf8)
+        ));
+    }
+}

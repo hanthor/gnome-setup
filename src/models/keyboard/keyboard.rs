@@ -105,3 +105,31 @@ fn tokenize_and_casefold_with_alts(
     let res = tokenize_and_casefold_internal(arg, translit_locale, true);
     (res.0, res.1.unwrap())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn has_token(keyboard: &Keyboard, wanted: &str) -> bool {
+        keyboard
+            .search_tokens()
+            .iter()
+            .any(|token| token.as_str() == wanted)
+    }
+
+    #[test]
+    fn search_tokens_cover_name_layout_and_variant() {
+        let keyboard = Keyboard::new("fr+oss", "French (alternative)", "fr", "oss");
+        assert!(has_token(&keyboard, "french"));
+        assert!(has_token(&keyboard, "alternative"));
+        assert!(has_token(&keyboard, "fr"));
+        assert!(has_token(&keyboard, "oss"));
+    }
+
+    #[test]
+    fn search_tokens_are_casefolded() {
+        let keyboard = Keyboard::new("us", "English (US)", "us", "");
+        assert!(has_token(&keyboard, "english"));
+        assert!(!has_token(&keyboard, "English"));
+    }
+}

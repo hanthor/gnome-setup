@@ -177,3 +177,60 @@ impl Disk {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn disk(vendor: Option<&str>, model: Option<&str>) -> Disk {
+        let mut builder = glib::Object::builder::<Disk>()
+            .property("node", "/dev/test")
+            .property("size", 1_000_000_000_i64);
+        if let Some(vendor) = vendor {
+            builder = builder.property("vendor", vendor);
+        }
+        if let Some(model) = model {
+            builder = builder.property("model", model);
+        }
+        builder.build()
+    }
+
+    #[test]
+    fn only_too_small_is_unusable() {
+        for status in [
+            DiskStatus::Empty,
+            DiskStatus::DataDetected,
+            DiskStatus::InsufficientFreeSpace,
+            DiskStatus::Full,
+            DiskStatus::UnsupportedPartitionTable,
+        ] {
+            assert!(status.usable(), "{status:?} should be usable");
+        }
+        assert!(!DiskStatus::TooSmall.usable());
+    }
+
+    #[test]
+    fn display_name_joins_vendor_and_model() {
+        let name = disk(Some("ACME"), Some("Fast SSD")).display_name();
+        assert!(name.starts_with("ACME Fast SSD "), "got {name:?}");
+    }
+
+    #[test]
+    fn display_name_with_only_vendor() {
+        let name = disk(Some("ACME"), None).display_name();
+        assert!(name.starts_with("ACME "), "got {name:?}");
+        assert!(!name.contains("Unknown Disk"), "got {name:?}");
+    }
+
+    #[test]
+    fn display_name_with_only_model() {
+        let name = disk(None, Some("Fast SSD")).display_name();
+        assert!(name.starts_with("Fast SSD "), "got {name:?}");
+    }
+
+    #[test]
+    fn display_name_falls_back_to_unknown_disk() {
+        let name = disk(None, None).display_name();
+        assert!(name.starts_with("Unknown Disk "), "got {name:?}");
+    }
+}
