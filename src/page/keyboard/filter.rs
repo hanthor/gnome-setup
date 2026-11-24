@@ -92,3 +92,78 @@ mod imp {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::cell::Cell;
+    use std::rc::Rc;
+
+    /// Runs `set_query` with each query in turn and returns the `FilterChange`
+    /// the filter reported for the last one.
+    fn last_change(queries: &[&str]) -> gtk::FilterChange {
+        let filter = KeyboardFilter::default();
+        let change = Rc::new(Cell::new(None));
+        filter.connect_changed({
+            let change = change.clone();
+            move |_, c| change.set(Some(c))
+        });
+        for query in queries {
+            filter.set_query(query);
+        }
+        change.get().expect("set_query should emit `changed`")
+    }
+
+    #[test]
+    fn first_query_is_more_strict() {
+        assert_eq!(last_change(&["fr"]), gtk::FilterChange::MoreStrict);
+    }
+
+    #[test]
+    fn extending_the_query_is_more_strict() {
+        assert_eq!(last_change(&["fr", "fre"]), gtk::FilterChange::MoreStrict);
+    }
+
+    #[test]
+    fn shortening_the_query_is_less_strict() {
+        assert_eq!(last_change(&["fre", "fr"]), gtk::FilterChange::LessStrict);
+    }
+
+    #[test]
+    fn clearing_the_query_is_less_strict() {
+        assert_eq!(last_change(&["fre", ""]), gtk::FilterChange::LessStrict);
+    }
+
+    #[test]
+    fn unrelated_query_is_different() {
+        assert_eq!(last_change(&["fre", "deu"]), gtk::FilterChange::Different);
+    }
+
+    #[test]
+    fn empty_query_matches_everything() {
+        let filter = KeyboardFilter::default();
+        let keyboard = Keyboard::new("xkb:us::eng", "English (US)", "us", "");
+        assert_eq!(filter.strictness(), gtk::FilterMatch::All);
+        assert!(filter.match_(&keyboard));
+    }
+
+    #[test]
+    fn every_query_token_must_prefix_a_keyboard_token() {
+        let filter = KeyboardFilter::default();
+        let keyboard = Keyboard::new("xkb:us:dvorak:eng", "English (Dvorak)", "us", "dvorak");
+
+        filter.set_query("eng");
+        assert_eq!(filter.strictness(), gtk::FilterMatch::Some);
+        assert!(filter.match_(&keyboard));
+
+        filter.set_query("ENG dvo");
+        assert!(filter.match_(&keyboard));
+
+        filter.set_query("eng colemak");
+        assert!(!filter.match_(&keyboard));
+
+        filter.set_query("xyz");
+        assert!(!filter.match_(&keyboard));
+    }
+}

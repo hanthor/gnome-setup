@@ -177,3 +177,93 @@ impl Disk {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const GB: i64 = 1_000_000_000;
+
+    fn disk(vendor: Option<&str>, model: Option<&str>, size: i64) -> Disk {
+        let mut builder = glib::Object::builder::<Disk>()
+            .property("node", "/dev/test")
+            .property("size", size);
+        if let Some(vendor) = vendor {
+            builder = builder.property("vendor", vendor);
+        }
+        if let Some(model) = model {
+            builder = builder.property("model", model);
+        }
+        builder.build()
+    }
+
+    fn size_str(size: i64) -> String {
+        glib::format_size(size as u64).to_string()
+    }
+
+    #[test]
+    fn only_too_small_is_unusable() {
+        let usable = [
+            DiskStatus::Empty,
+            DiskStatus::DataDetected,
+            DiskStatus::InsufficientFreeSpace,
+            DiskStatus::Full,
+            DiskStatus::UnsupportedPartitionTable,
+        ];
+        for status in usable {
+            assert!(status.usable(), "{status:?} should be usable");
+        }
+        assert!(!DiskStatus::TooSmall.usable());
+    }
+
+    #[test]
+    fn usable_property_follows_status() {
+        let disk = disk(None, None, GB);
+        assert!(disk.usable());
+
+        disk.set_status(DiskStatus::TooSmall);
+        assert!(!disk.usable());
+
+        disk.set_status(DiskStatus::Full);
+        assert!(disk.usable());
+    }
+
+    #[test]
+    fn display_name_joins_vendor_model_and_size() {
+        let disk = disk(Some("ACME"), Some("Speedy"), GB);
+        assert_eq!(disk.display_name(), format!("ACME Speedy {}", size_str(GB)));
+    }
+
+    #[test]
+    fn display_name_with_vendor_only() {
+        let disk = disk(Some("ACME"), None, GB);
+        assert_eq!(disk.display_name(), format!("ACME {}", size_str(GB)));
+    }
+
+    #[test]
+    fn display_name_with_model_only() {
+        let disk = disk(None, Some("Speedy"), GB);
+        assert_eq!(disk.display_name(), format!("Speedy {}", size_str(GB)));
+    }
+
+    #[test]
+    fn display_name_falls_back_to_unknown_disk() {
+        let disk = disk(None, None, GB);
+        assert_eq!(
+            disk.display_name(),
+            format!("{} {}", gettext("Unknown Disk"), size_str(GB))
+        );
+    }
+
+    #[test]
+    fn display_desc_distinguishes_empty_disks() {
+        let disk = disk(None, None, GB);
+        assert_eq!(disk.display_desc(), gettext("This disk is fully empty"));
+
+        disk.set_status(DiskStatus::DataDetected);
+        assert_eq!(
+            disk.display_desc(),
+            gettext("This disk contains existing data")
+        );
+    }
+}
