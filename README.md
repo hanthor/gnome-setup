@@ -3,9 +3,10 @@
 > **This is a mirror.** The upstream project is
 > <https://gitlab.gnome.org/Teams/STF/setup> (GNOME STF); `main` and the other
 > upstream branches here are unmodified copies of it. Issues and merge requests
-> belong upstream. The `utah` branch carries the small patches that
-> [Project Bluefin's Utah](https://github.com/projectbluefin/utah) image-based
-> installer builds from (pinned by commit in `iso/raw/Containerfile`), each
+> belong upstream. The `bluefin` branch carries the small patches that
+> Project Bluefin's [Utah](https://github.com/projectbluefin/utah) and
+> [Dakota](https://github.com/projectbluefin/dakota) installers build from
+> (pinned by commit; `utah` is its predecessor), each
 > meant to go upstream:
 >
 > - main: Don't force demo mode and the debug overrides
@@ -16,6 +17,9 @@
 > - polkit-rules: Allow listing cryptenroll keyslots
 > - installer: Ask for a disk passphrase when there is no TPM
 >   (`disk-passphrase` page, kept next to the recovery key)
+> - recovery-key: Stop on a failed enrollment and verify the key slots
+> - interfaces: `[page:installer] sysinstall-socket=` and
+>   `cryptenroll-socket=` in `pages.conf`
 
 Setup performs two important functions:
 
