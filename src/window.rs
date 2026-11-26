@@ -14,7 +14,7 @@ use crate::models::keyboard::KeyboardModel;
 use crate::models::language::{Language, LanguageModel};
 use crate::page::{
     BasePage, BasePageExt, DonePage, EulaPage, InstallerPage, KeyboardPage, LanguagePage,
-    PrereleasePage, RecoveryKeyPage, WelcomePage,
+    PassphrasePage, PrereleasePage, RecoveryKeyPage, WelcomePage,
 };
 
 use crate::config::PAGES_CONFIG_DIR;
@@ -121,6 +121,16 @@ mod imp {
                 log::error!("Failed to read pages config: {error}");
             }
 
+            crate::interfaces::set_post_install_unit(
+                key_file.string("page:installer", "post-install-unit").ok().map(Into::into),
+            );
+            crate::interfaces::set_sysinstall_socket(
+                key_file.string("page:installer", "sysinstall-socket").ok().map(Into::into),
+            );
+            crate::interfaces::set_crypt_enroll_socket(
+                key_file.string("page:installer", "cryptenroll-socket").ok().map(Into::into),
+            );
+
             // TODO: get from env
             let mode = "live-initial-setup";
 
@@ -149,6 +159,7 @@ mod imp {
             let page = match page_name.as_str() {
                 "installer-welcome" => WelcomePage::new().upcast(),
                 "installer" => InstallerPage::new().upcast(),
+                "disk-passphrase" => PassphrasePage::new()?.upcast(),
                 "recovery-key" => RecoveryKeyPage::new().upcast(),
                 "installer-done" => DonePage::new().upcast(),
                 "language" => {

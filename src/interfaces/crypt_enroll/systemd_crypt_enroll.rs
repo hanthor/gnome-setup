@@ -7,13 +7,14 @@ use zlink::{proxy, ReplyError};
 /// Proxy trait for calling methods on the interface.
 #[proxy("io.systemd.CryptEnroll")]
 pub trait CryptEnroll {
-    /// Enroll a recovery key and wipe key slots in LUKS2 volume.
+    /// Enroll a recovery key or a password and wipe key slots in LUKS2 volume.
     async fn enroll(
         &mut self,
         node: &str,
         mechanism: &EnrollMechanism,
         #[zlink(rename = "recoveryKey")] recovery_key: Option<&str>,
         #[zlink(rename = "unlockPassword")] unlock_password: Option<&str>,
+        password: Option<&str>,
         #[zlink(rename = "wipeSlots")] wipe_slots: Option<&[i64]>,
     ) -> zlink::Result<Result<EnrollOutput<'_>, CryptEnrollError>>;
 
