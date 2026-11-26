@@ -124,6 +124,12 @@ mod imp {
             crate::interfaces::set_post_install_unit(
                 key_file.string("page:installer", "post-install-unit").ok().map(Into::into),
             );
+            crate::interfaces::set_sysinstall_socket(
+                key_file.string("page:installer", "sysinstall-socket").ok().map(Into::into),
+            );
+            crate::interfaces::set_crypt_enroll_socket(
+                key_file.string("page:installer", "cryptenroll-socket").ok().map(Into::into),
+            );
 
             // TODO: get from env
             let mode = "live-initial-setup";

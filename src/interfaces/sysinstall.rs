@@ -22,7 +22,19 @@ use systemd_sysinstall::{
     BlockDeviceAction, CandidateDevice, DeviceFit, ProgressPhase, SysInstall as SysInstallTrait,
 };
 
-const SOCKET_PATH: &str = "/run/systemd/io.systemd.SysInstall";
+const DEFAULT_SOCKET_PATH: &str = "/run/systemd/io.systemd.SysInstall";
+
+static SOCKET_PATH: OnceLock<String> = OnceLock::new();
+
+pub fn set_sysinstall_socket(path: Option<String>) {
+    if let Some(path) = path.filter(|path| !path.is_empty()) {
+        let _ = SOCKET_PATH.set(path);
+    }
+}
+
+fn socket_path() -> &'static str {
+    SOCKET_PATH.get().map_or(DEFAULT_SOCKET_PATH, String::as_str)
+}
 
 /// Unit the distribution wants started (with the target disk as its instance) after
 /// systemd-sysinstall copied the OS, e.g. to fix up what a block copy cannot get right.
@@ -178,7 +190,7 @@ impl SysInstall {
         let connection = if let Some(ref mut demo_server) = demo_server {
             demo_server.connection()
         } else {
-            &mut zlink::unix::connect(SOCKET_PATH).await?
+            &mut zlink::unix::connect(socket_path()).await?
         };
 
         let mut stream =
@@ -232,7 +244,7 @@ impl SysInstall {
         let connection = if let Some(ref mut demo_server) = demo_server {
             demo_server.connection()
         } else {
-            &mut zlink::unix::connect(SOCKET_PATH).await?
+            &mut zlink::unix::connect(socket_path()).await?
         };
 
         let node = disk.node();

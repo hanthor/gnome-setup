@@ -3,7 +3,7 @@
 mod systemd_crypt_enroll;
 
 use std::cell::Cell;
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 
 use anyhow::{anyhow, bail, ensure};
 use log::info;
@@ -11,7 +11,19 @@ use zlink::futures_util::StreamExt;
 
 use systemd_crypt_enroll::{CryptEnroll as CryptEnrollTrait, EnrollMechanism};
 
-const SOCKET_PATH: &str = "/run/systemd/io.systemd.CryptEnroll";
+const DEFAULT_SOCKET_PATH: &str = "/run/systemd/io.systemd.CryptEnroll";
+
+static SOCKET_PATH: OnceLock<String> = OnceLock::new();
+
+pub fn set_crypt_enroll_socket(path: Option<String>) {
+    if let Some(path) = path.filter(|path| !path.is_empty()) {
+        let _ = SOCKET_PATH.set(path);
+    }
+}
+
+fn socket_path() -> &'static str {
+    SOCKET_PATH.get().map_or(DEFAULT_SOCKET_PATH, String::as_str)
+}
 
 /// The key slot of the passphrase the user chose, which must survive wiping the empty password
 /// SysInstall enrolled.
@@ -67,7 +79,7 @@ impl CryptEnroll {
             );
         }
 
-        let mut connection = zlink::unix::connect(SOCKET_PATH).await?;
+        let mut connection = zlink::unix::connect(socket_path()).await?;
         let result = connection
             .make_recovery_key()
             .await?
@@ -84,7 +96,7 @@ impl CryptEnroll {
             return Ok(());
         }
 
-        let mut connection = zlink::unix::connect(SOCKET_PATH).await?;
+        let mut connection = zlink::unix::connect(socket_path()).await?;
         let result = connection
             .enroll(
                 node,                       // node
@@ -112,7 +124,7 @@ impl CryptEnroll {
             return Ok(());
         }
 
-        let mut connection = zlink::unix::connect(SOCKET_PATH).await?;
+        let mut connection = zlink::unix::connect(socket_path()).await?;
         let passphrase_slot = *PASSPHRASE_SLOT.lock().unwrap();
 
         let recovery_slot = match self.enrollment.get() {
