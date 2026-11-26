@@ -2,9 +2,11 @@
 
 mod systemd_crypt_enroll;
 
+use std::cell::Cell;
 use std::sync::Mutex;
 
-use log::{error, info};
+use anyhow::{anyhow, bail, ensure};
+use log::info;
 use zlink::futures_util::StreamExt;
 
 use systemd_crypt_enroll::{CryptEnroll as CryptEnrollTrait, EnrollMechanism};
@@ -35,12 +37,26 @@ pub fn installed_luks_node() -> String {
         .unwrap_or_else(|| "/dev/disk/by-label/root".to_string())
 }
 
-#[derive(Debug)]
-pub struct CryptEnroll {}
+/// How far enrolling the recovery key got, so that a retry never enrolls a second key.
+#[derive(Clone, Copy, Debug, Default)]
+enum Enrollment {
+    #[default]
+    NotStarted,
+    /// The request was sent, but no valid reply arrived
+    Unconfirmed,
+    Confirmed {
+        recovery_slot: i64,
+    },
+}
+
+#[derive(Debug, Default)]
+pub struct CryptEnroll {
+    enrollment: Cell<Enrollment>,
+}
 
 impl CryptEnroll {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 
     pub async fn make_recovery_key(&self) -> anyhow::Result<String> {
@@ -86,59 +102,148 @@ impl CryptEnroll {
         Ok(())
     }
 
-    pub async fn enroll_recovery_key(
-        &self,
-        node: &str,
-        recovery_key: Option<&str>,
-    ) -> anyhow::Result<Option<String>> {
+    /// Enroll the recovery key, wipe the empty password SysInstall enrolled, and verify both
+    /// against the key slots on the disk. Only a disk that can be unlocked with the recovery key
+    /// and no longer with the empty password is a success. Can be called again after an error.
+    pub async fn enroll_recovery_key(&self, node: &str, recovery_key: &str) -> anyhow::Result<()> {
         // TODO: Would be nice to have a demo implementation for the crytpenroll interface
         if crate::is_demo() {
             info!("Not enrolling a recovery key since setup is run in demo mode");
-            return Ok(Some(
-                "dehgheth-gntevib-lnlijjfc-neerulnn-nndflbbi-bdlhgvg-unvfldlv-lcrcfnbg".to_string(),
-            ));
+            return Ok(());
         }
 
         let mut connection = zlink::unix::connect(SOCKET_PATH).await?;
-
         let passphrase_slot = *PASSPHRASE_SLOT.lock().unwrap();
-        let mut stream = connection.list_slots(node).await?;
-        let mut wipe_slots = Vec::with_capacity(1);
-        while let Some(result) = stream.next().await {
-            let reply = match result {
-                Ok(Ok(reply)) => reply,
-                Ok(Err(error)) => {
-                    error!("Unexpected response while fetching key slots:  {error:?}");
-                    continue;
-                }
-                Err(error) => {
-                    error!("Connection to CryptEnroll failed: {error:?}");
-                    continue;
-                }
-            };
-            // TODO: Use empty slot once https://github.com/systemd/systemd/pull/42645 is merged
-            if reply.r#type == Some(EnrollMechanism::Password) {
-                if let Some(slot) = reply.slot.filter(|slot| Some(*slot) != passphrase_slot) {
-                    wipe_slots.push(slot)
-                }
+
+        let recovery_slot = match self.enrollment.get() {
+            Enrollment::Unconfirmed => {
+                bail!("A previous recovery key enrollment could not be confirmed")
             }
+            Enrollment::Confirmed { recovery_slot } => recovery_slot,
+            Enrollment::NotStarted => {
+                // TODO: Use empty slot once https://github.com/systemd/systemd/pull/42645 is merged
+                let wipe_slots =
+                    temporary_slots(&list_slots(&mut connection, node).await?, passphrase_slot);
+                ensure!(!wipe_slots.is_empty(), "No temporary password slot on {node}");
+
+                // A lost reply may mean that the key was enrolled
+                self.enrollment.set(Enrollment::Unconfirmed);
+                let reply = connection
+                    .enroll(
+                        node,                       // node
+                        &EnrollMechanism::Recovery, // mechanism
+                        Some(recovery_key),         // recovery_key
+                        // We enroll an empty password via SysInstall
+                        Some(""),                  // unlock_password
+                        None,                      // password
+                        Some(wipe_slots.as_ref()), // wipe_slots
+                    )
+                    .await?
+                    .map_err(|error| anyhow!("Enroll on {node} failed: {error:?}"))?;
+
+                ensure!(
+                    reply.recovery_key == Some(recovery_key),
+                    "CryptEnroll returned a different recovery key"
+                );
+                let recovery_slot = reply
+                    .slot
+                    .ok_or_else(|| anyhow!("CryptEnroll did not report the recovery key slot"))?;
+                self.enrollment.set(Enrollment::Confirmed { recovery_slot });
+                recovery_slot
+            }
+        };
+
+        verify_slots(
+            &list_slots(&mut connection, node).await?,
+            recovery_slot,
+            passphrase_slot,
+        )
+    }
+}
+
+type Slot = (i64, Option<EnrollMechanism>);
+
+async fn list_slots(
+    connection: &mut zlink::unix::Connection,
+    node: &str,
+) -> anyhow::Result<Vec<Slot>> {
+    let mut slots = Vec::new();
+    let mut stream = connection.list_slots(node).await?;
+    while let Some(result) = stream.next().await {
+        match result {
+            Ok(Ok(reply)) => {
+                let slot =
+                    reply.slot.ok_or_else(|| anyhow!("ListSlots returned an invalid slot"))?;
+                slots.push((slot, reply.r#type));
+            }
+            // The server ends the list with a successful reply without parameters
+            Err(zlink::Error::MissingParameters) => break,
+            Ok(Err(error)) => bail!("ListSlots on {node} failed: {error:?}"),
+            Err(error) => return Err(error.into()),
         }
+    }
+    Ok(slots)
+}
 
-        drop(stream);
+/// The password slots that are not the passphrase the user chose.
+fn temporary_slots(slots: &[Slot], passphrase_slot: Option<i64>) -> Vec<i64> {
+    slots
+        .iter()
+        .filter(|(slot, kind)| {
+            *kind == Some(EnrollMechanism::Password) && Some(*slot) != passphrase_slot
+        })
+        .map(|(slot, _)| *slot)
+        .collect()
+}
 
-        let result = connection
-            .enroll(
-                node,                       // node
-                &EnrollMechanism::Recovery, // mechanism
-                recovery_key,               // recovery_key
-                // We enroll an empty password via SysInstall
-                Some(""),                  // unlock_password
-                None,                      // password
-                Some(wipe_slots.as_ref()), // wipe_slots
-            )
-            .await?
-            .map_err(|error| anyhow::anyhow!("Enroll on {node} failed: {error:?}"))?;
+fn verify_slots(
+    slots: &[Slot],
+    recovery_slot: i64,
+    passphrase_slot: Option<i64>,
+) -> anyhow::Result<()> {
+    ensure!(
+        slots.contains(&(recovery_slot, Some(EnrollMechanism::Recovery))),
+        "The recovery key is not on the disk"
+    );
+    ensure!(
+        temporary_slots(slots, passphrase_slot).is_empty(),
+        "The temporary password is still on the disk"
+    );
+    if let Some(slot) = passphrase_slot {
+        ensure!(
+            slots.contains(&(slot, Some(EnrollMechanism::Password))),
+            "The disk passphrase is not on the disk"
+        );
+    }
+    Ok(())
+}
 
-        Ok(result.recovery_key.map(|key| key.to_string()))
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const PASSWORD: Option<EnrollMechanism> = Some(EnrollMechanism::Password);
+    const RECOVERY: Option<EnrollMechanism> = Some(EnrollMechanism::Recovery);
+    const TPM2: Option<EnrollMechanism> = Some(EnrollMechanism::Tpm2);
+
+    #[test]
+    fn only_the_temporary_password_is_wiped() {
+        let slots = [(0, PASSWORD), (1, TPM2), (2, PASSWORD)];
+        assert_eq!(temporary_slots(&slots, Some(2)), [0]);
+        assert_eq!(temporary_slots(&slots, None), [0, 2]);
+    }
+
+    #[test]
+    fn a_disk_needs_the_recovery_key_and_no_temporary_password() {
+        assert!(verify_slots(&[(1, TPM2), (2, RECOVERY)], 2, None).is_ok());
+        assert!(verify_slots(&[(1, PASSWORD), (2, RECOVERY)], 2, Some(1)).is_ok());
+        // Recovery key missing, or in another slot
+        assert!(verify_slots(&[(1, TPM2)], 2, None).is_err());
+        assert!(verify_slots(&[(3, RECOVERY)], 2, None).is_err());
+        // Temporary password left
+        assert!(verify_slots(&[(0, PASSWORD), (2, RECOVERY)], 2, None).is_err());
+        assert!(verify_slots(&[(0, PASSWORD), (1, PASSWORD), (2, RECOVERY)], 2, Some(1)).is_err());
+        // The user's passphrase is gone
+        assert!(verify_slots(&[(2, RECOVERY)], 2, Some(1)).is_err());
     }
 }

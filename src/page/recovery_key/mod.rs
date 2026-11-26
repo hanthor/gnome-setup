@@ -4,8 +4,9 @@ mod qr_code;
 
 use adw::subclass::prelude::*;
 
+use gettextrs::gettext;
 use gtk::glib;
-use gtk::prelude::WidgetExt;
+use gtk::prelude::{CheckButtonExt, WidgetExt};
 use log::warn;
 
 use crate::osinfo::OsInfoCallbacks;
@@ -37,7 +38,9 @@ mod imp {
         #[template_child]
         recovery_key_label: TemplateChild<gtk::Label>,
         #[template_child]
-        done_btn: TemplateChild<gtk::Button>,
+        confirm_btn: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        error_label: TemplateChild<gtk::Label>,
         #[template_child]
         qr_code_dialog_btn: TemplateChild<gtk::Button>,
         #[template_child]
@@ -95,6 +98,9 @@ mod imp {
                 Ok(recovery_key) => recovery_key,
                 Err(error) => {
                     warn!("Unable to create recovery key via systemd-cryptenroll: {error}");
+                    self.show_error(&gettext(
+                        "Could not generate a recovery key. Setup cannot continue.",
+                    ));
                     return;
                 }
             };
@@ -102,23 +108,12 @@ mod imp {
             self.recovery_key_label.set_label(&recovery_key);
             self.recovery_key.set(recovery_key).unwrap();
             self.qr_code_dialog_btn.set_sensitive(true);
+            self.confirm_btn.set_sensitive(true);
         }
 
-        async fn enroll_recovery_key(&self) {
-            let node = crate::interfaces::installed_luks_node();
-            log::info!("Enrolling the recovery key on {node}");
-            let recovery_key = self.recovery_key.get();
-            let interface = self.interface.get().unwrap();
-
-            let result =
-                interface.enroll_recovery_key(&node, recovery_key.map(|x| x.as_str())).await;
-            match result {
-                Ok(Some(_)) => {}
-                Ok(None) => warn!("Systemd-cryptenroll didn't report a recovery key"),
-                Err(error) => {
-                    warn!("Unable to enroll recovery key via systemd-cryptenroll: {error}")
-                }
-            }
+        fn show_error(&self, message: &str) {
+            self.error_label.set_label(message);
+            self.error_label.set_visible(true);
         }
 
         #[template_callback]
@@ -140,9 +135,30 @@ mod imp {
 
         #[template_callback]
         async fn on_done(&self) {
-            self.enroll_recovery_key().await;
+            let Some(recovery_key) = self.recovery_key.get() else {
+                return;
+            };
+            // Also keeps a second click out while the first one is worked on
+            if !self.confirm_btn.is_sensitive() || !self.confirm_btn.is_active() {
+                return;
+            }
+            self.confirm_btn.set_sensitive(false);
+            self.confirm_btn.set_active(false);
+            self.error_label.set_visible(false);
 
-            self.obj().go_next();
+            let node = crate::interfaces::installed_luks_node();
+            log::info!("Enrolling the recovery key on {node}");
+            let interface = self.interface.get().unwrap();
+            match interface.enroll_recovery_key(&node, recovery_key).await {
+                Ok(()) => self.obj().go_next(),
+                Err(error) => {
+                    warn!("Unable to enroll recovery key via systemd-cryptenroll: {error}");
+                    self.show_error(&gettext(
+                        "The recovery key could not be set up. Keep your backup and do not restart yet.",
+                    ));
+                    self.confirm_btn.set_sensitive(true);
+                }
+            }
         }
     }
 }

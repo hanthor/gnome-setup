@@ -42,8 +42,15 @@ template $SetupRecoveryKeyPage : $SetupBasePage {
             styles [ "card" ]
           }
 
+      Gtk.Label error_label {
+        visible: false;
+        wrap: true;
+        styles [ "error" ]
+      }
+
       Gtk.CheckButton confirm_btn {
             label: _("I backed up my recovery key");
+            sensitive: false;
       }
 
       Gtk.Button done_btn {
