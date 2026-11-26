@@ -3,23 +3,35 @@
 > **This is a mirror.** The upstream project is
 > <https://gitlab.gnome.org/Teams/STF/setup> (GNOME STF); `main` and the other
 > upstream branches here are unmodified copies of it. Issues and merge requests
-> belong upstream. The `bluefin` branch carries the small patches that
-> Project Bluefin's [Utah](https://github.com/projectbluefin/utah) and
-> [Dakota](https://github.com/projectbluefin/dakota) installers build from
-> (pinned by commit; `utah` is its predecessor), each
-> meant to go upstream:
+> belong upstream.
 >
-> - main: Don't force demo mode and the debug overrides
-> - crypt-enroll: Return errors instead of panicking
-> - installer: Report failures, support a distro post-install unit
->   (`[page:installer] post-install-unit=` in `pages.conf`), enroll the
->   recovery key on the installed disk
-> - polkit-rules: Allow listing cryptenroll keyslots
-> - installer: Ask for a disk passphrase when there is no TPM
->   (`disk-passphrase` page, kept next to the recovery key)
-> - recovery-key: Stop on a failed enrollment and verify the key slots
-> - interfaces: `[page:installer] sysinstall-socket=` and
->   `cryptenroll-socket=` in `pages.conf`
+> The `bluefin` branch carries the patches that Project Bluefin's
+> [Utah](https://github.com/projectbluefin/utah) and
+> [Dakota](https://github.com/projectbluefin/dakota) installers build from
+> (pinned by commit; `utah` is its predecessor):
+>
+> 1. main: Don't force demo mode and the debug overrides
+> 2. crypt-enroll: Return errors instead of panicking
+> 3. installer: Report failures, support a distro post-install unit
+>    (`[page:installer] post-install-unit=` in `pages.conf`), enroll the
+>    recovery key on the installed disk
+> 4. polkit-rules: Allow listing cryptenroll keyslots
+> 5. installer: Ask for a disk passphrase when there is no TPM
+>    (`disk-passphrase` page, kept next to the recovery key)
+> 6. recovery-key: Stop on a failed enrollment and verify the key slots
+> 7. interfaces: `[page:installer] sysinstall-socket=` and
+>    `cryptenroll-socket=` in `pages.conf` (probably Bluefin-specific)
+>
+> **For upstream review:** the same series, one change per commit on top of
+> upstream `main`, is on the
+> [`for-upstream`](https://github.com/hanthor/gnome-setup/tree/for-upstream)
+> branch, open for line comments in
+> [#7](https://github.com/hanthor/gnome-setup/pull/7).
+>
+> **These patches were written with AI assistance** and tested in Bluefin's CI.
+> GNOME does not accept LLM-generated contributions, so they are not sent to
+> gitlab.gnome.org as they are: they show the problems we hit and one way to
+> fix them, for the maintainers to reimplement or for us to report as issues.
 
 Setup performs two important functions:
 
