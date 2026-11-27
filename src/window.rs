@@ -124,6 +124,9 @@ mod imp {
             crate::interfaces::set_post_install_unit(
                 key_file.string("page:installer", "post-install-unit").ok().map(Into::into),
             );
+            crate::interfaces::set_unencrypted_definitions(
+                key_file.string("page:installer", "unencrypted-definitions").ok().map(Into::into),
+            );
             crate::interfaces::set_sysinstall_socket(
                 key_file.string("page:installer", "sysinstall-socket").ok().map(Into::into),
             );
@@ -160,7 +163,7 @@ mod imp {
                 "installer-welcome" => WelcomePage::new().upcast(),
                 "installer" => InstallerPage::new().upcast(),
                 "disk-passphrase" => PassphrasePage::new()?.upcast(),
-                "recovery-key" => RecoveryKeyPage::new().upcast(),
+                "recovery-key" => RecoveryKeyPage::new()?.upcast(),
                 "installer-done" => DonePage::new().upcast(),
                 "language" => {
                     let page = LanguagePage::new();

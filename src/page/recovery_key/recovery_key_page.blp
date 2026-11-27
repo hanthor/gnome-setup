@@ -42,6 +42,28 @@ template $SetupRecoveryKeyPage : $SetupBasePage {
             styles [ "card" ]
           }
 
+      Gtk.Box {
+        spacing: 12;
+        halign: center;
+        homogeneous: true;
+
+        Gtk.Button copy_btn {
+          label: _("_Copy");
+          use-underline: true;
+          sensitive: false;
+          tooltip-text: _("Copy the recovery key to the clipboard");
+          clicked => $copy_recovery_key() swapped;
+        }
+
+        Gtk.Button save_btn {
+          label: _("_Save to File…");
+          use-underline: true;
+          sensitive: false;
+          tooltip-text: _("Save the recovery key to a text file, for example on a USB drive");
+          clicked => $save_recovery_key() swapped;
+        }
+      }
+
       Gtk.Label error_label {
         visible: false;
         wrap: true;

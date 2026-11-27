@@ -2,11 +2,12 @@
 
 mod qr_code;
 
+use adw::prelude::*;
 use adw::subclass::prelude::*;
 
+use formatx::formatx;
 use gettextrs::gettext;
-use gtk::glib;
-use gtk::prelude::{CheckButtonExt, WidgetExt};
+use gtk::{gio, glib};
 use log::warn;
 
 use crate::osinfo::OsInfoCallbacks;
@@ -19,17 +20,31 @@ glib::wrapper! {
 }
 
 impl RecoveryKeyPage {
-    pub fn new() -> Self {
-        glib::Object::new()
+    /// Only an encrypted disk has a recovery key.
+    pub fn new() -> Option<Self> {
+        crate::interfaces::encrypt_disk().then(glib::Object::new)
     }
+}
+
+/// How a screen reader reads the recovery key: group by group, letter by letter.
+/// `group` has a `{number}` and a `{letters}` placeholder.
+fn spoken_recovery_key(recovery_key: &str, group: &str) -> String {
+    recovery_key
+        .split('-')
+        .enumerate()
+        .map(|(index, letters)| {
+            let number = index + 1;
+            let letters = letters.chars().map(String::from).collect::<Vec<_>>().join(" ");
+            formatx!(group, number = number, letters = letters).unwrap()
+        })
+        .collect::<Vec<_>>()
+        .join(". ")
 }
 
 mod imp {
     use super::*;
 
     use crate::interfaces::CryptEnroll;
-    use adw::prelude::AdwDialogExt;
-    use glib::prelude::StaticType;
     use std::cell::OnceCell;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -43,6 +58,10 @@ mod imp {
         error_label: TemplateChild<gtk::Label>,
         #[template_child]
         qr_code_dialog_btn: TemplateChild<gtk::Button>,
+        #[template_child]
+        copy_btn: TemplateChild<gtk::Button>,
+        #[template_child]
+        save_btn: TemplateChild<gtk::Button>,
         #[template_child]
         qr_code_dialog: TemplateChild<adw::Dialog>,
         #[template_child]
@@ -105,9 +124,16 @@ mod imp {
                 }
             };
 
+            // TRANSLATORS: How a screen reader reads one group of the recovery key, e.g.
+            //              "Group 1: d e h g h e t h". Keep {number} and {letters}.
+            let spoken = spoken_recovery_key(&recovery_key, &gettext("Group {number}: {letters}"));
             self.recovery_key_label.set_label(&recovery_key);
+            self.recovery_key_label
+                .update_property(&[gtk::accessible::Property::Description(&spoken)]);
             self.recovery_key.set(recovery_key).unwrap();
             self.qr_code_dialog_btn.set_sensitive(true);
+            self.copy_btn.set_sensitive(true);
+            self.save_btn.set_sensitive(true);
             self.confirm_btn.set_sensitive(true);
         }
 
@@ -131,6 +157,67 @@ mod imp {
         #[template_callback]
         fn close_qr_code_dialog(&self) {
             self.qr_code_dialog.close();
+        }
+
+        #[template_callback]
+        async fn copy_recovery_key(&self) {
+            let Some(recovery_key) = self.recovery_key.get() else {
+                return;
+            };
+            let obj = self.obj();
+            obj.clipboard().set_text(recovery_key);
+            obj.announce(
+                &gettext("Recovery key copied"),
+                gtk::AccessibleAnnouncementPriority::Medium,
+            );
+
+            self.copy_btn.set_label(&gettext("Copied"));
+            glib::timeout_future_seconds(2).await;
+            self.copy_btn.set_label(&gettext("_Copy"));
+        }
+
+        #[template_callback]
+        async fn save_recovery_key(&self) {
+            let Some(recovery_key) = self.recovery_key.get() else {
+                return;
+            };
+            let obj = self.obj();
+
+            let dialog = gtk::FileDialog::builder()
+                .title(gettext("Save Recovery Key"))
+                .initial_name("recovery-key.txt")
+                .modal(true)
+                .build();
+            let window = obj.root().and_downcast::<gtk::Window>();
+            let file = match dialog.save_future(window.as_ref()).await {
+                Ok(file) => file,
+                Err(error) => {
+                    if !error.matches(gtk::DialogError::Dismissed)
+                        && !error.matches(gtk::DialogError::Cancelled)
+                    {
+                        warn!("Unable to choose a file for the recovery key: {error}");
+                    }
+                    return;
+                }
+            };
+
+            let contents = format!(
+                "{}\n{recovery_key}\n",
+                gettext(
+                    "This recovery key unlocks the encrypted disk when nothing else can. Keep it in a safe place."
+                )
+            );
+            let flags = gio::FileCreateFlags::PRIVATE | gio::FileCreateFlags::REPLACE_DESTINATION;
+            match file.replace_contents_future(contents, None, false, flags).await {
+                Ok(_) => obj.announce(
+                    &gettext("Recovery key saved"),
+                    gtk::AccessibleAnnouncementPriority::Medium,
+                ),
+                Err((_, error)) => {
+                    warn!("Unable to save the recovery key to {}: {error}", file.uri());
+                    self.show_error(&gettext("The recovery key could not be saved to that file."));
+                }
+            }
         }
 
         #[template_callback]
@@ -160,5 +247,18 @@ mod imp {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_recovery_key_is_read_group_by_group() {
+        assert_eq!(
+            spoken_recovery_key("dehg-gntv", "Group {number}: {letters}"),
+            "Group 1: d e h g. Group 2: g n t v"
+        );
     }
 }

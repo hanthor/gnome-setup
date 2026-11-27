@@ -11,6 +11,22 @@ template $SetupDiskSelectPage : $SetupBasePage {
       orientation: vertical;
       spacing: 18;
 
+      Gtk.ListBox encryption {
+        visible: false;
+        selection-mode: none;
+
+        Adw.SwitchRow encrypt_row {
+          title: _("Encrypt Disk");
+          active: true;
+
+          accessibility {
+            label: _("Encrypt Disk");
+          }
+        }
+
+        styles [ "boxed-list" ]
+      }
+
       Gtk.ListBox disks {
         visible: false;
         selection-mode: none;

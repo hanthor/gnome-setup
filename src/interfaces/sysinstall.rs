@@ -6,6 +6,7 @@ mod systemd_sysinstall_demo;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{LazyLock, Mutex, OnceLock};
 
 use anyhow::anyhow;
@@ -49,6 +50,48 @@ pub fn set_post_install_unit(unit: Option<String>) {
 
 pub fn installed_node() -> Option<String> {
     INSTALLED_NODE.lock().unwrap().clone()
+}
+
+/// Definitions the distribution offers for installing without encryption, next to the
+/// compiled-in (encrypted) ones. Only when they are set can the user turn encryption off.
+static UNENCRYPTED_DEFINITIONS: OnceLock<Option<String>> = OnceLock::new();
+
+/// Whether the user wants the installed disk encrypted.
+static ENCRYPT_DISK: AtomicBool = AtomicBool::new(true);
+
+pub fn set_unencrypted_definitions(dir: Option<String>) {
+    let _ = UNENCRYPTED_DEFINITIONS.set(dir.filter(|d| !d.is_empty()));
+}
+
+fn unencrypted_definitions() -> Option<&'static str> {
+    UNENCRYPTED_DEFINITIONS.get().and_then(Option::as_deref)
+}
+
+/// Whether the user can choose to install without encryption.
+pub fn encryption_optional() -> bool {
+    unencrypted_definitions().is_some()
+}
+
+pub fn set_encrypt_disk(encrypt: bool) {
+    ENCRYPT_DISK.store(encrypt, Ordering::Relaxed);
+}
+
+/// Whether the installed disk will be encrypted.
+pub fn encrypt_disk() -> bool {
+    will_encrypt(ENCRYPT_DISK.load(Ordering::Relaxed), unencrypted_definitions())
+}
+
+/// Without unencrypted definitions the disk is always encrypted, whatever was chosen.
+fn will_encrypt(encrypt: bool, unencrypted: Option<&str>) -> bool {
+    encrypt || unencrypted.is_none()
+}
+
+/// The definitions systemd-sysinstall installs with.
+fn definitions_dir(encrypt: bool, unencrypted: Option<&str>) -> &str {
+    match unencrypted {
+        Some(dir) if !will_encrypt(encrypt, unencrypted) => dir,
+        _ => REPART_DEFINITIONS_DIR,
+    }
 }
 
 /// The LUKS2 partition on `disk`, from the udev database.
@@ -247,11 +290,14 @@ impl SysInstall {
         };
 
         let node = disk.node();
+        let encrypt = ENCRYPT_DISK.load(Ordering::Relaxed);
+        let definitions = [definitions_dir(encrypt, unencrypted_definitions())];
+        log::info!("Installing to {node} with the definitions in {}", definitions[0]);
 
         let mut stream = connection
             .run_with_progress(
                 &node,                        // node
-                &[REPART_DEFINITIONS_DIR],    // definitions
+                &definitions,                 // definitions
                 erase,                        // erase
                 KERNEL_IAMGE_PATH.as_deref(), // kernel_image
                 true,                         // variables
@@ -365,5 +411,22 @@ mod tests {
         // systemd-sysinstall leaves partitionCount out for a disk without a partition table
         // that still carries a signature (filesystem, LUKS, LVM, ...)
         assert_eq!(status(None, Some(SIZE)), DiskStatus::DataDetected);
+    }
+
+    #[test]
+    fn the_disk_is_encrypted_unless_the_user_turns_it_off() {
+        assert!(will_encrypt(true, None));
+        assert!(will_encrypt(true, Some("/run/unencrypted.d")));
+        assert!(!will_encrypt(false, Some("/run/unencrypted.d")));
+        // Without unencrypted definitions there is nothing to turn off
+        assert!(will_encrypt(false, None));
+    }
+
+    #[test]
+    fn only_an_unencrypted_install_uses_the_unencrypted_definitions() {
+        assert_eq!(definitions_dir(true, None), REPART_DEFINITIONS_DIR);
+        assert_eq!(definitions_dir(false, None), REPART_DEFINITIONS_DIR);
+        assert_eq!(definitions_dir(true, Some("/run/unencrypted.d")), REPART_DEFINITIONS_DIR);
+        assert_eq!(definitions_dir(false, Some("/run/unencrypted.d")), "/run/unencrypted.d");
     }
 }

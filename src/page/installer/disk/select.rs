@@ -40,6 +40,10 @@ mod imp {
         unusable_disks: TemplateChild<gtk::ListBox>,
         #[template_child]
         power_off_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        encryption: TemplateChild<gtk::ListBox>,
+        #[template_child]
+        encrypt_row: TemplateChild<adw::SwitchRow>,
     }
 
     #[glib::object_subclass]
@@ -62,6 +66,8 @@ mod imp {
     impl ObjectImpl for DiskSelectPage {
         fn constructed(&self) {
             self.parent_constructed();
+
+            self.setup_encryption();
 
             let disks_model = DisksModel::default();
 
@@ -127,6 +133,21 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl DiskSelectPage {
+        /// Offer to install without encryption when the distribution provides definitions for it.
+        fn setup_encryption(&self) {
+            self.encryption.set_visible(crate::interfaces::encryption_optional());
+            // A rebuilt page keeps the choice
+            self.encrypt_row.set_active(crate::interfaces::encrypt_disk());
+            self.encrypt_row.set_subtitle(&if crate::interfaces::has_tpm2() {
+                gettext("Protects your files if this device is lost or stolen. A recovery key is shown after the installation, which you must save.")
+            } else {
+                gettext("Protects your files if this device is lost or stolen. You choose a passphrase to unlock the disk at startup, and a recovery key is shown after the installation, which you must save.")
+            });
+            self.encrypt_row.connect_active_notify(|row| {
+                crate::interfaces::set_encrypt_disk(row.is_active());
+            });
+        }
+
         fn on_disks_changed(&self) {
             let has_usable_disks = self.disks.row_at_index(0).is_some();
             let has_unusable_disks = self.unusable_disks.row_at_index(0).is_some();

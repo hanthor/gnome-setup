@@ -17,8 +17,9 @@ glib::wrapper! {
 
 impl PassphrasePage {
     /// Only machines without a TPM 2.0 need a passphrase: with one, the disk unlocks itself.
+    /// An unencrypted disk needs none at all.
     pub fn new() -> Option<Self> {
-        if crate::interfaces::has_tpm2() {
+        if crate::interfaces::has_tpm2() || !crate::interfaces::encrypt_disk() {
             None
         } else {
             Some(glib::Object::new())
