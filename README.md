@@ -21,6 +21,9 @@
 > 6. recovery-key: Stop on a failed enrollment and verify the key slots
 > 7. interfaces: `[page:installer] sysinstall-socket=` and
 >    `cryptenroll-socket=` in `pages.conf` (probably Bluefin-specific)
+> 8. sysinstall: Tell empty disks apart by their partition count (needs
+>    `partitionCount` in `ListCandidateDevices`, which our systemd-sysinstall
+>    adds; not on `for-upstream`)
 >
 > **For upstream review:** the same series, one change per commit on top of
 > upstream `main`, is on the
