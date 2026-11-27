@@ -28,19 +28,31 @@ template $SetupRecoveryKeyPage : $SetupBasePage {
                     label: _("Recovery Key");
                 }
             }
-            Gtk.Button qr_code_dialog_btn {
-                    hexpand: true;
-                    sensitive: false;
-                    halign: end;
-                    icon-name: "qr-code-symbolic";
-                    clicked => $show_qr_code_dialog() swapped;
-                    accessibility {
-                        label: _("Show QR Code for Recovery Key");
-                    }
-                    styles [ "flat" ]
-                }
             styles [ "card" ]
           }
+
+      Gtk.Box qr_code_box {
+        orientation: vertical;
+        spacing: 6;
+        halign: center;
+        visible: false;
+
+        Gtk.Picture qr_code_picture {
+          halign: center;
+          width-request: 200;
+          height-request: 200;
+          accessibility {
+            label: _("Recovery Key QR Code");
+          }
+        }
+
+        Gtk.Label {
+          label: _("Scan this code with your phone to store the key in a password manager.");
+          wrap: true;
+          justify: center;
+          styles [ "dim-label" ]
+        }
+      }
 
       Gtk.Box {
         spacing: 12;
@@ -85,45 +97,4 @@ template $SetupRecoveryKeyPage : $SetupBasePage {
       }
     }
   };
-}
-
-Adw.Dialog qr_code_dialog {
-    title: _("QR Code");
-    default-widget: dialog_done_btn;
-    content-width: 400;
-
-    Gtk.Box {
-        orientation: vertical;
-        spacing: 12;
-        margin-top: 48;
-        margin-bottom: 48;
-        margin-start: 48;
-        margin-end: 48;
-
-        Gtk.Picture qr_code_picture {
-            valign: center;
-            halign: center;
-            width-request: 200;
-            height-request: 200;
-        }
-
-        Gtk.Label {
-            label: _("Scan to Back Up");
-            styles [ "title-1" ]
-        }
-
-        Gtk.Label {
-            label: _("Scan this code with your phone and store the key in a password manager");
-            wrap: true;
-            lines: 2;
-            justify: center;
-        }
-
-        Gtk.Button dialog_done_btn {
-            label: _("Done");
-            clicked => $close_qr_code_dialog() swapped;
-
-            styles [ "pill", "suggested-action" ]
-        }
-    }
 }

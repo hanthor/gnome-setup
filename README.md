@@ -31,6 +31,8 @@
 >    `disk-passphrase` and `recovery-key` pages), and let the recovery key be
 >    copied, saved to a file and read out group by group; not on
 >    `for-upstream`
+> 10. recovery-key: Show the QR code on the page under the key instead of
+>     behind an icon-only button and a dialog; not on `for-upstream`
 >
 > **For upstream review:** the same series, one change per commit on top of
 > upstream `main`, is on the

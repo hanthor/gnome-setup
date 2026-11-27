@@ -57,13 +57,11 @@ mod imp {
         #[template_child]
         error_label: TemplateChild<gtk::Label>,
         #[template_child]
-        qr_code_dialog_btn: TemplateChild<gtk::Button>,
-        #[template_child]
         copy_btn: TemplateChild<gtk::Button>,
         #[template_child]
         save_btn: TemplateChild<gtk::Button>,
         #[template_child]
-        qr_code_dialog: TemplateChild<adw::Dialog>,
+        qr_code_box: TemplateChild<gtk::Box>,
         #[template_child]
         qr_code_picture: TemplateChild<gtk::Picture>,
         recovery_key: OnceCell<String>,
@@ -130,8 +128,12 @@ mod imp {
             self.recovery_key_label.set_label(&recovery_key);
             self.recovery_key_label
                 .update_property(&[gtk::accessible::Property::Description(&spoken)]);
+            // The QR code sits on the page next to the key: behind an icon-only button nobody
+            // found it.
+            let paintable = qr_code::QRCodePaintable::new(&recovery_key, self.obj().color());
+            self.qr_code_picture.set_paintable(Some(&paintable));
+            self.qr_code_box.set_visible(true);
             self.recovery_key.set(recovery_key).unwrap();
-            self.qr_code_dialog_btn.set_sensitive(true);
             self.copy_btn.set_sensitive(true);
             self.save_btn.set_sensitive(true);
             self.confirm_btn.set_sensitive(true);
@@ -140,23 +142,6 @@ mod imp {
         fn show_error(&self, message: &str) {
             self.error_label.set_label(message);
             self.error_label.set_visible(true);
-        }
-
-        #[template_callback]
-        fn show_qr_code_dialog(&self) {
-            let color = self.obj().color();
-            let paintable = qr_code::QRCodePaintable::new(
-                // The dialog is never created when we don't have a recovery key
-                self.recovery_key.get().unwrap(),
-                color,
-            );
-            self.qr_code_picture.set_paintable(Some(&paintable));
-            self.qr_code_dialog.present(Some(&*self.obj()));
-        }
-
-        #[template_callback]
-        fn close_qr_code_dialog(&self) {
-            self.qr_code_dialog.close();
         }
 
         #[template_callback]
