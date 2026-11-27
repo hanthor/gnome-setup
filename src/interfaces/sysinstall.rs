@@ -133,7 +133,7 @@ impl Disk {
             size_bytes,
             fit,
             minimal_size_bytes,
-            current_size_bytes,
+            partition_count,
             ..
         } = device;
 
@@ -146,13 +146,12 @@ impl Disk {
             DeviceFit::ConflictingDiskLabelPresent => DiskStatus::UnsupportedPartitionTable,
             DeviceFit::InsufficientFreeSpace => DiskStatus::InsufficientFreeSpace,
             DeviceFit::DiskTooSmall => DiskStatus::TooSmall,
-            DeviceFit::EnoughFreeSpace => {
-                if current_size_bytes == Some(0i64) {
-                    DiskStatus::Empty
-                } else {
-                    DiskStatus::DataDetected
-                }
-            }
+            // currentSizeBytes is the whole device, so only the partition count tells an empty
+            // disk apart. Without it (an older systemd-sysinstall), don't call a disk empty.
+            DeviceFit::EnoughFreeSpace => match partition_count {
+                Some(0) => DiskStatus::Empty,
+                _ => DiskStatus::DataDetected,
+            },
         };
 
         Some(
@@ -319,5 +318,52 @@ impl From<Option<ProgressPhase>> for InstallPhase {
             | ProgressPhase::InstallBootloader
             | ProgressPhase::UnmountPartitions => InstallPhase::InstallBootloader,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const SIZE: i64 = 512 * 1000 * 1000 * 1000;
+
+    fn status(partition_count: Option<i64>, current_size_bytes: Option<i64>) -> DiskStatus {
+        Disk::from_candidate_device(CandidateDevice {
+            node: Some("/dev/vda".to_string()),
+            size_bytes: Some(SIZE),
+            fit: Some(DeviceFit::EnoughFreeSpace),
+            current_size_bytes,
+            partition_count,
+            ..CandidateDevice::default()
+        })
+        .unwrap()
+        .status()
+    }
+
+    #[test]
+    fn a_disk_without_partitions_is_empty() {
+        // systemd-repart reports the whole device as its current size
+        assert_eq!(status(Some(0), Some(SIZE)), DiskStatus::Empty);
+        assert_eq!(status(Some(0), None), DiskStatus::Empty);
+    }
+
+    #[test]
+    fn a_disk_with_partitions_has_data() {
+        assert_eq!(status(Some(3), Some(SIZE)), DiskStatus::DataDetected);
+        assert_eq!(status(Some(3), Some(0)), DiskStatus::DataDetected);
+    }
+
+    #[test]
+    fn a_disk_is_not_empty_without_a_partition_count() {
+        // An older systemd-sysinstall that doesn't send partitionCount
+        assert_eq!(status(None, Some(SIZE)), DiskStatus::DataDetected);
+        assert_eq!(status(None, Some(0)), DiskStatus::DataDetected);
+    }
+
+    #[test]
+    fn a_whole_disk_filesystem_without_partition_table_has_data() {
+        // systemd-sysinstall leaves partitionCount out for a disk without a partition table
+        // that still carries a signature (filesystem, LUKS, LVM, ...)
+        assert_eq!(status(None, Some(SIZE)), DiskStatus::DataDetected);
     }
 }

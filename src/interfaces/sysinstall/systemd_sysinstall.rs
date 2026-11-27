@@ -60,6 +60,10 @@ pub struct CandidateDevice {
     pub minimal_size_bytes: Option<i64>,
     #[serde(rename = "currentSizeBytes")]
     pub current_size_bytes: Option<i64>,
+    /// Partitions already in the device's partition table, from systemd-repart's dry run.
+    /// Left out when that says nothing about existing data, e.g. a whole-disk filesystem.
+    #[serde(rename = "partitionCount", default)]
+    pub partition_count: Option<i64>,
     pub action: Option<BlockDeviceAction>,
 }
 
