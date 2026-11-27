@@ -24,6 +24,13 @@
 > 8. sysinstall: Tell empty disks apart by their partition count (needs
 >    `partitionCount` in `ListCandidateDevices`, which our systemd-sysinstall
 >    adds; not on `for-upstream`)
+> 9. installer: Let the user install without disk encryption (an
+>    `Encrypt Disk` switch, on by default, shown when
+>    `[page:installer] unencrypted-definitions=` in `pages.conf` names
+>    definitions without `Encrypt=`; turned off, it skips the
+>    `disk-passphrase` and `recovery-key` pages), and let the recovery key be
+>    copied, saved to a file and read out group by group; not on
+>    `for-upstream`
 >
 > **For upstream review:** the same series, one change per commit on top of
 > upstream `main`, is on the
